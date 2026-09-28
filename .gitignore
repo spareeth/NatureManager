@@ -1,0 +1,4 @@
+data/hortis/raw/
+.env.local
+node_modules/
+.venv/
