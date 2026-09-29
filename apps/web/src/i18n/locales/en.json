@@ -1,10 +1,52 @@
 {
-  "app": { "title": "Terra Garden" },
-  "nav": { "map": "Map", "field": "Field app" },
-  "map": { "heading": "Site map" },
+  "app": {
+    "title": "Terra Garden"
+  },
+  "nav": {
+    "map": "Map",
+    "field": "Field app",
+    "members": "Members",
+    "label": "Main"
+  },
+  "map": {
+    "heading": "Site map"
+  },
   "field": {
     "heading": "Field app",
     "placeholder": "Work orders, scans and observations will appear here."
   },
-  "language": { "switch": "العربية" }
+  "language": {
+    "switch": "العربية"
+  },
+  "login": {
+    "email": "Work email",
+    "submit": "Send sign-in link",
+    "sending": "Sending...",
+    "sent": "If {{email}} belongs to a staff account, a sign-in link is on its way. Check your inbox.",
+    "error": "Could not send the link: {{message}}"
+  },
+  "auth": {
+    "signOut": "Sign out"
+  },
+  "org": {
+    "switch": "Organisation",
+    "none": "Your account is not a member of any organisation. Ask a manager to add you."
+  },
+  "members": {
+    "heading": "Members",
+    "name": "Name",
+    "roles": "Roles",
+    "team": "Team"
+  },
+  "common": {
+    "loading": "Loading..."
+  },
+  "roles": {
+    "owner": "Owner",
+    "manager": "Manager",
+    "field_manager": "Field manager",
+    "curator": "Curator",
+    "green_team": "Green team",
+    "field_engineer": "Field engineer"
+  }
 }
