@@ -11,7 +11,9 @@
     "typecheck": "npm run typecheck -w apps/web",
     "test": "npm run test -w apps/web",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:db": "supabase test db",
+    "db:reset": "supabase db reset"
   },
   "devDependencies": {
     "supabase": "^2.118.0"
