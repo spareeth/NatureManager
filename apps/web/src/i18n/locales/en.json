@@ -1,0 +1,10 @@
+{
+  "app": { "title": "Terra Garden" },
+  "nav": { "map": "Map", "field": "Field app" },
+  "map": { "heading": "Site map" },
+  "field": {
+    "heading": "Field app",
+    "placeholder": "Work orders, scans and observations will appear here."
+  },
+  "language": { "switch": "العربية" }
+}
