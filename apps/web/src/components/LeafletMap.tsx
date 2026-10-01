@@ -4,8 +4,8 @@ import L from 'leaflet';
 // Thin wrapper over plain Leaflet (BSD-2). react-leaflet is not used because of its
 // Hippocratic-2.1 licence, see docs/LICENCE_REGISTER.md.
 
-// Terra Garden, Expo City Dubai (approximate centre; replaced by site extent in Phase 1).
-const TERRA_GARDEN_CENTRE: L.LatLngTuple = [24.9636, 55.1508];
+// Terra Garden, Expo City Dubai: centroid of TG_boundary (replaced by the site extent in Phase 1).
+const TERRA_GARDEN_CENTRE: L.LatLngTuple = [24.95875, 55.15449];
 
 type Props = {
   center?: L.LatLngTuple;
