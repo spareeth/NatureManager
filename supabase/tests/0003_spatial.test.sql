@@ -100,7 +100,7 @@ insert into location (id, organisation_id, site_id, kind, code, name, geom)
 select 'bbbbbbbb-0000-0000-0000-00000000c001', 'bbbbbbbb-0000-0000-0000-000000000000',
        'bbbbbbbb-0000-0000-0000-00000000b001', 'zone', 'BZ', 'B zone', boundary from tg;
 
-select ok((select abs(area_m2 - 400) < 1 from location where code = 'EG-01'), 'area_m2 of a 20 m square is 400 m2');
+select ok((select abs(area_m2 - 400) < 1 from location where id = 'aaaaaaaa-0000-0000-0000-00000000c002'), 'area_m2 of a 20 m square is 400 m2');
 
 select is(resolve_location(site_from_local('aaaaaaaa-0000-0000-0000-00000000a001', 110, 110),
                            'aaaaaaaa-0000-0000-0000-00000000a001'),
@@ -127,7 +127,7 @@ select throws_ok(
     select 'aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-00000000b001',
            'zone', 'XX', 'x', boundary from tg$$,
   '23503', null, 'location cannot use another organisation''s site');
-select is((select count(*)::int from audit_log where table_name = 'location'), 3, 'location inserts are audited');
+select is((select count(*)::int from audit_log where table_name = 'location' and organisation_id in ('aaaaaaaa-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000')), 3, 'location inserts are audited');
 
 -- RLS as manager of org A ------------------------------------------------------------
 set local role authenticated;
