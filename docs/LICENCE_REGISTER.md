@@ -37,3 +37,5 @@ Anything else is flagged here before use. Update this file when adding a depende
 | pytest, httpx, ruff | AI service tests and lint (dev only) | MIT / BSD-3-Clause / MIT | OK |
 | Supabase CLI | Local dev stack | MIT | OK |
 | @supabase/supabase-js | Web client for Supabase Auth, REST, Storage | MIT | OK |
+| Shapely | Point-in-polygon and distances in scripts | BSD-3-Clause | OK |
+| ezdxf | Read CAD drawings (DXF) in scripts | MIT | OK |
