@@ -108,6 +108,8 @@ const escapeHtml = (s: string) =>
 export function createOverlays(
   map: L.Map,
   getDetail?: (tag: string) => Promise<AssetDetail | null>,
+  onOpen?: (assetId: string) => void,
+  openLabel: () => string = () => 'Open',
 ): MapLayers {
   const zones = L.geoJSON(undefined, {
     style: (f) => ({
@@ -155,8 +157,19 @@ export function createOverlays(
               : '';
           layer.setPopupContent(
             `<strong>${escapeHtml(d.tag_code)}</strong><br>${escapeHtml(d.scientific_name ?? d.name ?? d.type_name)}` +
-              `<br>${escapeHtml(d.status)}${d.location_code ? ` · ${escapeHtml(d.location_code)}` : ''}${xy}`,
+              `<br>${escapeHtml(d.status)}${d.location_code ? ` · ${escapeHtml(d.location_code)}` : ''}${xy}` +
+              (onOpen
+                ? `<br><a href="/assets/${d.id}" data-asset>${escapeHtml(openLabel())}</a>`
+                : ''),
           );
+          const el = layer
+            .getPopup()
+            ?.getElement()
+            ?.querySelector<HTMLAnchorElement>('a[data-asset]');
+          el?.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            onOpen?.(d.id);
+          });
         } catch {
           // keep the short popup
         }

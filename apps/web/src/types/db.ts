@@ -464,8 +464,17 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "asset_set_status":
+            "asset_detail":
+{ Args: { "p_asset": string }; Returns: Json
+                           },
+"asset_search":
+{ Args: { "p_class"?: Database["public"]['Enums']["asset_class"],"p_desc"?: boolean,"p_limit"?: number,"p_location"?: string,"p_offset"?: number,"p_q"?: string,"p_site": string,"p_sort"?: string,"p_status"?: (Database["public"]['Enums']["asset_status"])[],"p_type"?: string }; Returns: Json
+                           },
+"asset_set_status":
 { Args: { "p_asset": string,"p_reason"?: string,"p_status": Database["public"]['Enums']["asset_status"] }; Returns: undefined
+                           },
+"asset_timeline":
+{ Args: { "p_asset": string }; Returns: Json
                            },
 "auth_org_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]

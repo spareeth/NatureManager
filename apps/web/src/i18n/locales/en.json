@@ -6,7 +6,8 @@
     "map": "Map",
     "field": "Field app",
     "members": "Members",
-    "label": "Main"
+    "label": "Main",
+    "assets": "Assets"
   },
   "map": {
     "heading": "Site map",
@@ -31,11 +32,27 @@
       "SG": "South Garden",
       "WG": "West Garden"
     },
-    "truncated": "(zoom in to see all)"
+    "truncated": "(zoom in to see all)",
+    "openAsset": "Open asset"
   },
   "field": {
     "heading": "Field app",
-    "placeholder": "Work orders, scans and observations will appear here."
+    "placeholder": "Work orders, scans and observations will appear here.",
+    "name": "name",
+    "barcode": "barcode",
+    "condition": "condition",
+    "criticality": "criticality",
+    "install_date": "planting date",
+    "attributes": "attributes",
+    "taxon_id": "taxon",
+    "accession_id": "accession",
+    "parent_asset_id": "parent",
+    "plant_count": "plant count",
+    "position_accuracy_m": "position accuracy",
+    "tag_code": "tag",
+    "asset_type_id": "type",
+    "site_id": "site",
+    "legacy_hortis_id": "Hortis record"
   },
   "language": {
     "switch": "العربية"
@@ -81,5 +98,96 @@
     "removed": "Removed",
     "out_of_service": "Out of service",
     "disposed": "Disposed"
+  },
+  "assets": {
+    "heading": "Assets",
+    "search": "Search",
+    "searchHint": "Tag, name, species, code",
+    "searchButton": "Search",
+    "clear": "Clear filters",
+    "class": "Class",
+    "type": "Type",
+    "status": "Status",
+    "location": "Zone or bed",
+    "all": "All",
+    "living": "Living",
+    "built": "Built",
+    "total_one": "{{n}} asset",
+    "total_other": "{{n}} assets",
+    "none": "No assets match these filters.",
+    "pages": "Pages",
+    "prev": "Previous",
+    "next": "Next",
+    "page": "Page {{page}} of {{pages}}",
+    "col": {
+      "tag": "Tag",
+      "name": "Species or name",
+      "type": "Type",
+      "location": "Bed",
+      "status": "Status",
+      "condition": "Condition",
+      "grid": "Grid x, y (m)"
+    },
+    "back": "Back to assets",
+    "notFound": "Asset not found, or you do not have access to it.",
+    "details": "Details",
+    "position": "Position",
+    "photos": "Photos",
+    "timeline": "History",
+    "timelineLater": "Work orders and observations will appear here from Phase 2.",
+    "f": {
+      "name": "Name",
+      "class": "Class",
+      "taxon": "Taxon",
+      "inhouse": "In-house code",
+      "iucn": "IUCN category",
+      "accession": "Accession",
+      "condition": "Condition",
+      "criticality": "Criticality",
+      "installed": "Planted or installed",
+      "plantCount": "Plant count",
+      "barcode": "Barcode",
+      "parent": "Parent",
+      "children": "Propagated from this",
+      "hortis": "Hortis record",
+      "location": "Bed",
+      "latlon": "Lat, lon (WGS 84)",
+      "grid": "Site grid",
+      "source": "Position source"
+    }
+  },
+  "timeline": {
+    "created": "Record created",
+    "status": "Status changed from {{from}} to {{to}}",
+    "condition": "Condition changed from {{from}} to {{to}}",
+    "moved": "Moved from {{from}} to {{to}} {{source}}",
+    "edited": "Edited: {{fields}}",
+    "photo": "Photo added",
+    "photoCaption": "Photo added: {{caption}}"
+  },
+  "position": {
+    "gps": "GPS",
+    "rtk": "RTK survey",
+    "offset": "Offset from control point",
+    "cad": "CAD drawing",
+    "hortis": "Hortis",
+    "bed_centroid": "Bed centre"
+  },
+  "iucn": {
+    "EX": "Extinct",
+    "EW": "Extinct in the wild",
+    "CR": "Critically endangered",
+    "EN": "Endangered",
+    "VU": "Vulnerable",
+    "NT": "Near threatened",
+    "LC": "Least concern",
+    "DD": "Data deficient",
+    "NE": "Not evaluated"
+  },
+  "provenance": {
+    "W": "Wild",
+    "Z": "Wild-derived",
+    "G": "Garden",
+    "U": "Unknown"
   }
 }

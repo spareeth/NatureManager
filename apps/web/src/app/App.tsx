@@ -6,6 +6,8 @@ import { MapPage } from '../pages/MapPage';
 import { FieldPage } from '../pages/FieldPage';
 import { LoginPage } from '../pages/LoginPage';
 import { MembersPage } from '../pages/MembersPage';
+import { AssetListPage } from '../pages/AssetListPage';
+import { AssetDetailPage } from '../pages/AssetDetailPage';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
 import { NAV, visibleNav } from './nav';
@@ -74,6 +76,8 @@ export function App() {
       <main className="min-h-0 flex-1">
         <Routes>
           <Route path="/" element={<MapPage />} />
+          <Route path="/assets" element={<AssetListPage />} />
+          <Route path="/assets/:id" element={<AssetDetailPage />} />
           <Route
             path="/field/*"
             element={

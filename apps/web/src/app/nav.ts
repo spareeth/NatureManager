@@ -10,6 +10,7 @@ export type NavItem = {
 // Grows phase by phase; each item's roles follow docs/SRS.md section 2.
 export const NAV: NavItem[] = [
   { path: '/', labelKey: 'nav.map' },
+  { path: '/assets', labelKey: 'nav.assets' },
   {
     path: '/field',
     labelKey: 'nav.field',

@@ -12,21 +12,33 @@ type Props = {
   zoom?: number;
   onReady?: (map: L.Map | null) => void;
   className?: string;
+  /** Canvas is fast for thousands of points (main map); small maps can use SVG. */
+  preferCanvas?: boolean;
 };
 
-export function LeafletMap({ center = TERRA_GARDEN_CENTRE, zoom = 18, onReady, className }: Props) {
+export function LeafletMap({
+  center = TERRA_GARDEN_CENTRE,
+  zoom = 18,
+  onReady,
+  className,
+  preferCanvas = true,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
     // Canvas renderer keeps thousands of asset points fast (NFR-02).
-    const map = L.map(containerRef.current, { preferCanvas: true, maxZoom: 22 }).setView(
-      center,
-      zoom,
-    );
+    const map = L.map(containerRef.current, { preferCanvas, maxZoom: 22 }).setView(center, zoom);
     onReady?.(map);
     return () => {
       onReady?.(null);
+      // Stop pan or zoom animations, then remove drawn layers while their canvas renderer still
+      // exists. map.remove() alone can drop the renderer first, and a path removed after it
+      // schedules a redraw on a destroyed canvas (Leaflet 1.9 "reading 'clearRect'").
+      map.stop();
+      map.eachLayer((layer) => {
+        if (!(layer instanceof L.Renderer)) map.removeLayer(layer);
+      });
       map.remove();
     };
     // Map is created once; callers use the instance from onReady for later changes.

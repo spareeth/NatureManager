@@ -3,14 +3,9 @@ import type L from 'leaflet';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LeafletMap } from '../components/LeafletMap';
-import { useOrg } from '../org/context';
-import {
-  fetchAssetDetail,
-  fetchAssets,
-  fetchLocations,
-  fetchMapSite,
-  fetchSites,
-} from '../map/api';
+import { useNavigate } from 'react-router-dom';
+import { useCurrentSite } from '../org/useSite';
+import { fetchAssetDetail, fetchAssets, fetchLocations, fetchMapSite } from '../map/api';
 import { CursorReadout } from '../map/CursorReadout';
 import { Legend } from '../map/Legend';
 import { legendZones } from '../map/style';
@@ -38,22 +33,21 @@ const roundBox = (b: BBox): BBox => ({
 
 export function MapPage() {
   const { t, i18n } = useTranslation();
-  const { current } = useOrg();
-  const orgId = current?.organisationId;
+  const navigate = useNavigate();
   const [map, setMap] = useState<L.Map | null>(null);
   const [overlays, setOverlays] = useState<MapLayers | null>(null);
   const [bbox, setBbox] = useState<BBox | null>(null);
 
-  const sites = useQuery({
-    queryKey: ['sites', orgId],
-    enabled: !!orgId,
-    queryFn: () => fetchSites(orgId!),
-  });
-  const siteId = sites.data?.[0]?.id;
+  const sites = useCurrentSite();
+  const siteId = sites.site?.id;
   const siteRef = useRef<string | undefined>(undefined);
+  const navigateRef = useRef(navigate);
+  const tRef = useRef(t);
   useEffect(() => {
     siteRef.current = siteId;
-  }, [siteId]);
+    navigateRef.current = navigate;
+    tRef.current = t;
+  }, [siteId, navigate, t]);
   const site = useQuery({
     queryKey: ['map-site', siteId],
     enabled: !!siteId,
@@ -79,8 +73,11 @@ export function MapPage() {
       return;
     }
     setOverlays(
-      createOverlays(m, (tag) =>
-        siteRef.current ? fetchAssetDetail(siteRef.current, tag) : Promise.resolve(null),
+      createOverlays(
+        m,
+        (tag) => (siteRef.current ? fetchAssetDetail(siteRef.current, tag) : Promise.resolve(null)),
+        (id) => navigateRef.current(`/assets/${id}`),
+        () => tRef.current('map.openAsset'),
       ),
     );
     m.on('moveend', () => setBbox(roundBox(bboxOf(m))));
@@ -94,10 +91,13 @@ export function MapPage() {
     if (!map || !site.data) return;
     const [w, s, e, n] = site.data.bbox;
     // fitBounds fires moveend, which sets the asset bounding box.
-    map.fitBounds([
-      [s, w],
-      [n, e],
-    ]);
+    map.fitBounds(
+      [
+        [s, w],
+        [n, e],
+      ],
+      { animate: false },
+    );
   }, [map, site.data]);
 
   useEffect(() => {
@@ -128,7 +128,7 @@ export function MapPage() {
       <LeafletMap className="min-h-0 flex-1" onReady={onReady} />
       <Legend zones={zones} />
       <CursorReadout map={map} siteId={siteId} hasGrid={site.data?.has_grid ?? false} />
-      {sites.data && sites.data.length === 0 && (
+      {sites.sites && sites.sites.length === 0 && (
         <p
           role="status"
           className="absolute start-1/2 top-4 z-[1000] -translate-x-1/2 rounded bg-white px-3 py-1 shadow"

@@ -60,13 +60,13 @@ describe('shell', () => {
 
   it('green team sees map and field app, not members', () => {
     renderApp({ memberships: [membership(['green_team'])] });
-    expect(navLinks()).toEqual(['Map', 'Field app']);
+    expect(navLinks()).toEqual(['Map', 'Assets', 'Field app']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
   it('manager sees members', async () => {
     renderApp({ path: '/members', memberships: [membership(['manager'])] });
-    expect(navLinks()).toEqual(['Map', 'Field app', 'Members']);
+    expect(navLinks()).toEqual(['Map', 'Assets', 'Field app', 'Members']);
     expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();
   });
 
@@ -78,7 +78,7 @@ describe('shell', () => {
 
   it('owner cannot open the field app', () => {
     renderApp({ path: '/field', memberships: [membership(['owner'])] });
-    expect(navLinks()).toEqual(['Map']);
+    expect(navLinks()).toEqual(['Map', 'Assets']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
