@@ -479,11 +479,28 @@ isOneToOne: false
 "has_role_anywhere":
 { Args: { "r": string }; Returns: boolean
                            },
+"map_asset_detail":
+{ Args: { "p_site": string,"p_tag": string }; Returns: Json
+                           },
+"map_assets":
+{ Args: { "p_east": number,"p_limit"?: number,"p_north": number,"p_site": string,"p_south": number,"p_west": number }; Returns: Json
+                           },
+"map_locations":
+{ Args: { "p_site": string }; Returns: Json
+                           },
+"map_site":
+{ Args: { "p_site": string }; Returns: Json
+                           },
 "resolve_location":
 { Args: { "p_geom": unknown,"p_site"?: string }; Returns: string
                            },
 "site_from_local":
 { Args: { "p_site": string,"p_x": number,"p_y": number }; Returns: unknown
+                           },
+"site_local_xy":
+{ Args: { "p_lat": number,"p_lon": number,"p_site": string }; Returns: {
+              "x": number,"y": number
+            }[]
                            },
 "site_to_local":
 { Args: { "p_geom": unknown,"p_site": string }; Returns: unknown

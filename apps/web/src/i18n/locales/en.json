@@ -9,7 +9,29 @@
     "label": "Main"
   },
   "map": {
-    "heading": "Site map"
+    "heading": "Site map",
+    "legend": "Legend",
+    "assetStatus": "Asset status",
+    "cursorHint": "Move the cursor over the map",
+    "noGrid": "No site grid set",
+    "noSite": "No site set up for this organisation yet.",
+    "assetCount_one": "{{n}} asset in view",
+    "assetCount_other": "{{n}} assets in view",
+    "layers": {
+      "osm": "OpenStreetMap",
+      "satellite": "Google satellite",
+      "orthophoto": "Site orthophoto",
+      "beds": "Beds",
+      "zones": "Zones",
+      "assets": "Assets"
+    },
+    "zones": {
+      "EG": "East Garden",
+      "NG": "North Garden",
+      "SG": "South Garden",
+      "WG": "West Garden"
+    },
+    "truncated": "(zoom in to see all)"
   },
   "field": {
     "heading": "Field app",
@@ -48,5 +70,16 @@
     "curator": "Curator",
     "green_team": "Green team",
     "field_engineer": "Field engineer"
+  },
+  "status": {
+    "planned": "Planned",
+    "planted": "Planted",
+    "established": "Established",
+    "active": "Active",
+    "declining": "Declining",
+    "dead": "Dead",
+    "removed": "Removed",
+    "out_of_service": "Out of service",
+    "disposed": "Disposed"
   }
 }

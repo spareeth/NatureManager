@@ -1,2 +1,19 @@
 @import 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
+
+.bed-label {
+  direction: ltr;
+  unicode-bidi: isolate;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1f2937;
+  text-shadow:
+    0 0 3px #fff,
+    0 0 3px #fff;
+}
+.bed-label::before {
+  display: none;
+}
