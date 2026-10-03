@@ -191,6 +191,7 @@ create table asset_type (
   asset_class asset_class not null,
   code text not null,                    -- PLANT, TREE, GROUP, VALVE, PUMP, SIGN, CAMTRAP, SENSOR, AERATOR
   name text not null,
+  name_ar text,                          -- Arabic name (added 3 Oct 2026, task 1.4)
   attribute_schema jsonb not null default '{}',  -- JSON Schema for asset.attributes
   icon text,
   unique (organisation_id, code)
@@ -286,6 +287,18 @@ As built (migration `20260928000300_taxonomy_assets.sql`):
   `<organisation_id>/...`; members read their organisation's folder, working roles upload,
   managers delete.
 - Helpers `has_any_role(org, roles[])` and `has_role_anywhere(role)`.
+
+As built (migration `20261003000100_asset_edit.sql`, task 1.4):
+
+- `asset_type.name_ar` (above). `attribute_schema` custom keywords: `x-title-ar` (Arabic field
+  label, next to `title`) and `x-tag-prefix` (three-letter prefix for built asset tags, for
+  example `VLV`; default is the first three letters of the type code).
+- `tag_pattern_ok(tag, class)`, `suggest_tag(site, geom, type, taxon, group)` (next free number
+  in the bed under the point, per kind T, G or built prefix; species part is the in-house code,
+  else the first three letters of the genus, else `XXX`), `check_tag(org, tag, class, asset)`
+  (pattern and uniqueness) and `taxon_search(org, q)`. All security invoker.
+- Open: `asset.position_source` has no value for "placed by clicking the map", so map placement
+  leaves it empty unless the user picks a source.
 
 Tag code format (Terra in-house standard, kept from Hortis): `<ZONE><BED>-T<NN>_<SPECIES>`,
 e.g. `WG07-T04_PRO` = West Garden bed 07, tree 04, *Prosopis cineraria*. Planting groups without

@@ -1,7 +1,12 @@
 // Read-only rendering of asset.attributes using the asset type's JSON Schema (titles, order).
 // Editing forms from the same schema come in task 1.4.
 
-type SchemaProp = { title?: string; type?: string | string[]; enum?: unknown[] };
+type SchemaProp = {
+  title?: string;
+  'x-title-ar'?: string;
+  type?: string | string[];
+  enum?: unknown[];
+};
 export type AttributeSchema = { type?: string; properties?: Record<string, SchemaProp> };
 export type AttributeRow = { key: string; label: string; value: string };
 
@@ -17,13 +22,15 @@ function show(v: unknown): string {
 export function attributeRows(
   attributes: Record<string, unknown> | null,
   schema: AttributeSchema | null,
+  lang = 'en',
 ): AttributeRow[] {
   const attrs = attributes ?? {};
   const props = schema?.properties ?? {};
   const rows: AttributeRow[] = [];
   for (const [key, p] of Object.entries(props)) {
     const value = show(attrs[key]);
-    if (value) rows.push({ key, label: p.title ?? key, value });
+    const label = (lang.startsWith('ar') ? p['x-title-ar'] : undefined) ?? p.title ?? key;
+    if (value) rows.push({ key, label, value });
   }
   for (const [key, v] of Object.entries(attrs)) {
     if (key in props) continue;

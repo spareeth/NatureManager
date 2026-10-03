@@ -8,6 +8,9 @@ import { useCurrentSite } from '../org/useSite';
 import { fetchAssetDetail, fetchAssets, fetchLocations, fetchMapSite } from '../map/api';
 import { CursorReadout } from '../map/CursorReadout';
 import { Legend } from '../map/Legend';
+import { MapEditor } from '../map/MapEditor';
+import { useOrg } from '../org/context';
+import { canEditAssets } from '../auth/canEdit';
 import { legendZones } from '../map/style';
 import {
   createOverlays,
@@ -34,6 +37,7 @@ const roundBox = (b: BBox): BBox => ({
 export function MapPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { current } = useOrg();
   const [map, setMap] = useState<L.Map | null>(null);
   const [overlays, setOverlays] = useState<MapLayers | null>(null);
   const [bbox, setBbox] = useState<BBox | null>(null);
@@ -127,6 +131,14 @@ export function MapPage() {
       </h1>
       <LeafletMap className="min-h-0 flex-1" onReady={onReady} />
       <Legend zones={zones} />
+      {current && (
+        <MapEditor
+          map={map}
+          orgId={current.organisationId}
+          siteId={siteId}
+          canEdit={canEditAssets(current.roles)}
+        />
+      )}
       <CursorReadout map={map} siteId={siteId} hasGrid={site.data?.has_grid ?? false} />
       {sites.sites && sites.sites.length === 0 && (
         <p

@@ -15,6 +15,7 @@ import {
   type Sort,
 } from '../assets/filters';
 import { StatusBadge } from '../assets/StatusBadge';
+import { useTypeName } from '../assets/useTypeNames';
 
 const STATUSES = [
   'planned',
@@ -58,6 +59,7 @@ export function AssetListPage() {
   const { t, i18n } = useTranslation();
   const { current } = useOrg();
   const { site } = useCurrentSite();
+  const typeName = useTypeName();
   const [params, setParams] = useSearchParams();
   const filters = useMemo(() => parseFilters(params), [params]);
   const [q, setQ] = useState(filters.q);
@@ -139,7 +141,7 @@ export function AssetListPage() {
               .filter((ty) => !filters.assetClass || ty.asset_class === filters.assetClass)
               .map((ty) => (
                 <option key={ty.code} value={ty.code}>
-                  {ty.name}
+                  {typeName(ty.code, ty.name)}
                 </option>
               ))}
           </select>
@@ -261,7 +263,7 @@ export function AssetListPage() {
                   {a.scientific_name ? <i>{a.scientific_name}</i> : (a.name ?? '')}
                   {a.inhouse_code && <span className="ms-1 text-gray-500">({a.inhouse_code})</span>}
                 </td>
-                <td className="py-1.5 pe-3">{a.type_name}</td>
+                <td className="py-1.5 pe-3">{typeName(a.type_code, a.type_name)}</td>
                 <td className="py-1.5 pe-3 font-mono" dir="ltr">
                   {a.location_code ?? ''}
                 </td>

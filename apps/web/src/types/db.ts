@@ -160,13 +160,13 @@ isOneToOne: false
                   ]
                 },"asset_type": {
                   Row: {
-                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema": NonNullable<Json>,"code": string,"created_at": string,"created_by": string | null,"icon": string | null,"id": string,"name": string,"organisation_id": string,"updated_at": string
+                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema": NonNullable<Json>,"code": string,"created_at": string,"created_by": string | null,"icon": string | null,"id": string,"name": string,"name_ar": string | null,"organisation_id": string,"updated_at": string,"asset_type_tag_prefix": string | null
                   }
                   Insert: {
-                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code": string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name": string,"organisation_id": string,"updated_at"?: string
+                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code": string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name": string,"name_ar"?: string | null,"organisation_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "asset_class"?: Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code"?: string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name"?: string,"organisation_id"?: string,"updated_at"?: string
+                    "asset_class"?: Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code"?: string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name"?: string,"name_ar"?: string | null,"organisation_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -476,8 +476,14 @@ isOneToOne: false
 "asset_timeline":
 { Args: { "p_asset": string }; Returns: Json
                            },
+"asset_type_tag_prefix":
+{ Args: { "p_type": Database["public"]['Tables']["asset_type"]['Row'] }; Returns: string
+                           },
 "auth_org_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
+                           },
+"check_tag":
+{ Args: { "p_asset"?: string,"p_class": Database["public"]['Enums']["asset_class"],"p_org": string,"p_tag": string }; Returns: Json
                            },
 "has_any_role":
 { Args: { "org": string,"rs": (string)[] }; Returns: boolean
@@ -513,6 +519,18 @@ isOneToOne: false
                            },
 "site_to_local":
 { Args: { "p_geom": unknown,"p_site": string }; Returns: unknown
+                           },
+"suggest_tag":
+{ Args: { "p_geom": unknown,"p_group"?: boolean,"p_site": string,"p_taxon"?: string,"p_type": string }; Returns: string
+                           },
+"tag_pattern_ok":
+{ Args: { "p_class": Database["public"]['Enums']["asset_class"],"p_tag": string }; Returns: boolean
+                           },
+"taxon_search":
+{ Args: { "p_limit"?: number,"p_org": string,"p_q": string }; Returns: Json
+                           },
+"taxon_tag_code":
+{ Args: { "p_org": string,"p_taxon": string }; Returns: string
                            }
           }
           Enums: {

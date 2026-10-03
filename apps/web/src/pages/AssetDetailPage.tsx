@@ -8,6 +8,9 @@ import { describeEvent } from '../assets/timeline';
 import { StatusBadge } from '../assets/StatusBadge';
 import { AssetMiniMap } from '../assets/AssetMiniMap';
 import { formatGrid, formatLatLon } from '../map/format';
+import { useOrg } from '../org/context';
+import { canEditAssets } from '../auth/canEdit';
+import { useTypeName } from '../assets/useTypeNames';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   if (children == null || children === '' || children === false) return null;
@@ -22,6 +25,8 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 export function AssetDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
+  const { current } = useOrg();
+  const typeName = useTypeName();
   const asset = useQuery({
     queryKey: ['asset', id],
     enabled: !!id,
@@ -76,7 +81,7 @@ export function AssetDetailPage() {
       timeStyle: 'short',
       timeZone: 'Asia/Dubai',
     }).format(new Date(iso));
-  const attrs = attributeRows(a.attributes, a.type.attribute_schema);
+  const attrs = attributeRows(a.attributes, a.type.attribute_schema, i18n.language);
   const common =
     a.taxon?.common_names?.[i18n.language === 'ar' ? 'ar' : 'en']?.join(', ') ??
     a.taxon?.common_names?.en?.join(', ');
@@ -92,7 +97,7 @@ export function AssetDetailPage() {
         </h1>
         <StatusBadge status={a.status} />
         <span className="text-gray-600">
-          {a.type.name}
+          {typeName(a.type.code, a.type.name)}
           {a.taxon && (
             <>
               {' · '}
@@ -101,6 +106,25 @@ export function AssetDetailPage() {
             </>
           )}
         </span>
+        {current && canEditAssets(current.roles) && (
+          <span className="ms-auto flex gap-3 text-sm">
+            <Link
+              to={`/assets/${a.id}/edit`}
+              className="rounded bg-green-800 px-3 py-1 font-medium text-white"
+            >
+              {t('edit.edit')}
+            </Link>
+            {/* Moving sets a point; polygons are reshaped later (task 1.8). */}
+            {a.geometry.type === 'Point' && (
+              <Link
+                to={`/?move=${a.id}`}
+                className="rounded border border-green-800 px-3 py-1 text-green-900"
+              >
+                {t('edit.moveOnMap')}
+              </Link>
+            )}
+          </span>
+        )}
       </header>
 
       <div className="mt-4 grid gap-6 lg:grid-cols-2">

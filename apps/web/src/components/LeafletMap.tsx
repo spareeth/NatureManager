@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
+import '../map/leafletGuards';
 
 // Thin wrapper over plain Leaflet (BSD-2). react-leaflet is not used because of its
 // Hippocratic-2.1 licence, see docs/LICENCE_REGISTER.md. Layers are added by the caller.

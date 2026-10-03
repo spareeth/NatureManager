@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/context';
 import { useOrg } from '../org/context';
@@ -8,6 +8,8 @@ import { LoginPage } from '../pages/LoginPage';
 import { MembersPage } from '../pages/MembersPage';
 import { AssetListPage } from '../pages/AssetListPage';
 import { AssetDetailPage } from '../pages/AssetDetailPage';
+import { AssetEditPage } from '../pages/AssetEditPage';
+import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
 import { NAV, visibleNav } from './nav';
@@ -78,6 +80,12 @@ export function App() {
           <Route path="/" element={<MapPage />} />
           <Route path="/assets" element={<AssetListPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
+          <Route
+            path="/assets/:id/edit"
+            element={
+              canEditAssets(current.roles) ? <AssetEditPage /> : <Navigate to="/assets" replace />
+            }
+          />
           <Route
             path="/field/*"
             element={
