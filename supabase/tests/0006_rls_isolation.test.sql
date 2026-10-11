@@ -18,7 +18,10 @@ insert into rls_exempt values
 create temp table definer_allowlist (fn text primary key);
 insert into definer_allowlist values
   ('auth_org_ids'), ('has_role'), ('has_any_role'), ('has_role_anywhere'),
-  ('audit_row'), ('asset_log_status');
+  ('audit_row'), ('asset_log_status'),
+  -- task 2.1: work order numbering writes a counter clients cannot touch; wo_is_mine reads
+  -- membership like has_role.
+  ('next_wo_number'), ('work_order_before_write'), ('wo_is_mine');
 
 create temp view public_tables as
   select c.relname::text as tbl,
@@ -112,6 +115,23 @@ from terra;   -- also writes asset_status_change and audit_log rows
 insert into media (organisation_id, bucket, path, kind, asset_id)
 select org, 'photos', org || '/rls.jpg', 'photo', '20000000-0000-0000-0000-0000000000a1' from terra;
 insert into storage.objects (bucket_id, name) select 'photos', org || '/rls.jpg' from terra;
+-- Work orders (task 2.1): SOP with a step, template, PM schedule, work order (which also creates
+-- the number counter row), its asset link, an event and an SOP answer.
+insert into sop (id, organisation_id, code, title) select '20000000-0000-0000-0000-0000000000b1', org, 'SOP-RLS', '{"en": "RLS"}' from terra;
+insert into sop_step (id, organisation_id, sop_id, seq, text, input_type)
+select '20000000-0000-0000-0000-0000000000b2', org, '20000000-0000-0000-0000-0000000000b1', 1, '{"en": "Check"}', 'tick' from terra;
+insert into wo_template (id, organisation_id, code, title, wo_type, sop_id)
+select '20000000-0000-0000-0000-0000000000b3', org, 'T-RLS', 'RLS template', 'preventive', '20000000-0000-0000-0000-0000000000b1' from terra;
+insert into pm_schedule (organisation_id, template_id, target_kind, target_asset_id, rule)
+select org, '20000000-0000-0000-0000-0000000000b3', 'asset', '20000000-0000-0000-0000-0000000000a1', '{"freq": "weekly"}' from terra;
+insert into work_order (id, organisation_id, site_id, source, wo_type, title, status)
+select '20000000-0000-0000-0000-0000000000b4', org, site, 'manual', 'reactive', 'RLS job', 'scheduled' from terra;
+insert into work_order_asset (organisation_id, work_order_id, asset_id)
+select org, '20000000-0000-0000-0000-0000000000b4', '20000000-0000-0000-0000-0000000000a1' from terra;
+insert into work_order_event (organisation_id, work_order_id, to_status, actor)
+select org, '20000000-0000-0000-0000-0000000000b4', 'scheduled', '10000000-0000-0000-0000-000000000002' from terra;
+insert into sop_response (organisation_id, work_order_id, sop_step_id, value)
+select org, '20000000-0000-0000-0000-0000000000b4', '20000000-0000-0000-0000-0000000000b2', 'true' from terra;
 
 select is(
   (select coalesce(array_agg(tbl order by tbl), '{}') from (

@@ -438,6 +438,24 @@ create table sop_response (
 checks the SRS 3.4.1 table with `has_role`, blocks `completed` if required SOP steps are missing,
 blocks the assignee from verifying their own job, writes `work_order_event`, updates status.
 
+As built (migration `20261012000100_work_orders.sql`, task 2.1):
+
+- `sop_step`, `work_order_asset` and `sop_response` also carry `organisation_id` (the every-business-table
+  rule above); all tables carry created/updated columns, and composite keys keep references inside one
+  organisation. `location` gained `unique (id, organisation_id)` for that.
+- Checks: SOP `title` and step `text` need an `en` key; `choice` steps need choices; `wo_type`, `priority`
+  (P1..P4), `source`, step `input_type` and SOP `status` take only the listed values; a PM schedule's target
+  columns must match its `target_kind`; `rule.freq` is daily, weekly or monthly.
+- Numbering: `work_order.number` is assigned on insert from `wo_number_seq` per organisation and year
+  (Asia/Dubai): `WO-2026-000123`.
+- Status changes only through `wo_transition()` (task 2.2): a trigger refuses any other change of
+  `work_order.status`. `work_order_event` is insert-only through that function.
+- RLS: members read. SOPs, steps, templates and schedules: `manager`. Work orders: any member may raise
+  one in `requested` (FR-WO-06); `manager` and `field_manager` create in any status and edit all; the
+  assignee or a member of the assigned team edits their own (notes, minutes, materials) and answers SOP
+  steps. Helper `wo_is_mine(org, assignee, team)`.
+- Audit trigger on `sop` and `pm_schedule`. `media.work_order_id` now references `work_order`.
+
 ## 6. Observations
 
 ```sql

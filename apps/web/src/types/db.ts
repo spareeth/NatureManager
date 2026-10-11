@@ -330,6 +330,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "organisation"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "media_work_order_id_fkey"
+      columns: ["work_order_id"]
+isOneToOne: false
+      referencedRelation: "work_order"
+      referencedColumns: ["id"]
     }
                   ]
                 },"membership": {
@@ -401,6 +407,73 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"pm_schedule": {
+                  Row: {
+                    "active": boolean,"created_at": string,"created_by": string | null,"horizon_days": number,"id": string,"last_generated_until": string | null,"max_per_day": number | null,"organisation_id": string,"rule": NonNullable<Json>,"target_asset_id": string | null,"target_asset_type_id": string | null,"target_kind": string,"target_location_id": string | null,"template_id": string,"updated_at": string
+                  }
+                  Insert: {
+                    "active"?: boolean,"created_at"?: string,"created_by"?: string | null,"horizon_days"?: number,"id"?: string,"last_generated_until"?: string | null,"max_per_day"?: number | null,"organisation_id": string,"rule": NonNullable<Json>,"target_asset_id"?: string | null,"target_asset_type_id"?: string | null,"target_kind": string,"target_location_id"?: string | null,"template_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "active"?: boolean,"created_at"?: string,"created_by"?: string | null,"horizon_days"?: number,"id"?: string,"last_generated_until"?: string | null,"max_per_day"?: number | null,"organisation_id"?: string,"rule"?: NonNullable<Json>,"target_asset_id"?: string | null,"target_asset_type_id"?: string | null,"target_kind"?: string,"target_location_id"?: string | null,"template_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pm_schedule_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pm_schedule_target_asset_id_fkey"
+      columns: ["target_asset_id"]
+isOneToOne: false
+      referencedRelation: "asset"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pm_schedule_target_asset_id_organisation_id_fkey"
+      columns: ["target_asset_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "asset"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "pm_schedule_target_asset_type_id_fkey"
+      columns: ["target_asset_type_id"]
+isOneToOne: false
+      referencedRelation: "asset_type"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pm_schedule_target_asset_type_id_organisation_id_fkey"
+      columns: ["target_asset_type_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "asset_type"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "pm_schedule_target_location_id_fkey"
+      columns: ["target_location_id"]
+isOneToOne: false
+      referencedRelation: "location"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pm_schedule_target_location_id_organisation_id_fkey"
+      columns: ["target_location_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "location"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "pm_schedule_template_id_fkey"
+      columns: ["template_id"]
+isOneToOne: false
+      referencedRelation: "wo_template"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "pm_schedule_template_id_organisation_id_fkey"
+      columns: ["template_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "wo_template"
+      referencedColumns: ["id","organisation_id"]
+    }
+                  ]
                 },"site": {
                   Row: {
                     "basemap_url": string | null,"boundary": unknown,"code": string,"created_at": string,"created_by": string | null,"grid_name": string | null,"grid_origin_e": number | null,"grid_origin_n": number | null,"grid_rotation_deg": number,"grid_scale": number,"id": string,"name": string,"organisation_id": string,"site_type": string,"updated_at": string
@@ -418,6 +491,105 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "organisation"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"sop": {
+                  Row: {
+                    "approved_at": string | null,"approved_by": string | null,"code": string,"created_at": string,"created_by": string | null,"hazards": (string)[] | null,"id": string,"organisation_id": string,"ppe": (string)[] | null,"purpose": Json | null,"status": string,"title": NonNullable<Json>,"updated_at": string,"version": number
+                  }
+                  Insert: {
+                    "approved_at"?: string | null,"approved_by"?: string | null,"code": string,"created_at"?: string,"created_by"?: string | null,"hazards"?: (string)[] | null,"id"?: string,"organisation_id": string,"ppe"?: (string)[] | null,"purpose"?: Json | null,"status"?: string,"title": NonNullable<Json>,"updated_at"?: string,"version"?: number
+                  }
+                  Update: {
+                    "approved_at"?: string | null,"approved_by"?: string | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"hazards"?: (string)[] | null,"id"?: string,"organisation_id"?: string,"ppe"?: (string)[] | null,"purpose"?: Json | null,"status"?: string,"title"?: NonNullable<Json>,"updated_at"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sop_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"sop_response": {
+                  Row: {
+                    "answered_at": string,"answered_by": string | null,"media_id": string | null,"organisation_id": string,"sop_step_id": string,"value": Json | null,"work_order_id": string
+                  }
+                  Insert: {
+                    "answered_at"?: string,"answered_by"?: string | null,"media_id"?: string | null,"organisation_id": string,"sop_step_id": string,"value"?: Json | null,"work_order_id": string
+                  }
+                  Update: {
+                    "answered_at"?: string,"answered_by"?: string | null,"media_id"?: string | null,"organisation_id"?: string,"sop_step_id"?: string,"value"?: Json | null,"work_order_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sop_response_media_id_fkey"
+      columns: ["media_id"]
+isOneToOne: false
+      referencedRelation: "media"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sop_response_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sop_response_sop_step_id_fkey"
+      columns: ["sop_step_id"]
+isOneToOne: false
+      referencedRelation: "sop_step"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sop_response_sop_step_id_organisation_id_fkey"
+      columns: ["sop_step_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "sop_step"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "sop_response_work_order_id_fkey"
+      columns: ["work_order_id"]
+isOneToOne: false
+      referencedRelation: "work_order"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sop_response_work_order_id_organisation_id_fkey"
+      columns: ["work_order_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "work_order"
+      referencedColumns: ["id","organisation_id"]
+    }
+                  ]
+                },"sop_step": {
+                  Row: {
+                    "choices": (string)[] | null,"created_at": string,"created_by": string | null,"id": string,"input_type": string,"media_path": string | null,"organisation_id": string,"required": boolean,"seq": number,"sop_id": string,"text": NonNullable<Json>,"unit": string | null,"updated_at": string
+                  }
+                  Insert: {
+                    "choices"?: (string)[] | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"input_type": string,"media_path"?: string | null,"organisation_id": string,"required"?: boolean,"seq": number,"sop_id": string,"text": NonNullable<Json>,"unit"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "choices"?: (string)[] | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"input_type"?: string,"media_path"?: string | null,"organisation_id"?: string,"required"?: boolean,"seq"?: number,"sop_id"?: string,"text"?: NonNullable<Json>,"unit"?: string | null,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "sop_step_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sop_step_sop_id_fkey"
+      columns: ["sop_id"]
+isOneToOne: false
+      referencedRelation: "sop"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "sop_step_sop_id_organisation_id_fkey"
+      columns: ["sop_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "sop"
+      referencedColumns: ["id","organisation_id"]
     }
                   ]
                 },"taxon": {
@@ -456,6 +628,233 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "organisation"
       referencedColumns: ["id"]
+    }
+                  ]
+                },"wo_number_seq": {
+                  Row: {
+                    "last_value": number,"organisation_id": string,"year": number
+                  }
+                  Insert: {
+                    "last_value"?: number,"organisation_id": string,"year": number
+                  }
+                  Update: {
+                    "last_value"?: number,"organisation_id"?: string,"year"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "wo_number_seq_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"wo_template": {
+                  Row: {
+                    "code": string,"created_at": string,"created_by": string | null,"default_priority": string,"est_minutes": number | null,"id": string,"organisation_id": string,"sop_id": string | null,"team_id": string | null,"title": string,"updated_at": string,"wo_type": string
+                  }
+                  Insert: {
+                    "code": string,"created_at"?: string,"created_by"?: string | null,"default_priority"?: string,"est_minutes"?: number | null,"id"?: string,"organisation_id": string,"sop_id"?: string | null,"team_id"?: string | null,"title": string,"updated_at"?: string,"wo_type": string
+                  }
+                  Update: {
+                    "code"?: string,"created_at"?: string,"created_by"?: string | null,"default_priority"?: string,"est_minutes"?: number | null,"id"?: string,"organisation_id"?: string,"sop_id"?: string | null,"team_id"?: string | null,"title"?: string,"updated_at"?: string,"wo_type"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "wo_template_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "wo_template_sop_id_fkey"
+      columns: ["sop_id"]
+isOneToOne: false
+      referencedRelation: "sop"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "wo_template_sop_id_organisation_id_fkey"
+      columns: ["sop_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "sop"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "wo_template_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "wo_template_team_id_organisation_id_fkey"
+      columns: ["team_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "team"
+      referencedColumns: ["id","organisation_id"]
+    }
+                  ]
+                },"work_order": {
+                  Row: {
+                    "actual_minutes": number | null,"assignee_user_id": string | null,"client_uuid": string | null,"completion_notes": string | null,"created_at": string,"created_by": string | null,"description": string | null,"due_at": string | null,"est_minutes": number | null,"geom": unknown,"id": string,"location_id": string | null,"materials": NonNullable<Json>,"number": string,"organisation_id": string,"planned_end": string | null,"planned_start": string | null,"pm_schedule_id": string | null,"priority": string,"site_id": string,"sop_id": string | null,"source": string,"source_ref": string | null,"status": Database["public"]['Enums']["wo_status"],"team_id": string | null,"template_id": string | null,"title": string,"updated_at": string,"wo_type": string
+                  }
+                  Insert: {
+                    "actual_minutes"?: number | null,"assignee_user_id"?: string | null,"client_uuid"?: string | null,"completion_notes"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"due_at"?: string | null,"est_minutes"?: number | null,"geom"?: unknown,"id"?: string,"location_id"?: string | null,"materials"?: NonNullable<Json>,"number": string,"organisation_id": string,"planned_end"?: string | null,"planned_start"?: string | null,"pm_schedule_id"?: string | null,"priority"?: string,"site_id": string,"sop_id"?: string | null,"source": string,"source_ref"?: string | null,"status": Database["public"]['Enums']["wo_status"],"team_id"?: string | null,"template_id"?: string | null,"title": string,"updated_at"?: string,"wo_type": string
+                  }
+                  Update: {
+                    "actual_minutes"?: number | null,"assignee_user_id"?: string | null,"client_uuid"?: string | null,"completion_notes"?: string | null,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"due_at"?: string | null,"est_minutes"?: number | null,"geom"?: unknown,"id"?: string,"location_id"?: string | null,"materials"?: NonNullable<Json>,"number"?: string,"organisation_id"?: string,"planned_end"?: string | null,"planned_start"?: string | null,"pm_schedule_id"?: string | null,"priority"?: string,"site_id"?: string,"sop_id"?: string | null,"source"?: string,"source_ref"?: string | null,"status"?: Database["public"]['Enums']["wo_status"],"team_id"?: string | null,"template_id"?: string | null,"title"?: string,"updated_at"?: string,"wo_type"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "work_order_location_id_fkey"
+      columns: ["location_id"]
+isOneToOne: false
+      referencedRelation: "location"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_location_id_organisation_id_fkey"
+      columns: ["location_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "location"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "work_order_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_pm_schedule_id_fkey"
+      columns: ["pm_schedule_id"]
+isOneToOne: false
+      referencedRelation: "pm_schedule"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_pm_schedule_id_organisation_id_fkey"
+      columns: ["pm_schedule_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "pm_schedule"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "work_order_site_id_fkey"
+      columns: ["site_id"]
+isOneToOne: false
+      referencedRelation: "site"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_site_id_organisation_id_fkey"
+      columns: ["site_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "site"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "work_order_sop_id_fkey"
+      columns: ["sop_id"]
+isOneToOne: false
+      referencedRelation: "sop"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_sop_id_organisation_id_fkey"
+      columns: ["sop_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "sop"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "work_order_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "team"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_team_id_organisation_id_fkey"
+      columns: ["team_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "team"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "work_order_template_id_fkey"
+      columns: ["template_id"]
+isOneToOne: false
+      referencedRelation: "wo_template"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_template_id_organisation_id_fkey"
+      columns: ["template_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "wo_template"
+      referencedColumns: ["id","organisation_id"]
+    }
+                  ]
+                },"work_order_asset": {
+                  Row: {
+                    "asset_id": string,"created_at": string,"created_by": string | null,"organisation_id": string,"work_order_id": string
+                  }
+                  Insert: {
+                    "asset_id": string,"created_at"?: string,"created_by"?: string | null,"organisation_id": string,"work_order_id": string
+                  }
+                  Update: {
+                    "asset_id"?: string,"created_at"?: string,"created_by"?: string | null,"organisation_id"?: string,"work_order_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "work_order_asset_asset_id_fkey"
+      columns: ["asset_id"]
+isOneToOne: false
+      referencedRelation: "asset"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_asset_asset_id_organisation_id_fkey"
+      columns: ["asset_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "asset"
+      referencedColumns: ["id","organisation_id"]
+    },{
+      foreignKeyName: "work_order_asset_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_asset_work_order_id_fkey"
+      columns: ["work_order_id"]
+isOneToOne: false
+      referencedRelation: "work_order"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_asset_work_order_id_organisation_id_fkey"
+      columns: ["work_order_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "work_order"
+      referencedColumns: ["id","organisation_id"]
+    }
+                  ]
+                },"work_order_event": {
+                  Row: {
+                    "actor": string,"at": string,"client_uuid": string | null,"from_status": Database["public"]['Enums']["wo_status"] | null,"geom": unknown,"id": string,"note": string | null,"organisation_id": string,"to_status": Database["public"]['Enums']["wo_status"],"work_order_id": string
+                  }
+                  Insert: {
+                    "actor": string,"at"?: string,"client_uuid"?: string | null,"from_status"?: Database["public"]['Enums']["wo_status"] | null,"geom"?: unknown,"id"?: string,"note"?: string | null,"organisation_id": string,"to_status": Database["public"]['Enums']["wo_status"],"work_order_id": string
+                  }
+                  Update: {
+                    "actor"?: string,"at"?: string,"client_uuid"?: string | null,"from_status"?: Database["public"]['Enums']["wo_status"] | null,"geom"?: unknown,"id"?: string,"note"?: string | null,"organisation_id"?: string,"to_status"?: Database["public"]['Enums']["wo_status"],"work_order_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "work_order_event_organisation_id_fkey"
+      columns: ["organisation_id"]
+isOneToOne: false
+      referencedRelation: "organisation"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_event_work_order_id_fkey"
+      columns: ["work_order_id"]
+isOneToOne: false
+      referencedRelation: "work_order"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "work_order_event_work_order_id_organisation_id_fkey"
+      columns: ["work_order_id","organisation_id"]
+isOneToOne: false
+      referencedRelation: "work_order"
+      referencedColumns: ["id","organisation_id"]
     }
                   ]
                 }
@@ -523,6 +922,9 @@ isOneToOne: false
 "nearest_bed_corner":
 { Args: { "p_lat": number,"p_lon": number,"p_max_m"?: number,"p_site": string }; Returns: Json
                            },
+"next_wo_number":
+{ Args: { "p_org": string }; Returns: string
+                           },
 "resolve_location":
 { Args: { "p_geom": unknown,"p_site"?: string }; Returns: string
                            },
@@ -566,10 +968,13 @@ isOneToOne: false
                            },
 "taxon_tag_code":
 { Args: { "p_org": string,"p_taxon": string }; Returns: string
+                           },
+"wo_is_mine":
+{ Args: { "p_assignee": string,"p_org": string,"p_team": string }; Returns: boolean
                            }
           }
           Enums: {
-            "asset_class": "living"|"built","asset_status": "planned"|"planted"|"established"|"active"|"declining"|"dead"|"removed"|"out_of_service"|"disposed","location_kind": "zone"|"bed"|"habitat"|"water_body"|"building"|"sub_area"|"other"
+            "asset_class": "living"|"built","asset_status": "planned"|"planted"|"established"|"active"|"declining"|"dead"|"removed"|"out_of_service"|"disposed","location_kind": "zone"|"bed"|"habitat"|"water_body"|"building"|"sub_area"|"other","wo_status": "requested"|"approved"|"scheduled"|"in_progress"|"on_hold"|"completed"|"verified"|"closed"|"cancelled"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -689,7 +1094,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "asset_class": ["living", "built"],"asset_status": ["planned", "planted", "established", "active", "declining", "dead", "removed", "out_of_service", "disposed"],"location_kind": ["zone", "bed", "habitat", "water_body", "building", "sub_area", "other"]
+            "asset_class": ["living", "built"],"asset_status": ["planned", "planted", "established", "active", "declining", "dead", "removed", "out_of_service", "disposed"],"location_kind": ["zone", "bed", "habitat", "water_body", "building", "sub_area", "other"],"wo_status": ["requested", "approved", "scheduled", "in_progress", "on_hold", "completed", "verified", "closed", "cancelled"]
           }
         }
 } as const
