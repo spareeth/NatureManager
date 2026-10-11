@@ -171,6 +171,7 @@ create table org_taxon (                 -- per-organisation attributes (Hortis 
   sensitive boolean not null default false,  -- obscure coordinates
   notes text,
   legacy_hortis_id text,
+  attributes jsonb not null default '{}', -- Hortis extras: life forms, climate, distribution (added 11 Oct 2026)
   primary key (organisation_id, taxon_id),
   unique (organisation_id, inhouse_code)
 );
@@ -209,6 +210,7 @@ create table accession (
   quantity_received int,
   notes text,
   legacy_hortis_id text,
+  attributes jsonb not null default '{}', -- Hortis extras: identification fields (added 11 Oct 2026)
   unique (organisation_id, accession_number)
 );
 
@@ -299,6 +301,11 @@ As built (migration `20261003000100_asset_edit.sql`, task 1.4):
   (pattern and uniqueness) and `taxon_search(org, q)`. All security invoker.
 - Open: `asset.position_source` has no value for "placed by clicking the map", so map placement
   leaves it empty unless the user picks a source.
+
+As built (migration `20261011000100_hortis_migration.sql`, task 1.6): `org_taxon.attributes`,
+`accession.attributes`; unique index on `asset (organisation_id, legacy_hortis_id)` as the
+migration upsert key; schema `staging_hortis` closed to client roles; `set_updated_at()` now only
+bumps `updated_at` when the row changed, so identical upserts are not audited.
 
 Tag code format (Terra in-house standard, kept from Hortis): `<ZONE><BED>-T<NN>_<SPECIES>`,
 e.g. `WG07-T04_PRO` = West Garden bed 07, tree 04, *Prosopis cineraria*. Planting groups without

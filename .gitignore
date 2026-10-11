@@ -13,3 +13,4 @@ __pycache__/
 supabase/.branches
 supabase/.temp
 *.egg-info/
+data/hortis/out/

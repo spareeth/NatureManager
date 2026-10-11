@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import import_locations as il  # noqa: E402
+import import_locations as il
 
 ROOT = Path(__file__).resolve().parents[2]
 BOUNDARY = il.load_boundary(ROOT / "data/gis/TG_boundary.geojson")

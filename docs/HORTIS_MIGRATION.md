@@ -62,8 +62,8 @@ Hortis template base map with a GCP file.
 | Tag number | `asset.tag_code` | Present on 396 rows. Rows without a tag get `<ZONE><BED>-G<NN>_<CODE>` or `_<GENUS3>` |
 | Location name | `asset.location_id` | Match `location.code` |
 | Latitude, Longitude | `asset.geom` (Point) | 396 rows; `position_source = 'hortis'`. Rows without coordinates: point at bed centroid, `position_source = 'bed_centroid'`, asset type GROUP |
-| Status | `asset.status` | Present to active |
-| Condition | `asset.condition` | Good 4, Fair 3, Poor 2; **Dead sets status `dead`** (9 rows) and drafts a replacement item request |
+| Status | `asset.status` | Present to established (decision 11 Oct 2026: `active` is a built-asset status) |
+| Condition | `asset.condition` | Good 4, Fair 3, Poor 2; **Dead sets status `dead`** (9 rows) and drafts a replacement item request (until item requests exist, task 2.10: `data/hortis/out/replacement_requests_draft.csv`) |
 | Last observed | `asset.attributes.last_observed` | 24 rows |
 | First present | `asset.install_date` | Parse `yyyy/m/d` |
 | Life forms contains Tree and has tag | asset type TREE; else PLANT or GROUP | |
@@ -84,6 +84,20 @@ ZIZ *Ziziphus spina-christi*.
 The other 52 taxa (herbs, grasses, shrubs without tags) have no code yet. Propose codes with the
 same 3-letter rule (curator approves) so every taxon has one before cut-over. Seed file:
 `data/hortis/species_codes.csv`.
+
+### As built (task 1.6, 11 Oct 2026)
+
+- Scripts: `scripts/hortis/` `stage.py`, `transform.py`, `validate.py`, `promote.py`, `reconcile.py`,
+  and `migrate.py` to run them in order (`--dry-run` rolls promote back). Database driver pg8000.
+- `org_taxon.attributes` and `accession.attributes` added for the Hortis extras (decision 11 Oct 2026).
+- Hortis tags are kept as printed on the trees. Bed-prefix mismatches are flagged with a re-tag
+  proposal; for each duplicate tag the first record keeps it and the next gets the next free
+  number in its bed (`SG03-T38_PHO`, `EG11-T55_TAM`). Curator decisions are applied by a re-run.
+- New tags for records without a tag use the approved in-house code, else the genus' first three
+  letters. Proposed codes for the 52 uncoded taxa go to `org_taxon.attributes.proposed_inhouse_code`
+  and the curator CSV, and become `inhouse_code` only once approved.
+- Bed-level records are placed with `st_pointonsurface` (always inside the bed), not the centroid.
+- Curator CSV: `data/hortis/out/curator_flags.csv` (git-ignored with the raw export).
 
 ## 3. Validation rules and known flags
 

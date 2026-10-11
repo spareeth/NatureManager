@@ -25,13 +25,13 @@ export type Database = {
           Tables: {
             "accession": {
                   Row: {
-                    "accession_number": string,"collection_locality": string | null,"collection_point": unknown,"collector": string | null,"created_at": string,"created_by": string | null,"id": string,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"provenance_type": string | null,"quantity_received": number | null,"received_date": string | null,"source": string | null,"taxon_id": string,"updated_at": string
+                    "accession_number": string,"attributes": NonNullable<Json>,"collection_locality": string | null,"collection_point": unknown,"collector": string | null,"created_at": string,"created_by": string | null,"id": string,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"provenance_type": string | null,"quantity_received": number | null,"received_date": string | null,"source": string | null,"taxon_id": string,"updated_at": string
                   }
                   Insert: {
-                    "accession_number": string,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id": string,"updated_at"?: string
+                    "accession_number": string,"attributes"?: NonNullable<Json>,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "accession_number"?: string,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id"?: string,"updated_at"?: string
+                    "accession_number"?: string,"attributes"?: NonNullable<Json>,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -365,13 +365,13 @@ isOneToOne: false
                   ]
                 },"org_taxon": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"inhouse_code": string | null,"iucn_category": string | null,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"origin": string | null,"protection_level": string | null,"sensitive": boolean,"taxon_id": string,"updated_at": string,"zones_present": (string)[] | null
+                    "attributes": NonNullable<Json>,"created_at": string,"created_by": string | null,"inhouse_code": string | null,"iucn_category": string | null,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"origin": string | null,"protection_level": string | null,"sensitive": boolean,"taxon_id": string,"updated_at": string,"zones_present": (string)[] | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id": string,"updated_at"?: string,"zones_present"?: (string)[] | null
+                    "attributes"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id": string,"updated_at"?: string,"zones_present"?: (string)[] | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id"?: string,"updated_at"?: string,"zones_present"?: (string)[] | null
+                    "attributes"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id"?: string,"updated_at"?: string,"zones_present"?: (string)[] | null
                   }
                   Relationships: [
                     {
