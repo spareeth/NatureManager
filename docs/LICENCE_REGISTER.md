@@ -38,4 +38,4 @@ Anything else is flagged here before use. Update this file when adding a depende
 | Supabase CLI | Local dev stack | MIT | OK |
 | @supabase/supabase-js | Web client for Supabase Auth, REST, Storage | MIT | OK |
 | Shapely | Point-in-polygon and distances in scripts | BSD-3-Clause | OK |
-| ezdxf | Read CAD drawings (DXF) in scripts | MIT | OK |
+| GDAL / OGR (system package, ogr2ogr) | Extract CAD (DXF) line work in scripts | MIT | OK, dev tool, not distributed |
