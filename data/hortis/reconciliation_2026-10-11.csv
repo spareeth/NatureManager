@@ -1,0 +1,13 @@
+section,name,export,platform,updated,rejected,flagged
+entity,Taxa,77,77,0,0,54
+entity,Accessions,77,77,0,0,0
+entity,Plant records,666,666,0,0,133
+entity,Tagged trees with points,396,396,,,
+check,Records in zone EG,156,156,,,
+check,Records in zone NG,142,142,,,
+check,Records in zone SG,173,173,,,
+check,Records in zone WG,195,195,,,
+check,Plants of IUCN EN taxa,6,6,,,
+check,Plants of IUCN NT taxa,17,17,,,
+check,Dead plants (status dead),9,9,,,
+check,Every Hortis key loaded once,666,666,,,

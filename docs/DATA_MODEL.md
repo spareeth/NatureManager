@@ -97,6 +97,8 @@ create table control_point (
   source text not null,                  -- rtk, cad, gcp_file, total_station
   accuracy_m numeric,
   surveyed_at date,
+  ref_x numeric(12,3), ref_y numeric(12,3),  -- reference position on the site grid (plan, CAD); added 11 Oct 2026
+  ref_source text,                       -- plan, cad, design, gcp_file
   unique (organisation_id, code)
 );
 
@@ -142,6 +144,12 @@ As built (migration `20260928000200_spatial.sql`):
   accepted. Security invoker, so RLS limits it to the caller's organisations; `p_site` narrows
   it for service-role scripts.
 
+As built (migration `20261011000300_control_points.sql`, task 1.8): `control_point.ref_x`,
+`ref_y`, `ref_source` (both or neither); residual = surveyed position against
+`site_from_local(ref_x, ref_y)`, listed with RMSE by `control_point_list`. Functions
+`site_geom_from_local` (whole geometries), `site_offset_geom`, `site_point` (WGS 84, Dubai TM or grid
+input, all three returned), `nearest_bed_corner` and `asset_move_offset`. All security invoker.
+
 ## 3. Taxonomy
 
 ```sql
@@ -171,6 +179,7 @@ create table org_taxon (                 -- per-organisation attributes (Hortis 
   sensitive boolean not null default false,  -- obscure coordinates
   notes text,
   legacy_hortis_id text,
+  attributes jsonb not null default '{}', -- Hortis extras: life forms, climate, distribution (added 11 Oct 2026)
   primary key (organisation_id, taxon_id),
   unique (organisation_id, inhouse_code)
 );
@@ -191,6 +200,7 @@ create table asset_type (
   asset_class asset_class not null,
   code text not null,                    -- PLANT, TREE, GROUP, VALVE, PUMP, SIGN, CAMTRAP, SENSOR, AERATOR
   name text not null,
+  name_ar text,                          -- Arabic name (added 3 Oct 2026, task 1.4)
   attribute_schema jsonb not null default '{}',  -- JSON Schema for asset.attributes
   icon text,
   unique (organisation_id, code)
@@ -208,6 +218,7 @@ create table accession (
   quantity_received int,
   notes text,
   legacy_hortis_id text,
+  attributes jsonb not null default '{}', -- Hortis extras: identification fields (added 11 Oct 2026)
   unique (organisation_id, accession_number)
 );
 
@@ -286,6 +297,29 @@ As built (migration `20260928000300_taxonomy_assets.sql`):
   `<organisation_id>/...`; members read their organisation's folder, working roles upload,
   managers delete.
 - Helpers `has_any_role(org, roles[])` and `has_role_anywhere(role)`.
+
+As built (migration `20261003000100_asset_edit.sql`, task 1.4):
+
+- `asset_type.name_ar` (above). `attribute_schema` custom keywords: `x-title-ar` (Arabic field
+  label, next to `title`) and `x-tag-prefix` (three-letter prefix for built asset tags, for
+  example `VLV`; default is the first three letters of the type code).
+- `tag_pattern_ok(tag, class)`, `suggest_tag(site, geom, type, taxon, group)` (next free number
+  in the bed under the point, per kind T, G or built prefix; species part is the in-house code,
+  else the first three letters of the genus, else `XXX`), `check_tag(org, tag, class, asset)`
+  (pattern and uniqueness) and `taxon_search(org, q)`. All security invoker.
+- Open: `asset.position_source` has no value for "placed by clicking the map", so map placement
+  leaves it empty unless the user picks a source.
+
+As built (migration `20261011000100_hortis_migration.sql`, task 1.6): `org_taxon.attributes`,
+`accession.attributes`; unique index on `asset (organisation_id, legacy_hortis_id)` as the
+migration upsert key; schema `staging_hortis` closed to client roles; `set_updated_at()` now only
+bumps `updated_at` when the row changed, so identical upserts are not audited.
+
+As built (migration `20261011000200_taxon_pages.sql`, task 1.7): the organisation's own common
+names (English and Arabic) live in `org_taxon.attributes.common_names` (`{"en": [...], "ar": [...]}`),
+because shared `taxon` rows are edited by the service role only; search covers both. Curators read
+`org_taxon` audit rows (FR-TAX-05 history). Functions `taxon_list`, `taxon_detail`,
+`taxon_history` (field-level, attributes split per key); `taxon_search` includes organisation names.
 
 Tag code format (Terra in-house standard, kept from Hortis): `<ZONE><BED>-T<NN>_<SPECIES>`,
 e.g. `WG07-T04_PRO` = West Garden bed 07, tree 04, *Prosopis cineraria*. Planting groups without

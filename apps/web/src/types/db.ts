@@ -25,13 +25,13 @@ export type Database = {
           Tables: {
             "accession": {
                   Row: {
-                    "accession_number": string,"collection_locality": string | null,"collection_point": unknown,"collector": string | null,"created_at": string,"created_by": string | null,"id": string,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"provenance_type": string | null,"quantity_received": number | null,"received_date": string | null,"source": string | null,"taxon_id": string,"updated_at": string
+                    "accession_number": string,"attributes": NonNullable<Json>,"collection_locality": string | null,"collection_point": unknown,"collector": string | null,"created_at": string,"created_by": string | null,"id": string,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"provenance_type": string | null,"quantity_received": number | null,"received_date": string | null,"source": string | null,"taxon_id": string,"updated_at": string
                   }
                   Insert: {
-                    "accession_number": string,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id": string,"updated_at"?: string
+                    "accession_number": string,"attributes"?: NonNullable<Json>,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "accession_number"?: string,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id"?: string,"updated_at"?: string
+                    "accession_number"?: string,"attributes"?: NonNullable<Json>,"collection_locality"?: string | null,"collection_point"?: unknown,"collector"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"provenance_type"?: string | null,"quantity_received"?: number | null,"received_date"?: string | null,"source"?: string | null,"taxon_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -160,13 +160,13 @@ isOneToOne: false
                   ]
                 },"asset_type": {
                   Row: {
-                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema": NonNullable<Json>,"code": string,"created_at": string,"created_by": string | null,"icon": string | null,"id": string,"name": string,"organisation_id": string,"updated_at": string
+                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema": NonNullable<Json>,"code": string,"created_at": string,"created_by": string | null,"icon": string | null,"id": string,"name": string,"name_ar": string | null,"organisation_id": string,"updated_at": string,"asset_type_tag_prefix": string | null
                   }
                   Insert: {
-                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code": string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name": string,"organisation_id": string,"updated_at"?: string
+                    "asset_class": Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code": string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name": string,"name_ar"?: string | null,"organisation_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "asset_class"?: Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code"?: string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name"?: string,"organisation_id"?: string,"updated_at"?: string
+                    "asset_class"?: Database["public"]['Enums']["asset_class"],"attribute_schema"?: NonNullable<Json>,"code"?: string,"created_at"?: string,"created_by"?: string | null,"icon"?: string | null,"id"?: string,"name"?: string,"name_ar"?: string | null,"organisation_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -198,13 +198,13 @@ isOneToOne: false
                   ]
                 },"control_point": {
                   Row: {
-                    "accuracy_m": number | null,"code": string,"created_at": string,"created_by": string | null,"description": string | null,"geom": unknown,"id": string,"organisation_id": string,"site_id": string,"source": string,"surveyed_at": string | null,"updated_at": string
+                    "accuracy_m": number | null,"code": string,"created_at": string,"created_by": string | null,"description": string | null,"geom": unknown,"id": string,"organisation_id": string,"ref_source": string | null,"ref_x": number | null,"ref_y": number | null,"site_id": string,"source": string,"surveyed_at": string | null,"updated_at": string
                   }
                   Insert: {
-                    "accuracy_m"?: number | null,"code": string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom": unknown,"id"?: string,"organisation_id": string,"site_id": string,"source": string,"surveyed_at"?: string | null,"updated_at"?: string
+                    "accuracy_m"?: number | null,"code": string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom": unknown,"id"?: string,"organisation_id": string,"ref_source"?: string | null,"ref_x"?: number | null,"ref_y"?: number | null,"site_id": string,"source": string,"surveyed_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "accuracy_m"?: number | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom"?: unknown,"id"?: string,"organisation_id"?: string,"site_id"?: string,"source"?: string,"surveyed_at"?: string | null,"updated_at"?: string
+                    "accuracy_m"?: number | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom"?: unknown,"id"?: string,"organisation_id"?: string,"ref_source"?: string | null,"ref_x"?: number | null,"ref_y"?: number | null,"site_id"?: string,"source"?: string,"surveyed_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -365,13 +365,13 @@ isOneToOne: false
                   ]
                 },"org_taxon": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"inhouse_code": string | null,"iucn_category": string | null,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"origin": string | null,"protection_level": string | null,"sensitive": boolean,"taxon_id": string,"updated_at": string,"zones_present": (string)[] | null
+                    "attributes": NonNullable<Json>,"created_at": string,"created_by": string | null,"inhouse_code": string | null,"iucn_category": string | null,"legacy_hortis_id": string | null,"notes": string | null,"organisation_id": string,"origin": string | null,"protection_level": string | null,"sensitive": boolean,"taxon_id": string,"updated_at": string,"zones_present": (string)[] | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id": string,"updated_at"?: string,"zones_present"?: (string)[] | null
+                    "attributes"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id": string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id": string,"updated_at"?: string,"zones_present"?: (string)[] | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id"?: string,"updated_at"?: string,"zones_present"?: (string)[] | null
+                    "attributes"?: NonNullable<Json>,"created_at"?: string,"created_by"?: string | null,"inhouse_code"?: string | null,"iucn_category"?: string | null,"legacy_hortis_id"?: string | null,"notes"?: string | null,"organisation_id"?: string,"origin"?: string | null,"protection_level"?: string | null,"sensitive"?: boolean,"taxon_id"?: string,"updated_at"?: string,"zones_present"?: (string)[] | null
                   }
                   Relationships: [
                     {
@@ -464,11 +464,40 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "asset_set_status":
+            "asset_by_code":
+{ Args: { "p_code": string,"p_org"?: string }; Returns: {
+              "id": string,"matched": string,"organisation_id": string,"tag_code": string
+            }[]
+                           },
+"asset_detail":
+{ Args: { "p_asset": string }; Returns: Json
+                           },
+"asset_labels":
+{ Args: { "p_assets": (string)[] }; Returns: Json
+                           },
+"asset_move_offset":
+{ Args: { "p_accuracy"?: number,"p_asset": string,"p_dx": number,"p_dy": number }; Returns: Json
+                           },
+"asset_search":
+{ Args: { "p_class"?: Database["public"]['Enums']["asset_class"],"p_desc"?: boolean,"p_limit"?: number,"p_location"?: string,"p_offset"?: number,"p_q"?: string,"p_site": string,"p_sort"?: string,"p_status"?: (Database["public"]['Enums']["asset_status"])[],"p_type"?: string }; Returns: Json
+                           },
+"asset_set_status":
 { Args: { "p_asset": string,"p_reason"?: string,"p_status": Database["public"]['Enums']["asset_status"] }; Returns: undefined
+                           },
+"asset_timeline":
+{ Args: { "p_asset": string }; Returns: Json
+                           },
+"asset_type_tag_prefix":
+{ Args: { "p_type": Database["public"]['Tables']["asset_type"]['Row'] }; Returns: string
                            },
 "auth_org_ids":
 { Args: Record<PropertyKey, never>; Returns: string[]
+                           },
+"check_tag":
+{ Args: { "p_asset"?: string,"p_class": Database["public"]['Enums']["asset_class"],"p_org": string,"p_tag": string }; Returns: Json
+                           },
+"control_point_list":
+{ Args: { "p_site": string }; Returns: Json
                            },
 "has_any_role":
 { Args: { "org": string,"rs": (string)[] }; Returns: boolean
@@ -479,14 +508,64 @@ isOneToOne: false
 "has_role_anywhere":
 { Args: { "r": string }; Returns: boolean
                            },
+"map_asset_detail":
+{ Args: { "p_site": string,"p_tag": string }; Returns: Json
+                           },
+"map_assets":
+{ Args: { "p_east": number,"p_limit"?: number,"p_north": number,"p_site": string,"p_south": number,"p_west": number }; Returns: Json
+                           },
+"map_locations":
+{ Args: { "p_site": string }; Returns: Json
+                           },
+"map_site":
+{ Args: { "p_site": string }; Returns: Json
+                           },
+"nearest_bed_corner":
+{ Args: { "p_lat": number,"p_lon": number,"p_max_m"?: number,"p_site": string }; Returns: Json
+                           },
 "resolve_location":
 { Args: { "p_geom": unknown,"p_site"?: string }; Returns: string
                            },
 "site_from_local":
 { Args: { "p_site": string,"p_x": number,"p_y": number }; Returns: unknown
                            },
+"site_geom_from_local":
+{ Args: { "p_geom": unknown,"p_site": string }; Returns: unknown
+                           },
+"site_local_xy":
+{ Args: { "p_lat": number,"p_lon": number,"p_site": string }; Returns: {
+              "x": number,"y": number
+            }[]
+                           },
+"site_offset_geom":
+{ Args: { "p_dx": number,"p_dy": number,"p_geom": unknown,"p_site": string }; Returns: unknown
+                           },
+"site_point":
+{ Args: { "p_a": number,"p_b": number,"p_site": string,"p_system": string }; Returns: Json
+                           },
 "site_to_local":
 { Args: { "p_geom": unknown,"p_site": string }; Returns: unknown
+                           },
+"suggest_tag":
+{ Args: { "p_geom": unknown,"p_group"?: boolean,"p_site": string,"p_taxon"?: string,"p_type": string }; Returns: string
+                           },
+"tag_pattern_ok":
+{ Args: { "p_class": Database["public"]['Enums']["asset_class"],"p_tag": string }; Returns: boolean
+                           },
+"taxon_detail":
+{ Args: { "p_org": string,"p_taxon": string }; Returns: Json
+                           },
+"taxon_history":
+{ Args: { "p_org": string,"p_taxon": string }; Returns: Json
+                           },
+"taxon_list":
+{ Args: { "p_code"?: string,"p_desc"?: boolean,"p_iucn"?: string,"p_limit"?: number,"p_offset"?: number,"p_org": string,"p_origin"?: string,"p_q"?: string,"p_sort"?: string,"p_zone"?: string }; Returns: Json
+                           },
+"taxon_search":
+{ Args: { "p_limit"?: number,"p_org": string,"p_q": string }; Returns: Json
+                           },
+"taxon_tag_code":
+{ Args: { "p_org": string,"p_taxon": string }; Returns: string
                            }
           }
           Enums: {

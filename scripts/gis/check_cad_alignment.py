@@ -73,7 +73,7 @@ def main() -> int:
             log(f"  {n} primitives, {len(xs)} vertices")
         try:
             vs = list(prim.vertices())
-        except Exception:  # unsupported primitive, skip
+        except Exception:  # noqa: BLE001, S112 - unsupported primitive, skip
             continue
         layer = prim.entity.dxf.layer if prim.entity is not None else "?"
         for v in vs:

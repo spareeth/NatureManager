@@ -3,6 +3,11 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(31);
 
+-- Start from the seed alone, even when the local database also holds migrated Hortis data.
+-- Rolled back with the rest of the test.
+delete from media; delete from asset_status_change; delete from asset; delete from accession;
+delete from org_taxon; delete from taxon; delete from audit_log;
+
 -- Fixtures (as postgres) --------------------------------------------------------
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'mgr_a@test.local'),

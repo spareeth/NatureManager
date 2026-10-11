@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/context';
 import { useOrg } from '../org/context';
@@ -6,6 +6,14 @@ import { MapPage } from '../pages/MapPage';
 import { FieldPage } from '../pages/FieldPage';
 import { LoginPage } from '../pages/LoginPage';
 import { MembersPage } from '../pages/MembersPage';
+import { AssetListPage } from '../pages/AssetListPage';
+import { AssetDetailPage } from '../pages/AssetDetailPage';
+import { AssetEditPage } from '../pages/AssetEditPage';
+import { ScanPage } from '../pages/ScanPage';
+import { TaxonListPage } from '../pages/TaxonListPage';
+import { TaxonDetailPage } from '../pages/TaxonDetailPage';
+import { ControlPointsPage } from '../pages/ControlPointsPage';
+import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
 import { NAV, visibleNav } from './nav';
@@ -74,11 +82,30 @@ export function App() {
       <main className="min-h-0 flex-1">
         <Routes>
           <Route path="/" element={<MapPage />} />
+          <Route path="/a/:code" element={<ScanPage />} />
+          <Route path="/assets" element={<AssetListPage />} />
+          <Route path="/taxa" element={<TaxonListPage />} />
+          <Route path="/taxa/:id" element={<TaxonDetailPage />} />
+          <Route path="/assets/:id" element={<AssetDetailPage />} />
+          <Route
+            path="/assets/:id/edit"
+            element={
+              canEditAssets(current.roles) ? <AssetEditPage /> : <Navigate to="/assets" replace />
+            }
+          />
           <Route
             path="/field/*"
             element={
               <RequireRole roles={roleOf('/field')}>
                 <FieldPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/control-points"
+            element={
+              <RequireRole roles={roleOf('/control-points')}>
+                <ControlPointsPage />
               </RequireRole>
             }
           />
