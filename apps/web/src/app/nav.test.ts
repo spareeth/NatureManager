@@ -12,8 +12,22 @@ describe('role-aware nav', () => {
     expect(paths(['field_engineer'])).toEqual(['/', '/assets', '/taxa', '/field']);
   });
   it('managers and field managers see members', () => {
-    expect(paths(['manager'])).toEqual(['/', '/assets', '/taxa', '/field', '/members']);
-    expect(paths(['field_manager'])).toEqual(['/', '/assets', '/taxa', '/field', '/members']);
+    expect(paths(['manager'])).toEqual([
+      '/',
+      '/assets',
+      '/taxa',
+      '/field',
+      '/control-points',
+      '/members',
+    ]);
+    expect(paths(['field_manager'])).toEqual([
+      '/',
+      '/assets',
+      '/taxa',
+      '/field',
+      '/control-points',
+      '/members',
+    ]);
   });
   it('several roles combine', () => {
     expect(paths(['owner', 'curator'])).toEqual(['/', '/assets', '/taxa', '/field']);

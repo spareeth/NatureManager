@@ -66,7 +66,7 @@ describe('shell', () => {
 
   it('manager sees members', async () => {
     renderApp({ path: '/members', memberships: [membership(['manager'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Field app', 'Members']);
+    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Field app', 'Control points', 'Members']);
     expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();
   });
 

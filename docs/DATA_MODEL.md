@@ -97,6 +97,8 @@ create table control_point (
   source text not null,                  -- rtk, cad, gcp_file, total_station
   accuracy_m numeric,
   surveyed_at date,
+  ref_x numeric(12,3), ref_y numeric(12,3),  -- reference position on the site grid (plan, CAD); added 11 Oct 2026
+  ref_source text,                       -- plan, cad, design, gcp_file
   unique (organisation_id, code)
 );
 
@@ -141,6 +143,12 @@ As built (migration `20260928000200_spatial.sql`):
   covering the point (a bed wins over its zone); polygons use a point on their surface; any SRID
   accepted. Security invoker, so RLS limits it to the caller's organisations; `p_site` narrows
   it for service-role scripts.
+
+As built (migration `20261011000300_control_points.sql`, task 1.8): `control_point.ref_x`,
+`ref_y`, `ref_source` (both or neither); residual = surveyed position against
+`site_from_local(ref_x, ref_y)`, listed with RMSE by `control_point_list`. Functions
+`site_geom_from_local` (whole geometries), `site_offset_geom`, `site_point` (WGS 84, Dubai TM or grid
+input, all three returned), `nearest_bed_corner` and `asset_move_offset`. All security invoker.
 
 ## 3. Taxonomy
 

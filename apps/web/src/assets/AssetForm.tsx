@@ -34,6 +34,8 @@ type Props = {
   geometry?: NewGeometry;
   /** Edit mode: the asset as loaded for the detail page. */
   asset?: AssetDetail;
+  /** Create mode: position source and accuracy already known (for example from an offset). */
+  initialPosition?: { source: string; accuracy: number | null };
   onSaved: (id: string) => void;
   onCancel: () => void;
 };
@@ -62,7 +64,15 @@ function Field({
   );
 }
 
-export function AssetForm({ orgId, siteId, geometry, asset, onSaved, onCancel }: Props) {
+export function AssetForm({
+  orgId,
+  siteId,
+  geometry,
+  asset,
+  initialPosition,
+  onSaved,
+  onCancel,
+}: Props) {
   const { t, i18n } = useTranslation();
   const editing = !!asset;
   const types = useQuery({
@@ -100,8 +110,12 @@ export function AssetForm({ orgId, siteId, geometry, asset, onSaved, onCancel }:
   const [name, setName] = useState(asset?.name ?? '');
   const [barcode, setBarcode] = useState(asset?.barcode ?? '');
   const [plantCount, setPlantCount] = useState(asset?.plant_count?.toString() ?? '');
-  const [positionSource, setPositionSource] = useState(asset?.position_source ?? '');
-  const [accuracy, setAccuracy] = useState(asset?.position_accuracy_m?.toString() ?? '');
+  const [positionSource, setPositionSource] = useState(
+    asset?.position_source ?? initialPosition?.source ?? '',
+  );
+  const [accuracy, setAccuracy] = useState(
+    asset?.position_accuracy_m?.toString() ?? initialPosition?.accuracy?.toString() ?? '',
+  );
   const [attrs, setAttrs] = useState<Record<string, unknown>>(asset?.attributes ?? {});
   const [attrErrors, setAttrErrors] = useState<FieldError[]>([]);
   const [formError, setFormError] = useState<string | null>(null);

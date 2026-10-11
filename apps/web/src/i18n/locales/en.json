@@ -8,7 +8,8 @@
     "members": "Members",
     "label": "Main",
     "assets": "Assets",
-    "taxa": "Taxa"
+    "taxa": "Taxa",
+    "controlPoints": "Control points"
   },
   "map": {
     "heading": "Site map",
@@ -25,7 +26,8 @@
       "orthophoto": "Site orthophoto",
       "beds": "Beds",
       "zones": "Zones",
-      "assets": "Assets"
+      "assets": "Assets",
+      "controlPoints": "Control points"
     },
     "zones": {
       "EG": "East Garden",
@@ -170,7 +172,7 @@
   "position": {
     "gps": "GPS",
     "rtk": "RTK survey",
-    "offset": "Offset from control point",
+    "offset": "Measured offset",
     "cad": "CAD drawing",
     "hortis": "Hortis",
     "bed_centroid": "Bed centre"
@@ -206,7 +208,14 @@
     "saveMove": "Save position",
     "edit": "Edit",
     "moveOnMap": "Move on map",
-    "backToAsset": "Back to asset"
+    "backToAsset": "Back to asset",
+    "addOffset": "Add by offset",
+    "addOffsetTitle": "New asset by offset",
+    "shiftTitle": "Move by offset:",
+    "moveHow": "How to move",
+    "moveByClick": "Click new position",
+    "moveByOffset": "Offset from a marker",
+    "moveByOffsetLink": "Move by offset"
   },
   "form": {
     "createTitle": "New asset",
@@ -407,5 +416,76 @@
     "form": "Form",
     "cultivar": "Cultivar",
     "family": "Family"
+  },
+  "offset": {
+    "from": "Measure from",
+    "controlPoint": "Control point",
+    "bedCorner": "Bed corner",
+    "pickCorner": "Pick a bed corner on the map",
+    "clickCorner": "Click near a bed corner...",
+    "noCorner": "No bed corner within 3 m of that click. Zoom in and try again.",
+    "noControls": "No control points yet",
+    "origin": "From",
+    "startHere": "From current position of",
+    "dxdy": "dx, dy",
+    "distanceBearing": "Distance and bearing",
+    "dx": "dx (m, grid east)",
+    "dy": "dy (m, grid north)",
+    "distance": "Distance (m)",
+    "bearing": "Bearing (degrees)",
+    "bearingNote": "Bearing is clockwise from grid north. For a compass reading, add the local magnetic declination first.",
+    "use": "Use this position"
+  },
+  "cp": {
+    "heading": "Control points",
+    "add": "Add control point",
+    "none": "No control points yet. Add 6 to 10 markers spread across the four zones.",
+    "summary_one": "{{n}} control point, {{ref}} with a reference position. Residual RMSE {{rmse}} m, largest {{max}} m.",
+    "summary_other": "{{n}} control points, {{ref}} with a reference position. Residual RMSE {{rmse}} m, largest {{max}} m.",
+    "code": "Code",
+    "source": "Surveyed by",
+    "grid": "Grid x, y (m)",
+    "dltm": "Dubai TM E, N (m)",
+    "reference": "Reference x, y",
+    "residual": "Residual",
+    "delete": "Delete",
+    "newTitle": "New control point",
+    "editTitle": "Edit control point",
+    "description": "Description",
+    "surveyedAt": "Surveyed on",
+    "position": "Surveyed position",
+    "system": "Coordinate system",
+    "systems": {
+      "dltm": "Dubai Local TM (EPSG:3997), E and N",
+      "wgs84": "WGS 84 longitude and latitude",
+      "grid": "Site grid x and y"
+    },
+    "lon": "Longitude",
+    "lat": "Latitude",
+    "easting": "Easting E (m)",
+    "northing": "Northing N (m)",
+    "gridX": "Grid x (m)",
+    "gridY": "Grid y (m)",
+    "clickHint": "Or click the map to take the position.",
+    "referenceTitle": "Reference position on the site grid (from the plan or CAD), for the residual",
+    "refSource": "From",
+    "codeRequired": "A code is required.",
+    "positionRequired": "Enter or click a position.",
+    "refBoth": "Give both reference x and y, or neither.",
+    "codeTaken": "Another control point already uses this code.",
+    "notAllowed": "Only managers and field managers can change control points.",
+    "confirmDelete": "Delete control point {{code}}?",
+    "sources": {
+      "rtk": "RTK GNSS",
+      "total_station": "Total station",
+      "cad": "CAD drawing",
+      "gcp_file": "Georeferencing points file"
+    },
+    "refSources": {
+      "plan": "Site plan",
+      "cad": "CAD drawing",
+      "design": "Design",
+      "gcp_file": "GCP file"
+    }
   }
 }

@@ -6,23 +6,32 @@ import { useTranslation } from 'react-i18next';
 import { AssetForm, type NewGeometry } from '../assets/AssetForm';
 import { fetchAssetDetail } from '../assets/api';
 import { moveAsset } from '../assets/editApi';
+import { moveAssetByOffset } from '../geo/api';
+import { OffsetPanel } from '../geo/OffsetPanel';
 import { POSITION_SOURCES } from '../assets/statuses';
 import { distinctCorners, pointEWKT, polygonEWKT, type LngLat } from './geometry';
 import { formatLatLon } from './format';
 
-type Mode = 'idle' | 'point' | 'polygon' | 'form' | 'move';
+type Mode = 'idle' | 'point' | 'polygon' | 'form' | 'move' | 'offset' | 'shift';
 type Props = { map: L.Map | null; orgId: string; siteId: string | undefined; canEdit: boolean };
 
 const ll = (c: LngLat): L.LatLngTuple => [c[1], c[0]];
 
-/** Add assets by clicking (point) or drawing (planting group polygon), and move an asset (?move=id). */
+/**
+ * Add assets by clicking (point), drawing (planting group polygon) or by offset from a control point
+ * or bed corner; move a point asset (?move=id, by click or offset); shift any asset by dx, dy (?shift=id).
+ */
 export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [params, setParams] = useSearchParams();
   const moveId = params.get('move');
-  const [mode, setMode] = useState<Mode>(moveId ? 'move' : 'idle');
+  const shiftId = params.get('shift');
+  const [mode, setMode] = useState<Mode>(moveId ? 'move' : shiftId ? 'shift' : 'idle');
+  const [moveByOffset, setMoveByOffset] = useState(false);
+  const [offsetMeta, setOffsetMeta] = useState<{ accuracy: number | null } | null>(null);
+  const [busy, setBusy] = useState(false);
   const [corners, setCorners] = useState<LngLat[]>([]);
   const [geometry, setGeometry] = useState<NewGeometry | null>(null);
   const [movePoint, setMovePoint] = useState<LngLat | null>(null);
@@ -35,6 +44,11 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
     queryKey: ['asset', moveId],
     enabled: !!moveId,
     queryFn: () => fetchAssetDetail(moveId!),
+  });
+  const shifting = useQuery({
+    queryKey: ['asset', shiftId],
+    enabled: !!shiftId,
+    queryFn: () => fetchAssetDetail(shiftId!),
   });
 
   // Sketch layer for markers and the polygon outline being drawn.
@@ -54,8 +68,10 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
     setGeometry(null);
     setMovePoint(null);
     setMoveError(null);
-    if (moveId) setParams({}, { replace: true });
-  }, [moveId, setParams]);
+    setMoveByOffset(false);
+    setOffsetMeta(null);
+    if (moveId || shiftId) setParams({}, { replace: true });
+  }, [moveId, shiftId, setParams]);
 
   // Draw the sketch.
   useEffect(() => {
@@ -109,7 +125,8 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
   // Map clicks per mode, with a crosshair cursor while placing.
   useEffect(() => {
     if (!map) return;
-    const placing = mode === 'point' || mode === 'polygon' || (mode === 'move' && !!moving.data);
+    const placing =
+      mode === 'point' || mode === 'polygon' || (mode === 'move' && !!moving.data && !moveByOffset);
     map.getContainer().style.cursor = placing ? 'crosshair' : '';
     if (placing) map.doubleClickZoom.disable();
     else map.doubleClickZoom.enable();
@@ -155,7 +172,7 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
       map.getContainer().style.cursor = '';
       map.doubleClickZoom.enable();
     };
-  }, [map, mode, moving.data, reset]);
+  }, [map, mode, moving.data, moveByOffset, reset]);
 
   const finishPolygon = () => {
     const ewkt = polygonEWKT(corners);
@@ -198,6 +215,74 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
           >
             {t('edit.addGroup')}
           </button>
+          <button
+            type="button"
+            onClick={() => setMode('offset')}
+            className="rounded bg-white px-3 py-1.5 text-sm font-medium text-green-900 shadow"
+          >
+            {t('edit.addOffset')}
+          </button>
+        </div>
+      )}
+
+      {mode === 'offset' && (
+        <div className={`${panel} max-h-[calc(100%-1rem)] overflow-auto`}>
+          <OffsetPanel
+            map={map}
+            siteId={siteId}
+            mode="origin"
+            title={t('edit.addOffsetTitle')}
+            onCancel={reset}
+            onUse={({ target, accuracy }) => {
+              const c: LngLat = [Number(target.lon), Number(target.lat)];
+              const ewkt = pointEWKT(c);
+              setCorners([c]);
+              setGeometry({ ewkt, anchorEwkt: ewkt, polygon: false });
+              setOffsetMeta({ accuracy });
+              setMode('form');
+            }}
+          />
+        </div>
+      )}
+
+      {mode === 'shift' && (
+        <div className={`${panel} max-h-[calc(100%-1rem)] overflow-auto`}>
+          {shifting.data === null && <p className="text-sm text-red-700">{t('assets.notFound')}</p>}
+          {shifting.data && shifting.data.local_x != null && (
+            <OffsetPanel
+              map={map}
+              siteId={siteId}
+              mode="shift"
+              busy={busy}
+              title={`${t('edit.shiftTitle')} ${shifting.data.tag_code}`}
+              start={{
+                label: shifting.data.tag_code,
+                x: Number(shifting.data.local_x),
+                y: Number(shifting.data.local_y),
+                lon: Number(shifting.data.lon),
+                lat: Number(shifting.data.lat),
+                accuracy: null,
+              }}
+              onCancel={() => navigate(`/assets/${shiftId}`)}
+              onUse={async ({ offset, accuracy }) => {
+                setBusy(true);
+                try {
+                  await moveAssetByOffset(shiftId!, offset.dx, offset.dy, accuracy);
+                  await queryClient.invalidateQueries();
+                  navigate(`/assets/${shiftId}`);
+                } catch (e) {
+                  setMoveError(e instanceof Error ? e.message : String(e));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            />
+          )}
+          {moveError && (
+            <p role="alert" className="mt-2 text-sm text-red-700">
+              {moveError}
+            </p>
+          )}
         </div>
       )}
 
@@ -245,6 +330,9 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
             orgId={orgId}
             siteId={siteId}
             geometry={geometry}
+            initialPosition={
+              offsetMeta ? { source: 'offset', accuracy: offsetMeta.accuracy } : undefined
+            }
             onCancel={reset}
             onSaved={async (id) => {
               await queryClient.invalidateQueries();
@@ -255,68 +343,124 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
       )}
 
       {mode === 'move' && (
-        <div className={panel}>
-          <h2 className="font-semibold">
-            {t('edit.moveTitle')}{' '}
-            <span className="font-mono" dir="ltr">
-              {moving.data?.tag_code ?? ''}
-            </span>
-          </h2>
-          {moving.data === null && <p className="text-sm text-red-700">{t('assets.notFound')}</p>}
-          <p className="mt-1 text-sm">
-            {movePoint ? formatLatLon(movePoint[1], movePoint[0]) : t('edit.clickNewPosition')}
-          </p>
-          {movePoint && (
-            <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
-              <label className="flex flex-col">
-                {t('form.positionSource')}
-                <select
-                  value={moveSource}
-                  onChange={(e) => setMoveSource(e.target.value)}
-                  className="rounded border border-gray-300 px-1 py-1"
-                >
-                  <option value="" />
-                  {POSITION_SOURCES.map((s) => (
-                    <option key={s} value={s}>
-                      {t(`position.${s}`)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex flex-col">
-                {t('form.accuracy')}
-                <input
-                  dir="ltr"
-                  inputMode="decimal"
-                  value={moveAccuracy}
-                  onChange={(e) => setMoveAccuracy(e.target.value)}
-                  className="rounded border border-gray-300 px-1 py-1"
-                />
-              </label>
-            </div>
-          )}
-          {moveError && (
-            <p role="alert" className="mt-2 text-sm text-red-700">
-              {moveError}
-            </p>
-          )}
-          <div className="mt-2 flex gap-3">
-            <button
-              type="button"
-              disabled={!movePoint}
-              onClick={() => void saveMove()}
-              className="rounded bg-green-800 px-3 py-1 text-sm text-white disabled:opacity-50"
-            >
-              {t('edit.saveMove')}
-            </button>
-            <button
-              type="button"
-              onClick={() => (moveId ? navigate(`/assets/${moveId}`) : reset())}
-              className="text-sm underline"
-            >
-              {t('form.cancel')}
-            </button>
+        <div className={`${panel} max-h-[calc(100%-1rem)] overflow-auto`}>
+          <div className="mb-2 flex gap-4 text-sm" role="radiogroup" aria-label={t('edit.moveHow')}>
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                name="move-how"
+                checked={!moveByOffset}
+                onChange={() => setMoveByOffset(false)}
+              />
+              {t('edit.moveByClick')}
+            </label>
+            <label className="flex items-center gap-1">
+              <input
+                type="radio"
+                name="move-how"
+                checked={moveByOffset}
+                onChange={() => {
+                  setMoveByOffset(true);
+                  setMovePoint(null);
+                }}
+              />
+              {t('edit.moveByOffset')}
+            </label>
           </div>
+          {moveByOffset && (
+            <OffsetPanel
+              map={map}
+              siteId={siteId}
+              mode="origin"
+              busy={busy}
+              title={`${t('edit.moveTitle')} ${moving.data?.tag_code ?? ''}`}
+              onCancel={() => navigate(`/assets/${moveId}`)}
+              onUse={async ({ target, accuracy }) => {
+                setBusy(true);
+                try {
+                  await moveAsset(
+                    moveId!,
+                    pointEWKT([Number(target.lon), Number(target.lat)]),
+                    'offset',
+                    accuracy,
+                  );
+                  await queryClient.invalidateQueries();
+                  navigate(`/assets/${moveId}`);
+                } catch (e) {
+                  setMoveError(e instanceof Error ? e.message : String(e));
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            />
+          )}
+          {!moveByOffset && (
+            <>
+              <h2 className="font-semibold">
+                {t('edit.moveTitle')}{' '}
+                <span className="font-mono" dir="ltr">
+                  {moving.data?.tag_code ?? ''}
+                </span>
+              </h2>
+              {moving.data === null && (
+                <p className="text-sm text-red-700">{t('assets.notFound')}</p>
+              )}
+              <p className="mt-1 text-sm">
+                {movePoint ? formatLatLon(movePoint[1], movePoint[0]) : t('edit.clickNewPosition')}
+              </p>
+              {movePoint && (
+                <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                  <label className="flex flex-col">
+                    {t('form.positionSource')}
+                    <select
+                      value={moveSource}
+                      onChange={(e) => setMoveSource(e.target.value)}
+                      className="rounded border border-gray-300 px-1 py-1"
+                    >
+                      <option value="" />
+                      {POSITION_SOURCES.map((s) => (
+                        <option key={s} value={s}>
+                          {t(`position.${s}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="flex flex-col">
+                    {t('form.accuracy')}
+                    <input
+                      dir="ltr"
+                      inputMode="decimal"
+                      value={moveAccuracy}
+                      onChange={(e) => setMoveAccuracy(e.target.value)}
+                      className="rounded border border-gray-300 px-1 py-1"
+                    />
+                  </label>
+                </div>
+              )}
+              {moveError && (
+                <p role="alert" className="mt-2 text-sm text-red-700">
+                  {moveError}
+                </p>
+              )}
+              <div className="mt-2 flex gap-3">
+                <button
+                  type="button"
+                  disabled={!movePoint}
+                  onClick={() => void saveMove()}
+                  className="rounded bg-green-800 px-3 py-1 text-sm text-white disabled:opacity-50"
+                >
+                  {t('edit.saveMove')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => (moveId ? navigate(`/assets/${moveId}`) : reset())}
+                  className="text-sm underline"
+                >
+                  {t('form.cancel')}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </>

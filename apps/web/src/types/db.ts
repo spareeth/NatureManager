@@ -198,13 +198,13 @@ isOneToOne: false
                   ]
                 },"control_point": {
                   Row: {
-                    "accuracy_m": number | null,"code": string,"created_at": string,"created_by": string | null,"description": string | null,"geom": unknown,"id": string,"organisation_id": string,"site_id": string,"source": string,"surveyed_at": string | null,"updated_at": string
+                    "accuracy_m": number | null,"code": string,"created_at": string,"created_by": string | null,"description": string | null,"geom": unknown,"id": string,"organisation_id": string,"ref_source": string | null,"ref_x": number | null,"ref_y": number | null,"site_id": string,"source": string,"surveyed_at": string | null,"updated_at": string
                   }
                   Insert: {
-                    "accuracy_m"?: number | null,"code": string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom": unknown,"id"?: string,"organisation_id": string,"site_id": string,"source": string,"surveyed_at"?: string | null,"updated_at"?: string
+                    "accuracy_m"?: number | null,"code": string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom": unknown,"id"?: string,"organisation_id": string,"ref_source"?: string | null,"ref_x"?: number | null,"ref_y"?: number | null,"site_id": string,"source": string,"surveyed_at"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "accuracy_m"?: number | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom"?: unknown,"id"?: string,"organisation_id"?: string,"site_id"?: string,"source"?: string,"surveyed_at"?: string | null,"updated_at"?: string
+                    "accuracy_m"?: number | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"description"?: string | null,"geom"?: unknown,"id"?: string,"organisation_id"?: string,"ref_source"?: string | null,"ref_x"?: number | null,"ref_y"?: number | null,"site_id"?: string,"source"?: string,"surveyed_at"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -475,6 +475,9 @@ isOneToOne: false
 "asset_labels":
 { Args: { "p_assets": (string)[] }; Returns: Json
                            },
+"asset_move_offset":
+{ Args: { "p_accuracy"?: number,"p_asset": string,"p_dx": number,"p_dy": number }; Returns: Json
+                           },
 "asset_search":
 { Args: { "p_class"?: Database["public"]['Enums']["asset_class"],"p_desc"?: boolean,"p_limit"?: number,"p_location"?: string,"p_offset"?: number,"p_q"?: string,"p_site": string,"p_sort"?: string,"p_status"?: (Database["public"]['Enums']["asset_status"])[],"p_type"?: string }; Returns: Json
                            },
@@ -492,6 +495,9 @@ isOneToOne: false
                            },
 "check_tag":
 { Args: { "p_asset"?: string,"p_class": Database["public"]['Enums']["asset_class"],"p_org": string,"p_tag": string }; Returns: Json
+                           },
+"control_point_list":
+{ Args: { "p_site": string }; Returns: Json
                            },
 "has_any_role":
 { Args: { "org": string,"rs": (string)[] }; Returns: boolean
@@ -514,16 +520,28 @@ isOneToOne: false
 "map_site":
 { Args: { "p_site": string }; Returns: Json
                            },
+"nearest_bed_corner":
+{ Args: { "p_lat": number,"p_lon": number,"p_max_m"?: number,"p_site": string }; Returns: Json
+                           },
 "resolve_location":
 { Args: { "p_geom": unknown,"p_site"?: string }; Returns: string
                            },
 "site_from_local":
 { Args: { "p_site": string,"p_x": number,"p_y": number }; Returns: unknown
                            },
+"site_geom_from_local":
+{ Args: { "p_geom": unknown,"p_site": string }; Returns: unknown
+                           },
 "site_local_xy":
 { Args: { "p_lat": number,"p_lon": number,"p_site": string }; Returns: {
               "x": number,"y": number
             }[]
+                           },
+"site_offset_geom":
+{ Args: { "p_dx": number,"p_dy": number,"p_geom": unknown,"p_site": string }; Returns: unknown
+                           },
+"site_point":
+{ Args: { "p_a": number,"p_b": number,"p_site": string,"p_system": string }; Returns: Json
                            },
 "site_to_local":
 { Args: { "p_geom": unknown,"p_site": string }; Returns: unknown

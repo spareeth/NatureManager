@@ -12,6 +12,7 @@ import { AssetEditPage } from '../pages/AssetEditPage';
 import { ScanPage } from '../pages/ScanPage';
 import { TaxonListPage } from '../pages/TaxonListPage';
 import { TaxonDetailPage } from '../pages/TaxonDetailPage';
+import { ControlPointsPage } from '../pages/ControlPointsPage';
 import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
@@ -97,6 +98,14 @@ export function App() {
             element={
               <RequireRole roles={roleOf('/field')}>
                 <FieldPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/control-points"
+            element={
+              <RequireRole roles={roleOf('/control-points')}>
+                <ControlPointsPage />
               </RequireRole>
             }
           />

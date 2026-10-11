@@ -14,6 +14,7 @@ export type MapLayers = {
   beds: L.GeoJSON;
   zones: L.GeoJSON;
   assets: L.GeoJSON;
+  controls: L.LayerGroup;
 };
 
 /** Base layers and the layer switcher. Rebuilt when the language or site basemap changes. */
@@ -69,6 +70,7 @@ export function useBaseLayers(
       [t('map.layers.beds')]: overlays.beds,
       [t('map.layers.zones')]: overlays.zones,
       [t('map.layers.assets')]: overlays.assets,
+      [t('map.layers.controlPoints')]: overlays.controls,
     });
     control.addTo(map);
 
@@ -176,9 +178,12 @@ export function createOverlays(
       });
     },
   });
+  // Control points draw above assets, as blue diamonds with their code.
+  const controls = L.layerGroup();
   zones.addTo(map);
   beds.addTo(map);
   assets.addTo(map);
+  controls.addTo(map);
 
   // Bed labels only when zoomed in, so the garden view stays readable.
   const toggleLabels = () => {
@@ -190,7 +195,7 @@ export function createOverlays(
   };
   map.on('zoomend', toggleLabels);
   beds.on('add', toggleLabels);
-  return { beds, zones, assets };
+  return { beds, zones, assets, controls };
 }
 
 export function setLocations(
@@ -209,4 +214,31 @@ export function setLocations(
 
 export function setAssets(layers: MapLayers, fc: FeatureCollection<Point, AssetProps>) {
   layers.assets.clearLayers().addData(fc);
+}
+
+export function setControlPoints(
+  layers: MapLayers,
+  points: { code: string; lat: number; lon: number; description: string | null }[],
+) {
+  layers.controls.clearLayers();
+  for (const c of points) {
+    L.marker([Number(c.lat), Number(c.lon)], {
+      icon: L.divIcon({
+        className: 'cp-icon',
+        html: '<span></span>',
+        iconSize: [12, 12],
+        iconAnchor: [6, 6],
+      }),
+      keyboard: false,
+    })
+      .bindTooltip(escapeHtml(c.code), {
+        permanent: true,
+        direction: 'right',
+        className: 'bed-label',
+      })
+      .bindPopup(
+        `<strong>${escapeHtml(c.code)}</strong>${c.description ? `<br>${escapeHtml(c.description)}` : ''}`,
+      )
+      .addTo(layers.controls);
+  }
 }

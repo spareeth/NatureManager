@@ -17,3 +17,13 @@
 .bed-label::before {
   display: none;
 }
+
+.cp-icon span {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: #2563eb;
+  border: 2px solid #fff;
+  transform: rotate(45deg);
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { LeafletMap } from '../components/LeafletMap';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentSite } from '../org/useSite';
+import { listControlPoints } from '../geo/api';
 import { fetchAssetDetail, fetchAssets, fetchLocations, fetchMapSite } from '../map/api';
 import { CursorReadout } from '../map/CursorReadout';
 import { Legend } from '../map/Legend';
@@ -14,6 +15,7 @@ import { canEditAssets } from '../auth/canEdit';
 import { legendZones } from '../map/style';
 import {
   createOverlays,
+  setControlPoints,
   setAssets,
   setLocations,
   useBaseLayers,
@@ -62,6 +64,11 @@ export function MapPage() {
     enabled: !!siteId,
     queryFn: () => fetchLocations(siteId!),
   });
+  const controlPoints = useQuery({
+    queryKey: ['control-points', siteId],
+    enabled: !!siteId,
+    queryFn: () => listControlPoints(siteId!),
+  });
   const assets = useQuery({
     queryKey: ['map-assets', siteId, bbox],
     enabled: !!siteId && !!bbox,
@@ -107,6 +114,10 @@ export function MapPage() {
   useEffect(() => {
     if (map && overlays && locations.data) setLocations(overlays, locations.data, map);
   }, [map, overlays, locations.data]);
+
+  useEffect(() => {
+    if (overlays && controlPoints.data) setControlPoints(overlays, controlPoints.data.rows);
+  }, [overlays, controlPoints.data]);
 
   useEffect(() => {
     if (overlays && assets.data) setAssets(overlays, assets.data.features);

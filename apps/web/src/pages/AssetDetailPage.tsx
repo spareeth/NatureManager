@@ -125,7 +125,13 @@ export function AssetDetailPage() {
             >
               {t('edit.edit')}
             </Link>
-            {/* Moving sets a point; polygons are reshaped later (task 1.8). */}
+            <Link
+              to={`/?shift=${a.id}`}
+              className="rounded border border-green-800 px-3 py-1 text-green-900"
+            >
+              {t('edit.moveByOffsetLink')}
+            </Link>
+            {/* Clicking a new spot sets a point, so it is offered for point assets only. */}
             {a.geometry.type === 'Point' && (
               <Link
                 to={`/?move=${a.id}`}
