@@ -11,7 +11,8 @@ select plan(16);
 create temp table rls_exempt (tbl text primary key, why text);
 insert into rls_exempt values
   ('organisation', 'tenant root, scoped by id'),
-  ('taxon', 'shared across organisations by design (DATA_MODEL section 3)');
+  ('taxon', 'shared across organisations by design (DATA_MODEL section 3)'),
+  ('wo_transition_rule', 'SRS 3.4.1 transition table, the same for every organisation; read-only');
 
 -- Security definer functions that are allowed to bypass RLS. Anything new must be reviewed and
 -- added here.
@@ -21,7 +22,10 @@ insert into definer_allowlist values
   ('audit_row'), ('asset_log_status'),
   -- task 2.1: work order numbering writes a counter clients cannot touch; wo_is_mine reads
   -- membership like has_role.
-  ('next_wo_number'), ('work_order_before_write'), ('wo_is_mine');
+  ('next_wo_number'), ('work_order_before_write'), ('wo_is_mine'),
+  -- task 2.2: the only path to change work order status and write events; checks membership
+  -- and roles itself.
+  ('wo_transition');
 
 create temp view public_tables as
   select c.relname::text as tbl,
@@ -56,8 +60,9 @@ select is(
 
 select is(
   (select coalesce(array_agg(tablename || '.' || policyname order by 1), '{}') from pg_policies
-   where schemaname = 'public' and (qual = 'true' or with_check = 'true') and tablename <> 'taxon'),
-  '{}'::text[], 'no policy is unconditionally true (except the shared taxon read)');
+   where schemaname = 'public' and (qual = 'true' or with_check = 'true')
+     and tablename not in ('taxon', 'wo_transition_rule')),
+  '{}'::text[], 'no policy is unconditionally true (except shared reference data reads)');
 
 select is(
   (select coalesce(array_agg(tablename || '.' || policyname order by 1), '{}') from pg_policies
@@ -149,7 +154,7 @@ declare
   n bigint;
   out text[] := '{}';
 begin
-  for t in select tbl, has_org from public_tables where tbl not in ('taxon') order by tbl loop
+  for t in select tbl, has_org from public_tables where tbl not in ('taxon', 'wo_transition_rule') order by tbl loop
     if p_op = 'select' then
       execute format('select count(*) from %I where %s is distinct from $1', t.tbl,
                      case when t.has_org then 'organisation_id' else 'id' end)

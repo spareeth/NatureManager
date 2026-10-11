@@ -456,6 +456,21 @@ As built (migration `20261012000100_work_orders.sql`, task 2.1):
   steps. Helper `wo_is_mine(org, assignee, team)`.
 - Audit trigger on `sop` and `pm_schedule`. `media.work_order_id` now references `work_order`.
 
+As built (migration `20261012000200_wo_transition.sql`, task 2.2):
+
+- `wo_transition(p_wo, p_to, p_note, p_geom, p_client_uuid)` applies the SRS 3.4.1 table, stored in
+  `wo_transition_rule` (shared, read-only reference data). "Assignee" means the assigned user or a member
+  of the assigned team. Refusals: a pair not in the table `22023`; a listed pair by the wrong person
+  `42501`; not a member of the work order's organisation `P0002` (same as not found).
+- Extra checks: scheduling needs an assignee or a team; `completed` needs every required SOP step answered
+  (`wo_missing_steps`: a tick must be true, a photo step needs `media_id`); `verified` is refused for the
+  assignee, team members and whoever completed the job; a failed verification (completed to in_progress)
+  needs a reason.
+- Writes the event (from, to, note, GPS, actor, client_uuid). A repeated `client_uuid` returns the first
+  result with `replayed: true`; reusing it for a different transition is refused.
+- `wo_allowed_transitions(p_wo)` lists the transitions the caller may make now (for the UI).
+- Not yet: verified to closed automatically after 24 h (needs a system actor for the event; task 2.3).
+
 ## 6. Observations
 
 ```sql

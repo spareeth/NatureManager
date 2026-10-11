@@ -692,6 +692,19 @@ isOneToOne: false
       referencedColumns: ["id","organisation_id"]
     }
                   ]
+                },"wo_transition_rule": {
+                  Row: {
+                    "assignee_allowed": boolean,"from_status": Database["public"]['Enums']["wo_status"],"note_required": boolean,"roles": (string)[],"to_status": Database["public"]['Enums']["wo_status"]
+                  }
+                  Insert: {
+                    "assignee_allowed": boolean,"from_status": Database["public"]['Enums']["wo_status"],"note_required"?: boolean,"roles": (string)[],"to_status": Database["public"]['Enums']["wo_status"]
+                  }
+                  Update: {
+                    "assignee_allowed"?: boolean,"from_status"?: Database["public"]['Enums']["wo_status"],"note_required"?: boolean,"roles"?: (string)[],"to_status"?: Database["public"]['Enums']["wo_status"]
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"work_order": {
                   Row: {
                     "actual_minutes": number | null,"assignee_user_id": string | null,"client_uuid": string | null,"completion_notes": string | null,"created_at": string,"created_by": string | null,"description": string | null,"due_at": string | null,"est_minutes": number | null,"geom": unknown,"id": string,"location_id": string | null,"materials": NonNullable<Json>,"number": string,"organisation_id": string,"planned_end": string | null,"planned_start": string | null,"pm_schedule_id": string | null,"priority": string,"site_id": string,"sop_id": string | null,"source": string,"source_ref": string | null,"status": Database["public"]['Enums']["wo_status"],"team_id": string | null,"template_id": string | null,"title": string,"updated_at": string,"wo_type": string
@@ -969,8 +982,21 @@ isOneToOne: false
 "taxon_tag_code":
 { Args: { "p_org": string,"p_taxon": string }; Returns: string
                            },
+"wo_allowed_transitions":
+{ Args: { "p_wo": string }; Returns: {
+              "note_required": boolean,"to_status": Database["public"]['Enums']["wo_status"]
+            }[]
+                           },
 "wo_is_mine":
 { Args: { "p_assignee": string,"p_org": string,"p_team": string }; Returns: boolean
+                           },
+"wo_missing_steps":
+{ Args: { "p_wo": string }; Returns: {
+              "input_type": string,"seq": number,"step_id": string,"text": Json
+            }[]
+                           },
+"wo_transition":
+{ Args: { "p_client_uuid"?: string,"p_geom"?: unknown,"p_note"?: string,"p_to": Database["public"]['Enums']["wo_status"],"p_wo": string }; Returns: Json
                            }
           }
           Enums: {
