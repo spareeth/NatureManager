@@ -534,6 +534,15 @@ isOneToOne: false
 "tag_pattern_ok":
 { Args: { "p_class": Database["public"]['Enums']["asset_class"],"p_tag": string }; Returns: boolean
                            },
+"taxon_detail":
+{ Args: { "p_org": string,"p_taxon": string }; Returns: Json
+                           },
+"taxon_history":
+{ Args: { "p_org": string,"p_taxon": string }; Returns: Json
+                           },
+"taxon_list":
+{ Args: { "p_code"?: string,"p_desc"?: boolean,"p_iucn"?: string,"p_limit"?: number,"p_offset"?: number,"p_org": string,"p_origin"?: string,"p_q"?: string,"p_sort"?: string,"p_zone"?: string }; Returns: Json
+                           },
 "taxon_search":
 { Args: { "p_limit"?: number,"p_org": string,"p_q": string }; Returns: Json
                            },

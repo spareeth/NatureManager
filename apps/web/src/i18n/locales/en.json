@@ -7,7 +7,8 @@
     "field": "Field app",
     "members": "Members",
     "label": "Main",
-    "assets": "Assets"
+    "assets": "Assets",
+    "taxa": "Taxa"
   },
   "map": {
     "heading": "Site map",
@@ -310,5 +311,101 @@
     "notFoundTitle": "Asset not found",
     "notFound": "No asset you can see has this tag or barcode:",
     "search": "Search the asset list"
+  },
+  "taxa": {
+    "heading": "Taxa",
+    "searchHint": "Name, family, common name, code",
+    "iucn": "IUCN",
+    "iucnNone": "Not assessed (blank)",
+    "origin": "Origin",
+    "zone": "Zone",
+    "code": "In-house code",
+    "codeHas": "Has a code",
+    "codeProposed": "Code proposed, not approved",
+    "codeNone": "No code",
+    "total_one": "{{n}} taxon",
+    "total_other": "{{n}} taxa",
+    "sensitive": "sensitive",
+    "deadCount": "{{n}} dead",
+    "col": {
+      "name": "Scientific name",
+      "common": "Common name",
+      "family": "Family",
+      "code": "Code",
+      "iucn": "IUCN",
+      "zones": "Zones",
+      "plants": "Plants"
+    },
+    "back": "Back to taxa",
+    "notFound": "Taxon not found.",
+    "edit": "Edit (curator)",
+    "proposedNote": "Proposed in-house code, waiting for curator approval:",
+    "approveCode": "Approve code",
+    "taxonomy": "Taxonomy",
+    "rank": "Rank",
+    "namesEn": "Common names (English)",
+    "namesAr": "Common names (Arabic)",
+    "accepted": "Accepted name",
+    "life": "Life forms",
+    "distribution": "Native distribution",
+    "terraFields": "{{org}} record",
+    "plants": "Plants",
+    "yes": "Yes",
+    "history": "Change history",
+    "changed": "{{field}}: {{from}} to {{to}}",
+    "system": "Migration or system",
+    "historyAction": {
+      "insert": "Record created",
+      "delete": "Record deleted"
+    },
+    "field": {
+      "inhouse_code": "In-house code",
+      "iucn_category": "IUCN category",
+      "protection_level": "Protection level",
+      "origin": "Origin",
+      "sensitive": "Sensitive",
+      "zones_present": "Zones",
+      "notes": "Notes",
+      "attributes": "Other details",
+      "attributes.common_names": "Common names (organisation)",
+      "attributes.proposed_inhouse_code": "Proposed code",
+      "attributes.life_forms": "Life forms",
+      "attributes.climate": "Climate",
+      "attributes.native_distribution": "Native distribution",
+      "attributes.public_description": "Public description",
+      "attributes.hortis_tags": "Hortis tags"
+    },
+    "form": {
+      "title": "Edit taxon",
+      "code": "In-house code",
+      "iucn": "IUCN category",
+      "origin": "Origin",
+      "protection": "Protection level",
+      "nameEn": "Common names, English (comma separated)",
+      "nameAr": "Common names, Arabic",
+      "zones": "Zones where present",
+      "sensitive": "Sensitive: hide exact locations from the public",
+      "notes": "Notes",
+      "notSet": "Not set",
+      "codePattern": "The code is three capital letters, for example PRO.",
+      "codeTaken": "Another taxon already uses this code.",
+      "notAllowed": "Only curators can edit taxon fields."
+    }
+  },
+  "origin": {
+    "native": "Native",
+    "endemic": "Endemic",
+    "naturalised": "Naturalised",
+    "exotic": "Exotic",
+    "unknown": "Unknown"
+  },
+  "rank": {
+    "species": "Species",
+    "genus": "Genus",
+    "subspecies": "Subspecies",
+    "variety": "Variety",
+    "form": "Form",
+    "cultivar": "Cultivar",
+    "family": "Family"
   }
 }

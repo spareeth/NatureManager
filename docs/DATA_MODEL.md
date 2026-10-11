@@ -307,6 +307,12 @@ As built (migration `20261011000100_hortis_migration.sql`, task 1.6): `org_taxon
 migration upsert key; schema `staging_hortis` closed to client roles; `set_updated_at()` now only
 bumps `updated_at` when the row changed, so identical upserts are not audited.
 
+As built (migration `20261011000200_taxon_pages.sql`, task 1.7): the organisation's own common
+names (English and Arabic) live in `org_taxon.attributes.common_names` (`{"en": [...], "ar": [...]}`),
+because shared `taxon` rows are edited by the service role only; search covers both. Curators read
+`org_taxon` audit rows (FR-TAX-05 history). Functions `taxon_list`, `taxon_detail`,
+`taxon_history` (field-level, attributes split per key); `taxon_search` includes organisation names.
+
 Tag code format (Terra in-house standard, kept from Hortis): `<ZONE><BED>-T<NN>_<SPECIES>`,
 e.g. `WG07-T04_PRO` = West Garden bed 07, tree 04, *Prosopis cineraria*. Planting groups without
 tags get `<ZONE><BED>-G<NN>_<SPECIES>`; built assets `<ZONE><BED>-<TYPE><NN>`, e.g. `SG03-VLV02`.
