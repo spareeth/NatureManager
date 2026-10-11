@@ -464,8 +464,16 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "asset_detail":
+            "asset_by_code":
+{ Args: { "p_code": string,"p_org"?: string }; Returns: {
+              "id": string,"matched": string,"organisation_id": string,"tag_code": string
+            }[]
+                           },
+"asset_detail":
 { Args: { "p_asset": string }; Returns: Json
+                           },
+"asset_labels":
+{ Args: { "p_assets": (string)[] }; Returns: Json
                            },
 "asset_search":
 { Args: { "p_class"?: Database["public"]['Enums']["asset_class"],"p_desc"?: boolean,"p_limit"?: number,"p_location"?: string,"p_offset"?: number,"p_q"?: string,"p_site": string,"p_sort"?: string,"p_status"?: (Database["public"]['Enums']["asset_status"])[],"p_type"?: string }; Returns: Json

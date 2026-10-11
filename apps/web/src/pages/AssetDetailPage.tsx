@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,8 @@ import { formatGrid, formatLatLon } from '../map/format';
 import { useOrg } from '../org/context';
 import { canEditAssets } from '../auth/canEdit';
 import { useTypeName } from '../assets/useTypeNames';
+import { LabelDialog } from '../labels/LabelDialog';
+import { assetUrl } from '../labels/qrPayload';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   if (children == null || children === '' || children === false) return null;
@@ -27,6 +29,7 @@ export function AssetDetailPage() {
   const { t, i18n } = useTranslation();
   const { current } = useOrg();
   const typeName = useTypeName();
+  const [printing, setPrinting] = useState(false);
   const asset = useQuery({
     queryKey: ['asset', id],
     enabled: !!id,
@@ -91,6 +94,7 @@ export function AssetDetailPage() {
       <Link to="/assets" className="text-sm underline">
         {t('assets.back')}
       </Link>
+      {printing && <LabelDialog ids={[a.id]} count={1} onClose={() => setPrinting(false)} />}
       <header className="mt-2 flex flex-wrap items-baseline gap-3">
         <h1 className="font-mono text-2xl font-semibold" dir="ltr">
           {a.tag_code}
@@ -106,8 +110,15 @@ export function AssetDetailPage() {
             </>
           )}
         </span>
+        <button
+          type="button"
+          onClick={() => setPrinting(true)}
+          className="ms-auto rounded border px-3 py-1 text-sm"
+        >
+          {t('labels.printOne')}
+        </button>
         {current && canEditAssets(current.roles) && (
-          <span className="ms-auto flex gap-3 text-sm">
+          <span className="flex gap-3 text-sm">
             <Link
               to={`/assets/${a.id}/edit`}
               className="rounded bg-green-800 px-3 py-1 font-medium text-white"
@@ -223,6 +234,11 @@ export function AssetDetailPage() {
                   {formatGrid(Number(a.local_x), Number(a.local_y))}
                 </span>
               )}
+            </Row>
+            <Row label={t('assets.f.qr')}>
+              <a href={assetUrl(a.tag_code)} className="font-mono text-xs underline" dir="ltr">
+                {assetUrl(a.tag_code)}
+              </a>
             </Row>
             <Row label={t('assets.f.source')}>
               {a.position_source &&

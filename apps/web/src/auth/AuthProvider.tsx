@@ -24,7 +24,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithOtp({
           email,
           // Only existing staff sign in; accounts are created by a manager or the seed.
-          options: { shouldCreateUser: false, emailRedirectTo: window.location.origin + '/' },
+          // Return to the page the user opened (for example a scanned /a/<tag> link).
+          options: { shouldCreateUser: false, emailRedirectTo: window.location.href },
         });
         // Unknown addresses get the same answer as staff accounts, so the form does not
         // reveal who has an account.

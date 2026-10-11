@@ -16,6 +16,8 @@ import {
 } from '../assets/filters';
 import { StatusBadge } from '../assets/StatusBadge';
 import { useTypeName } from '../assets/useTypeNames';
+import { LabelDialog } from '../labels/LabelDialog';
+import { idsForFilters } from '../labels/api';
 
 const STATUSES = [
   'planned',
@@ -63,6 +65,7 @@ export function AssetListPage() {
   const [params, setParams] = useSearchParams();
   const filters = useMemo(() => parseFilters(params), [params]);
   const [q, setQ] = useState(filters.q);
+  const [printing, setPrinting] = useState(false);
   const update = (f: AssetFilters) => setParams(toParams(f), { replace: true });
 
   const types = useQuery({
@@ -197,9 +200,27 @@ export function AssetListPage() {
         )}
       </form>
 
-      <p className="mt-3 text-sm text-gray-600" role="status" data-testid="asset-total">
-        {result.data ? t('assets.total', { count: total, n: nf(total) }) : t('common.loading')}
-      </p>
+      <div className="mt-3 flex items-center gap-4">
+        <p className="text-sm text-gray-600" role="status" data-testid="asset-total">
+          {result.data ? t('assets.total', { count: total, n: nf(total) }) : t('common.loading')}
+        </p>
+        {total > 0 && site && (
+          <button
+            type="button"
+            onClick={() => setPrinting(true)}
+            className="rounded border border-green-800 px-3 py-1 text-sm text-green-900"
+          >
+            {t('labels.printList', { count: total, n: nf(Math.min(total, 2000)) })}
+          </button>
+        )}
+      </div>
+      {printing && site && (
+        <LabelDialog
+          ids={() => idsForFilters(site.id, filters)}
+          count={Math.min(total, 2000)}
+          onClose={() => setPrinting(false)}
+        />
+      )}
       {result.error && (
         <p role="alert" className="mt-2 text-red-700">
           {result.error.message}

@@ -153,7 +153,8 @@
       "location": "Bed",
       "latlon": "Lat, lon (WGS 84)",
       "grid": "Site grid",
-      "source": "Position source"
+      "source": "Position source",
+      "qr": "QR link"
     }
   },
   "timeline": {
@@ -290,5 +291,24 @@
     "flow": "flow",
     "water_level": "water level",
     "dissolved_oxygen": "dissolved oxygen"
+  },
+  "labels": {
+    "title": "Print labels",
+    "summary_one": "{{labels}} label on {{pages}} A4 sheet (24 per sheet, 70 x 37 mm).",
+    "summary_other": "{{labels}} labels on {{pages}} A4 sheets (24 per sheet, 70 x 37 mm).",
+    "startAt": "Start at label (1 to {{n}}, for a part-used sheet)",
+    "position": "{{n}}: row {{row}}, column {{col}}",
+    "outlines": "Draw label outlines (test print on plain paper)",
+    "note": "Labels show the QR link, tag, scientific name and common name. Arabic names are not printed yet.",
+    "download": "Download PDF",
+    "working": "Making PDF...",
+    "printList_one": "Print label",
+    "printList_other": "Print {{n}} labels",
+    "printOne": "Print label"
+  },
+  "scan": {
+    "notFoundTitle": "Asset not found",
+    "notFound": "No asset you can see has this tag or barcode:",
+    "search": "Search the asset list"
   }
 }

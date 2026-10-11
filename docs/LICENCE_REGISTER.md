@@ -40,3 +40,5 @@ Anything else is flagged here before use. Update this file when adding a depende
 | Shapely | Point-in-polygon and distances in scripts | BSD-3-Clause | OK |
 | ezdxf | Read CAD drawings (DXF) in scripts | MIT | OK |
 | Google Map Tiles API (satellite 2D tiles) | Satellite base layer (decision 1 Oct 2026) | Google Maps Platform terms, paid API with key | Check: official API only (no undocumented tile URLs); show viewport attribution; no offline caching of tiles, so not usable for the task 2.8 offline tile cache |
+| jsPDF (and its MIT deps fflate, fast-png; optional html2canvas MIT, canvg MIT, DOMPurify used under Apache-2.0) | Label sheet PDF | MIT | OK |
+| qrcode (node-qrcode) | QR codes on labels | MIT | OK |

@@ -9,6 +9,7 @@ import { MembersPage } from '../pages/MembersPage';
 import { AssetListPage } from '../pages/AssetListPage';
 import { AssetDetailPage } from '../pages/AssetDetailPage';
 import { AssetEditPage } from '../pages/AssetEditPage';
+import { ScanPage } from '../pages/ScanPage';
 import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
@@ -78,6 +79,7 @@ export function App() {
       <main className="min-h-0 flex-1">
         <Routes>
           <Route path="/" element={<MapPage />} />
+          <Route path="/a/:code" element={<ScanPage />} />
           <Route path="/assets" element={<AssetListPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
           <Route
