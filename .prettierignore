@@ -1,0 +1,9 @@
+node_modules
+dist
+data
+docs
+supabase
+services
+*.md
+apps/web/src/types/db.ts
+package-lock.json

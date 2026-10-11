@@ -1,0 +1,9 @@
+# Self-hosting (NFR-09). Supabase runs from its own stack (`supabase start` locally,
+# or the Supabase self-hosting compose in production).
+services:
+  ai:
+    build: ./services/ai
+    env_file: .env.local
+    ports:
+      - '8088:8088'
+    restart: unless-stopped

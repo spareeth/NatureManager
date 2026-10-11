@@ -9,7 +9,8 @@ Anything else is flagged here before use. Update this file when adding a depende
 | PostGIS | Spatial | GPL-2.0 (database extension, not distributed with our code) | OK, standard practice |
 | Supabase (self-hosted) | Auth, REST, Storage | Apache-2.0 | OK |
 | React, Vite, TanStack Query | Web | MIT | OK |
-| Leaflet, react-leaflet | Map | BSD-2 / Hippocratic-2.1 (check react-leaflet version) | Check |
+| Leaflet | Map | BSD-2-Clause | OK |
+| react-leaflet | Map (React bindings) | Hippocratic-2.1 (all versions, 4.x and 5.x) | Not used. Decision 2026-09-28: plain Leaflet with in-house wrapper `apps/web/src/components/LeafletMap.tsx` |
 | Dexie | Offline store | Apache-2.0 | OK |
 | @zxing/browser | QR/barcode | Apache-2.0 | OK |
 | FastAPI | AI service | MIT | OK |
@@ -23,3 +24,18 @@ Anything else is flagged here before use. Update this file when adding a depende
 | openMAINT, Atlas CMMS | Reference only | AGPL-3.0 | Do not copy code |
 | pyproj / PROJ | CRS transforms in scripts | MIT | OK |
 | SheetJS (xlsx) or openpyxl | Item request XLSX export | Apache-2.0 / MIT | OK |
+| React Router (react-router-dom) | Web routing | MIT | OK |
+| Tailwind CSS, @tailwindcss/vite | Web styling | MIT | OK |
+| i18next, react-i18next | Localisation (NFR-07) | MIT | OK |
+| vite-plugin-pwa (Workbox) | Field PWA | MIT | OK |
+| TypeScript | Web build | Apache-2.0 | OK |
+| ESLint, typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-react-refresh | Lint (dev only) | MIT | OK |
+| Prettier | Formatting (dev only) | MIT | OK |
+| Vitest, jsdom, Testing Library | Web tests (dev only) | MIT | OK |
+| Uvicorn | AI service server | BSD-3-Clause | OK |
+| pydantic-settings | AI service config | MIT | OK |
+| pytest, httpx, ruff | AI service tests and lint (dev only) | MIT / BSD-3-Clause / MIT | OK |
+| Supabase CLI | Local dev stack | MIT | OK |
+| @supabase/supabase-js | Web client for Supabase Auth, REST, Storage | MIT | OK |
+| Shapely | Point-in-polygon and distances in scripts | BSD-3-Clause | OK |
+| ezdxf | Read CAD drawings (DXF) in scripts | MIT | OK |

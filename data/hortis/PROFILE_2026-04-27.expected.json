@@ -1,0 +1,188 @@
+{
+  "_source": "Transcribed from data/hortis/PROFILE_2026-04-27.md, with spatial figures from data/gis/README.md and docs/HORTIS_MIGRATION.md. Checked by scripts/hortis/profile.py.",
+  "taxa": 77,
+  "families": 37,
+  "accessions": 77,
+  "accession_first": "2026-0008",
+  "accession_last": "2026-0086",
+  "accession_gaps": [
+    "2026-0028",
+    "2026-0044"
+  ],
+  "plant_records": 666,
+  "plant_keys_unique": true,
+  "locations": 48,
+  "locations_by_zone": {
+    "EG": 12,
+    "NG": 15,
+    "SG": 11,
+    "WG": 10
+  },
+  "records_per_zone": {
+    "EG": 156,
+    "NG": 142,
+    "SG": 173,
+    "WG": 195
+  },
+  "records_per_bed": {
+    "min": 1,
+    "median": 11,
+    "max": 62
+  },
+  "tagged_with_coords": 396,
+  "tagged_tree_share_pct": 93,
+  "tagged_beds": 43,
+  "rows_without_tag_or_coords": 270,
+  "extent": {
+    "lat_min": 24.95799,
+    "lat_max": {
+      "approx": 24.95984,
+      "tol": 1e-05,
+      "why": "raw max 24.959834954 rounds to 24.95983; the report shows 24.95984"
+    },
+    "lon_min": 55.15333,
+    "lon_max": 55.15548
+  },
+  "extent_m": {
+    "north_south": {
+      "approx": 206,
+      "tol": 2,
+      "why": "report says about 206 m; 204.7 m in EPSG:3997"
+    },
+    "east_west": {
+      "approx": 217,
+      "tol": 2,
+      "why": "report says about 217 m"
+    }
+  },
+  "status": {
+    "Present": 666
+  },
+  "condition": {
+    "Dead": 9,
+    "Fair": 1,
+    "Good": 5,
+    "Poor": 9
+  },
+  "provenance": {
+    "G": 666
+  },
+  "iucn_per_taxon": {
+    "(blank)": 3,
+    "Data Deficient": 3,
+    "Endangered": 1,
+    "Least Concern": 31,
+    "Near Threatened": 1,
+    "Not Evaluated": 38
+  },
+  "iucn_listed_plants": {
+    "Boswellia sacra": {
+      "status": "Near Threatened",
+      "plants": 17
+    },
+    "Tecomella undulata": {
+      "status": "Endangered",
+      "plants": 6
+    }
+  },
+  "empty_material_columns": [
+    "Archived",
+    "Donor/Supplier",
+    "Elevation",
+    "First absent",
+    "Location description",
+    "Notes",
+    "Quantity",
+    "Sex",
+    "Weight"
+  ],
+  "duplicate_tags": [
+    "EG11-T37_TAM",
+    "SG03-T10_PHO"
+  ],
+  "species_codes_in_tags": 25,
+  "tag_bed_mismatches": 37,
+  "names_to_check": [
+    "Ziziphus spina-christi christi"
+  ],
+  "points_inside_own_bed": 301,
+  "points_outside_all_beds": 95,
+  "outside_distance_m": {
+    "median": 0.7,
+    "max": 5.9,
+    "within_2m": 72,
+    "_within_2m_note": "counted on distances rounded to 0.1 m, as in the QA table; 71 without rounding"
+  },
+  "outside_beds_and_boundary": 14,
+  "outside_boundary_beds": [
+    "WG-03",
+    "WG-07",
+    "WG-08"
+  ],
+  "mismatch_spatial": {
+    "inside_location_bed": 33,
+    "inside_tag_bed": 0,
+    "outside_all_beds": 4
+  },
+  "gis": {
+    "beds_crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+    "boundary_crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+    "beds": 48,
+    "bed_names_match_hortis_locations": true,
+    "beds_all_valid": true,
+    "beds_inside_boundary": true,
+    "boundary_area_m2": 29876
+  },
+  "dead_plants": [
+    [
+      "Citrus × aurantiifolia",
+      "SG-11",
+      "SG03-T12_CIT"
+    ],
+    [
+      "Moringa oleifera",
+      "SG-11",
+      "SG03-T27_MOR"
+    ],
+    [
+      "Moringa oleifera",
+      "SG-11",
+      "SG03-T06_MOR"
+    ],
+    [
+      "Melaleuca viminalis",
+      "EG-11",
+      "EG11-T47_MEL"
+    ],
+    [
+      "Phoenix dactylifera",
+      "SG-03",
+      "SG03-T09_PHO"
+    ],
+    [
+      "Phoenix dactylifera",
+      "SG-11",
+      "SG03-T31_PHO"
+    ],
+    [
+      "Acacia arabica",
+      "NG-04",
+      "NG04-T12_ACA"
+    ],
+    [
+      "Bismarckia nobilis",
+      "NG-13",
+      "NG13-T03_BIS"
+    ],
+    [
+      "Tamarix aphylla",
+      "EG-11",
+      "EG11-T24_TAM"
+    ]
+  ],
+  "qa_outside_beds_table": {
+    "rows": 95,
+    "same_trees": true,
+    "distances_agree_within_0_05_m": true
+  }
+}

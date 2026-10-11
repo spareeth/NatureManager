@@ -58,8 +58,10 @@ returns geometry language sql stable as $$
 $$;
 ```
 
-`st_setsrid(..., 0)` is implicit for the local result. Test: for 100 random points inside the
-boundary, `site_from_local(site_to_local(g))` must return within 1 mm of `g`.
+The built `site_to_local` wraps the result in `st_setsrid(..., 0)` explicitly (PostGIS keeps
+SRID 3997 otherwise). Test (`supabase/tests/0003_spatial.test.sql`): 1,000 random points inside
+the real boundary, `site_from_local(site_to_local(g))` within 1 mm of `g`, for rotation 0 and for
+rotation 23.7 degrees with scale 1.0005.
 
 `asset.local_x`, `asset.local_y` (numeric, 2 decimals) are kept by a trigger on insert/update of
 `geom`, using the centroid for polygons.

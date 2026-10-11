@@ -1,4 +1,15 @@
 data/hortis/raw/
 .env.local
+.env
 node_modules/
 .venv/
+dist/
+dev-dist/
+coverage/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+supabase/.branches
+supabase/.temp
+*.egg-info/
