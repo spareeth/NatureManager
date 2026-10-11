@@ -96,6 +96,7 @@ Uses:
       shift, no Helmert correction needed) and a median distance of 0.15 m (86% within 0.5 m, 97% within
       1 m; same in every zone): the beds were traced from this drawing with about 15 cm scatter. The CAD
       can be used as a basemap and for control point reference positions without transformation.
+      Visual check in QGIS (CAD extract over `TG_beds_new`, EPSG:3997) confirmed the match, 11 Oct 2026.
 - [x] Hortis tree points vs beds: 301 of 396 inside their bed; 95 outside all beds (median 0.7 m, max 5.9 m away).
       This is the positional error the site grid and control points are meant to remove. See `data/gis/README.md`.
 - [ ] Are there surveyed markers on site already?
