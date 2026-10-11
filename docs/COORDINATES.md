@@ -96,7 +96,13 @@ added first. Typed positions (WGS 84, Dubai TM E/N, or grid x/y) are converted b
 ## 5. Open checks before Phase 1
 
 - [x] CRS of `TG_beds_new` and `TG_boundary`: CRS84 (WGS 84 lon/lat), checked 28 Sep 2026. Load directly as EPSG:4326.
-- [ ] CRS of the CAD drawing `92001-SDW-C144200-LT-200001(C).dxf` (likely EPSG:3997 or a UTM 40N variant; confirm in QGIS).
+- [x] CRS of the CAD drawing `92001-SDW-C144200-LT-200001(C).dxf`: **EPSG:3997 (Dubai Local TM), metres,
+      aligned with our layers**, checked 11 Oct 2026 with `scripts/gis/check_cad_alignment.sh`. The drawing
+      extents contain the TG boundary in EPSG:3997 (UTM 40N would put eastings near 300,000). Against the
+      CAD line work, the 1,448 bed polygon corners have a mean offset of 0.012 m E, -0.007 m N (no systematic
+      shift, no Helmert correction needed) and a median distance of 0.15 m (86% within 0.5 m, 97% within
+      1 m; same in every zone): the beds were traced from this drawing with about 15 cm scatter. The CAD
+      can be used as a basemap and for control point reference positions without transformation.
 - [x] Hortis tree points vs beds: 301 of 396 inside their bed; 95 outside all beds (median 0.7 m, max 5.9 m away).
       This is the positional error the site grid and control points are meant to remove. See `data/gis/README.md`.
 - [ ] Are there surveyed markers on site already?
