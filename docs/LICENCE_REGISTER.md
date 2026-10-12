@@ -12,7 +12,8 @@ Anything else is flagged here before use. Update this file when adding a depende
 | Leaflet | Map | BSD-2-Clause | OK |
 | react-leaflet | Map (React bindings) | Hippocratic-2.1 (all versions, 4.x and 5.x) | Not used. Decision 2026-09-28: plain Leaflet with in-house wrapper `apps/web/src/components/LeafletMap.tsx` |
 | Dexie | Offline store | Apache-2.0 | OK |
-| @zxing/browser | QR/barcode | Apache-2.0 | OK |
+| @zxing/browser 0.2.1 | QR/barcode scanning in the field app | MIT (corrected 2026-10-12, npm metadata) | OK |
+| @zxing/library 0.23.0 | Decoder used by @zxing/browser | Apache-2.0 | OK |
 | FastAPI | AI service | MIT | OK |
 | open_clip + BioCLIP 2 weights | Species ID | MIT | OK |
 | SpeciesNet | Camera traps | Apache-2.0 | OK |

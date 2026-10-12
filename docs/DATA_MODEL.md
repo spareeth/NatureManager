@@ -522,6 +522,11 @@ As built (migration `20261013000100_field_app.sql`, task 2.6):
 - Job photos are compressed on the phone to at most 1600 px and stored in `photos` under
   `<organisation_id>/wo/<work_order_id>/`, with a `media` row (`kind = photo`, `work_order_id`).
 
+As built (migration `20261013000200_field_scan.sql`, task 2.7): `field_scan(p_asset)` returns a scanned asset
+with its open work orders (through `work_order_asset`), each marked `mine` for the signed-in user or their
+team. The phone resolves the scanned text with `asset_by_code` (tag from the `/a/<tag>` label URL, or an
+existing barcode).
+
 ## 6. Observations
 
 ```sql

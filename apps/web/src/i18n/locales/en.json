@@ -321,7 +321,9 @@
   "scan": {
     "notFoundTitle": "Asset not found",
     "notFound": "No asset you can see has this tag or barcode:",
-    "search": "Search the asset list"
+    "search": "Search the asset list",
+    "camera": "Camera",
+    "noCamera": "Camera not available. Type the code instead."
   },
   "taxa": {
     "heading": "Taxa",
@@ -791,6 +793,15 @@
     "addItem": "Add item",
     "saveRecord": "Save record",
     "saved": "Saved.",
-    "missing": "Still to do before completing:"
+    "missing": "Still to do before completing:",
+    "scan": "Scan",
+    "typeCode": "Type a tag or barcode",
+    "find": "Find",
+    "openAsset": "Open asset",
+    "openJobs": "Open jobs",
+    "noOpenJobs": "No open jobs for this asset.",
+    "continueJob": "Continue job",
+    "viewJob": "View job",
+    "scanAgain": "Scan another"
   }
 }

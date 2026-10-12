@@ -1851,6 +1851,7 @@ export type Database = {
       control_point_list: { Args: { p_site: string }; Returns: Json };
       field_job: { Args: { p_wo: string }; Returns: Json };
       field_my_day: { Args: { p_day: string; p_site: string }; Returns: Json };
+      field_scan: { Args: { p_asset: string }; Returns: Json };
       has_any_role: { Args: { org: string; rs: string[] }; Returns: boolean };
       has_role: { Args: { org: string; r: string }; Returns: boolean };
       has_role_anywhere: { Args: { r: string }; Returns: boolean };

@@ -47,6 +47,12 @@ export function MyDay() {
           ›
         </button>
       </div>
+      <Link
+        to="/field/scan"
+        className="mt-2 inline-flex min-h-14 w-full items-center justify-center rounded-lg bg-green-800 text-lg font-semibold text-white"
+      >
+        {t('fieldApp.scan')}
+      </Link>
       <div className="mt-2 flex gap-2">
         <button
           type="button"

@@ -45,7 +45,8 @@ export function RequestForm({ orgId, siteId, asset, onDone, onCancel }: Props) {
       setBusy(false);
     }
   }
-  const input = 'w-full rounded border border-gray-300 px-2 py-1';
+  // 48 px on phones for the field app (FR-FLD-06).
+  const input = 'w-full rounded border border-gray-300 px-2 py-1 min-h-12 sm:min-h-0';
   return (
     <form
       onSubmit={submit}
@@ -92,11 +93,11 @@ export function RequestForm({ orgId, siteId, asset, onDone, onCancel }: Props) {
         <button
           type="submit"
           disabled={busy}
-          className="rounded bg-green-800 px-3 py-1 font-medium text-white disabled:opacity-60"
+          className="min-h-12 rounded bg-green-800 px-3 py-1 font-medium text-white disabled:opacity-60 sm:min-h-0"
         >
           {t('wo.send')}
         </button>
-        <button type="button" onClick={onCancel} className="underline">
+        <button type="button" onClick={onCancel} className="min-h-12 underline sm:min-h-0">
           {t('form.cancel')}
         </button>
       </div>

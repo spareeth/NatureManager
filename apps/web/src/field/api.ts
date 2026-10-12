@@ -148,3 +148,30 @@ export function isAnswered(step: Pick<JobStep, 'input_type' | 'value' | 'media_i
   if (step.input_type === 'tick') return step.value === true;
   return step.value !== null && step.value !== undefined && step.value !== '';
 }
+
+export type ScanJob = {
+  id: string;
+  number: string;
+  title: string;
+  status: WoStatus;
+  priority: string;
+  planned_start: string | null;
+  mine: boolean;
+};
+export type ScannedAsset = {
+  id: string;
+  organisation_id: string;
+  site_id: string;
+  tag_code: string;
+  name: string | null;
+  status: string;
+  location_id: string | null;
+  location_code: string | null;
+  scientific_name: string | null;
+  lon: number | null;
+  lat: number | null;
+  jobs: ScanJob[];
+};
+
+export const fetchScan = async (assetId: string) =>
+  check<ScannedAsset | null>(await supabase.rpc('field_scan', { p_asset: assetId }));
