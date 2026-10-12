@@ -53,13 +53,14 @@ export function App() {
 
   const toggleLanguage = () => void i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
   const linkClass = ({ isActive }: { isActive: boolean }) =>
-    isActive ? 'font-semibold underline' : 'hover:underline';
+    // 48 px touch targets on phone widths (FR-FLD-06).
+    `inline-flex min-h-12 items-center sm:min-h-0 ${isActive ? 'font-semibold underline' : 'hover:underline'}`;
 
   return (
     <div className="flex h-screen flex-col">
       <header className="flex flex-wrap items-center gap-x-6 gap-y-2 bg-green-800 px-4 py-2 text-white">
         <span className="font-bold">{t('app.title')}</span>
-        <nav aria-label={t('nav.label')} className="flex gap-4">
+        <nav aria-label={t('nav.label')} className="flex flex-wrap gap-x-4">
           {visibleNav(current.roles).map((item) => (
             <NavLink key={item.path} to={item.path} end={item.path === '/'} className={linkClass}>
               {t(item.labelKey)}
@@ -74,11 +75,15 @@ export function App() {
           <button
             type="button"
             onClick={toggleLanguage}
-            className="rounded border px-2 py-1 text-sm"
+            className="min-h-12 rounded border px-2 py-1 text-sm sm:min-h-0"
           >
             {t('language.switch')}
           </button>
-          <button type="button" onClick={() => void signOut()} className="text-sm underline">
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="min-h-12 text-sm underline sm:min-h-0"
+          >
             {t('auth.signOut')}
           </button>
         </div>

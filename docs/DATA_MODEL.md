@@ -512,6 +512,16 @@ As built (migration `20261012000500_sop_library.sql`, task 2.5):
   `sop_library(p_org)` lists codes with current and draft versions.
 - Step images live in the private `sop-media` bucket under `<organisation_id>/sops/<sop_id>/`.
 
+As built (migration `20261013000100_field_app.sql`, task 2.6):
+
+- `sop_response` trigger `sop_response_guard`: answers are given only while the job is `in_progress`, only
+  for steps of the job's pinned SOP version, and record who answered and when. Signed-in users only.
+- `field_my_day(p_site, p_day)`: jobs of the signed-in user or their team planned for that day (Asia/Dubai),
+  plus unfinished jobs from earlier days, sorted by location code. `field_job(p_wo)`: `wo_detail` plus the
+  SOP steps with answers, missing required steps and photos.
+- Job photos are compressed on the phone to at most 1600 px and stored in `photos` under
+  `<organisation_id>/wo/<work_order_id>/`, with a `media` row (`kind = photo`, `work_order_id`).
+
 ## 6. Observations
 
 ```sql

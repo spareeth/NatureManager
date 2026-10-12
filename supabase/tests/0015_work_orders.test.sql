@@ -78,6 +78,7 @@ select throws_ok($$insert into work_order (organisation_id, site_id, source, wo_
   '42501', null, 'green team cannot create scheduled work');
 update work_order set completion_notes = 'Weeded and mulched', actual_minutes = 40 where id = 'd0000000-0000-0000-0000-00000000a001';
 select is((select actual_minutes from work_order where id = 'd0000000-0000-0000-0000-00000000a001'), 40, 'team member records work on the team''s job');
+select wo_transition('d0000000-0000-0000-0000-00000000a001', 'in_progress', null); -- answers need a started job (task 2.6)
 select lives_ok($$insert into sop_response (organisation_id, work_order_id, sop_step_id, value)
                   select org, 'd0000000-0000-0000-0000-00000000a001', 'd0000000-0000-0000-0000-0000000000c2', 'true' from tg$$,
   'team member answers an SOP step');
