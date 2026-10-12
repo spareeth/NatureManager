@@ -500,6 +500,18 @@ As built (migration `20261012000400_wo_board.sql`, task 2.4):
   `wo_replan` (move start keeping the duration; not once started), `wo_bulk_move` (a day's open work to
   another day), `wo_people` (members and teams for planning).
 
+As built (migration `20261012000500_sop_library.sql`, task 2.5):
+
+- Approved and retired SOP versions are read-only (trigger `sop_guard` on `sop` and `sop_step`): their
+  title, purpose, PPE, hazards and steps cannot change and they cannot be deleted, so a work order pinned to
+  a version keeps its exact steps (FR-SOP-02). New SOPs start as drafts. The guard applies to signed-in
+  users; system work without a user (seed, imports) is not limited.
+- `sop_new_version(p_sop)` copies a version and its steps into the next draft (one draft per code).
+  `sop_approve(p_sop)` (managers only, FR-SOP-05; needs at least one step) approves the draft and retires the
+  previously approved version of that code. `sop_reorder(p_sop, p_steps)` reorders a draft's steps.
+  `sop_library(p_org)` lists codes with current and draft versions.
+- Step images live in the private `sop-media` bucket under `<organisation_id>/sops/<sop_id>/`.
+
 ## 6. Observations
 
 ```sql

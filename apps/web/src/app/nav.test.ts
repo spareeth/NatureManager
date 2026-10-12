@@ -18,6 +18,7 @@ describe('role-aware nav', () => {
       '/taxa',
       '/work',
       '/field',
+      '/plan',
       '/control-points',
       '/members',
     ]);
@@ -27,6 +28,7 @@ describe('role-aware nav', () => {
       '/taxa',
       '/work',
       '/field',
+      '/plan',
       '/control-points',
       '/members',
     ]);

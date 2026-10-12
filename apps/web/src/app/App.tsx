@@ -15,6 +15,8 @@ import { TaxonDetailPage } from '../pages/TaxonDetailPage';
 import { ControlPointsPage } from '../pages/ControlPointsPage';
 import { WorkPage } from '../pages/WorkPage';
 import { WorkOrderPage } from '../pages/WorkOrderPage';
+import { PlanPage } from '../pages/PlanPage';
+import { SopEditorPage } from '../pages/SopEditorPage';
 import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
@@ -102,6 +104,22 @@ export function App() {
             element={
               <RequireRole roles={roleOf('/field')}>
                 <FieldPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/plan"
+            element={
+              <RequireRole roles={roleOf('/plan')}>
+                <PlanPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/plan/sops/:id"
+            element={
+              <RequireRole roles={roleOf('/plan')}>
+                <SopEditorPage />
               </RequireRole>
             }
           />

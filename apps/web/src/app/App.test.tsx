@@ -72,6 +72,7 @@ describe('shell', () => {
       'Taxa',
       'Work',
       'Field app',
+      'Planning',
       'Control points',
       'Members',
     ]);

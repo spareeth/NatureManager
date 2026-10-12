@@ -989,6 +989,18 @@ isOneToOne: false
 "site_to_local":
 { Args: { "p_geom": unknown,"p_site": string }; Returns: unknown
                            },
+"sop_approve":
+{ Args: { "p_sop": string }; Returns: undefined
+                           },
+"sop_library":
+{ Args: { "p_org": string }; Returns: Json
+                           },
+"sop_new_version":
+{ Args: { "p_sop": string }; Returns: string
+                           },
+"sop_reorder":
+{ Args: { "p_sop": string,"p_steps": (string)[] }; Returns: undefined
+                           },
 "suggest_tag":
 { Args: { "p_geom": unknown,"p_group"?: boolean,"p_site": string,"p_taxon"?: string,"p_type": string }; Returns: string
                            },
