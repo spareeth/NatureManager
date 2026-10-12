@@ -1,7 +1,7 @@
 -- Task 2.3: rule periods, targets, generator (spreading, idempotency, SOP pinning), auto-close.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(28);
+select plan(32);
 
 -- Rule periods on fixed dates (Mon 2026-11-02 .. Sun 2026-11-15) ---------------------------------
 create function pg_temp.days(r jsonb, a date, f date, t date, w int[] default '{0,1,2,3,4}') returns text language sql as
@@ -61,6 +61,16 @@ select results_eq($$select distinct status::text, source, (sop_id = 'f1000000-00
 select ok((select bool_and(to_char(planned_start at time zone 'Asia/Dubai', 'HH24:MI') = '07:00'
                      and (due_at at time zone 'Asia/Dubai')::date = (planned_start at time zone 'Asia/Dubai')::date) from work_order),
   'starts 07:00 Dubai time, due the same day');
+
+-- Regression: a horizon that ends on a Monday must not crowd that Monday with the whole week's beds.
+delete from work_order_event; delete from work_order_asset; delete from work_order where pm_schedule_id = 'f1000000-0000-0000-0000-0000000000b1';
+select is((select (pm_generate(org, today - weekday0(today) + 7) ->> 'over_capacity')::int from tg), 0,
+  'a horizon cut mid-week reports no overflow');
+select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), 3,
+  'the cut day gets only its share (3), not the whole week');
+select is((select (pm_generate(org) ->> 'created')::int > 0 from tg), true, 'a later run adds the rest of that week');
+select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), 3,
+  'and still 3 a day');
 
 -- A manager moves a job to another day: the next run does not recreate it.
 update work_order set planned_start = planned_start + interval '1 day', planned_end = planned_end + interval '1 day'

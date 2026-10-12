@@ -489,6 +489,17 @@ As built (migration `20261012000300_pm_generator.sql`, task 2.3):
   `source = 'system'`; user events must have an actor).
 - `pg_cron`: `pm-generate-nightly` (`pm_generate_all`, 00:30 Dubai) and `wo-autoclose-hourly`.
 
+As built (migration `20261012000400_wo_board.sql`, task 2.4):
+
+- SLA (FR-WO-11): hours per priority from `organisation.settings.sla_hours` (default P1 4, P2 24, P3 72,
+  P4 336). "Response" means work started: met when the job reaches `in_progress` within the hours after it
+  was raised; breached when the time has passed and work has not started. Overdue: past `due_at` and not
+  completed, verified, closed or cancelled.
+- Functions (security invoker): `wo_board` (inbox, board, calendar and map list with SLA and overdue
+  flags), `wo_detail`, `wo_schedule` (assign, time, then approve and schedule through `wo_transition`),
+  `wo_replan` (move start keeping the duration; not once started), `wo_bulk_move` (a day's open work to
+  another day), `wo_people` (members and teams for planning).
+
 ## 6. Observations
 
 ```sql

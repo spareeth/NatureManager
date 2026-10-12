@@ -9,7 +9,8 @@
     "label": "الرئيسية",
     "assets": "الأصول",
     "taxa": "الأصنوفات",
-    "controlPoints": "النقاط المرجعية"
+    "controlPoints": "النقاط المرجعية",
+    "work": "العمل"
   },
   "map": {
     "heading": "خريطة الموقع",
@@ -514,6 +515,125 @@
       "cad": "رسم CAD",
       "design": "التصميم",
       "gcp_file": "ملف GCP"
+    }
+  },
+  "wo": {
+    "heading": "أوامر العمل",
+    "views": "طرق العرض",
+    "view": {
+      "inbox": "الوارد",
+      "board": "اللوحة",
+      "calendar": "التقويم",
+      "map": "الخريطة"
+    },
+    "status": {
+      "requested": "مطلوب",
+      "approved": "معتمد",
+      "scheduled": "مجدول",
+      "in_progress": "قيد التنفيذ",
+      "on_hold": "معلّق",
+      "completed": "مكتمل",
+      "verified": "تم التحقق",
+      "closed": "مغلق",
+      "cancelled": "ملغى"
+    },
+    "report": "الإبلاغ عن مشكلة",
+    "reportTitle": "الإبلاغ عن مشكلة",
+    "whatIsWrong": "ما المشكلة؟",
+    "details": "التفاصيل",
+    "urgency": "الأولوية",
+    "priority": {
+      "P1": "P1 عاجل (سلامة، ضرر كبير)",
+      "P2": "P2 مرتفع",
+      "P3": "P3 عادي",
+      "P4": "P4 منخفض"
+    },
+    "send": "إرسال الطلب",
+    "titleRequired": "اذكر المشكلة باختصار.",
+    "slaBreached": "تجاوز مهلة الاستجابة",
+    "overdue": "متأخر",
+    "unassigned": "غير مُسند",
+    "inboxEmpty": "لا توجد طلبات بانتظار المعالجة.",
+    "openRequests": "الطلبات المفتوحة",
+    "schedule": "جدولة",
+    "approve": "اعتماد",
+    "reject": "رفض",
+    "scheduleTitle": "جدولة",
+    "assignee": "مُسند إلى",
+    "team": "الفريق",
+    "day": "اليوم",
+    "time": "وقت البدء",
+    "minutes": "الدقائق",
+    "assignRequired": "اختر شخصًا أو فريقًا.",
+    "prevWeek": "الأسبوع السابق",
+    "thisWeek": "هذا الأسبوع",
+    "nextWeek": "الأسبوع التالي",
+    "bulkMove": "نقل هذا اليوم",
+    "bulkMovePrompt": "نقل كل الأعمال المفتوحة ليوم {{day}} إلى أي يوم؟ (yyyy-mm-dd)",
+    "moved": "نُقل إلى {{status}}.",
+    "replanned": "أُعيد التخطيط.",
+    "bulkMoved_zero": "لم يُنقل شيء.",
+    "bulkMoved_one": "نُقل أمر عمل واحد إلى {{to}}.",
+    "bulkMoved_two": "نُقل أمرا عمل إلى {{to}}.",
+    "bulkMoved_few": "نُقلت {{count}} أوامر عمل إلى {{to}}.",
+    "bulkMoved_many": "نُقل {{count}} أمر عمل إلى {{to}}.",
+    "bulkMoved_other": "نُقل {{count}} أمر عمل إلى {{to}}.",
+    "open": "فتح",
+    "notFound": "أمر العمل غير موجود.",
+    "back": "العودة إلى أوامر العمل",
+    "actions": "الإجراءات",
+    "reason": "السبب",
+    "confirm": "تأكيد",
+    "type": "النوع",
+    "types": {
+      "preventive": "وقائي",
+      "reactive": "تصحيحي",
+      "inspection": "فحص",
+      "project": "مشروع"
+    },
+    "sourceLabel": "المصدر",
+    "sources": {
+      "pm": "جدول وقائي",
+      "request": "طلب",
+      "observation": "ملاحظة",
+      "alert": "تنبيه",
+      "manual": "أنشأه مخطط"
+    },
+    "location": "الحوض",
+    "assets": "الأصول",
+    "sop": "إجراء التشغيل",
+    "planned": "المخطط",
+    "due": "الاستحقاق",
+    "slaDue": "موعد الاستجابة",
+    "raised": "تاريخ الإنشاء",
+    "actualMinutes": "الدقائق الفعلية",
+    "completionNotes": "ملاحظات الإنجاز",
+    "history": "السجل",
+    "eventMove": "من {{from}} إلى {{to}}",
+    "system": "النظام",
+    "raisedEvent": "تم الإنشاء",
+    "action": {
+      "requested": {
+        "approved": "اعتماد",
+        "cancelled": "رفض"
+      },
+      "scheduled": {
+        "in_progress": "بدء"
+      },
+      "in_progress": {
+        "on_hold": "تعليق",
+        "completed": "إكمال"
+      },
+      "on_hold": {
+        "in_progress": "استئناف"
+      },
+      "completed": {
+        "verified": "تحقق",
+        "in_progress": "رفض التحقق"
+      },
+      "verified": {
+        "closed": "إغلاق"
+      }
     }
   }
 }

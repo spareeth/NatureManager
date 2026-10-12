@@ -13,6 +13,8 @@ import { ScanPage } from '../pages/ScanPage';
 import { TaxonListPage } from '../pages/TaxonListPage';
 import { TaxonDetailPage } from '../pages/TaxonDetailPage';
 import { ControlPointsPage } from '../pages/ControlPointsPage';
+import { WorkPage } from '../pages/WorkPage';
+import { WorkOrderPage } from '../pages/WorkOrderPage';
 import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
@@ -85,6 +87,8 @@ export function App() {
           <Route path="/a/:code" element={<ScanPage />} />
           <Route path="/assets" element={<AssetListPage />} />
           <Route path="/taxa" element={<TaxonListPage />} />
+          <Route path="/work" element={<WorkPage />} />
+          <Route path="/work/:id" element={<WorkOrderPage />} />
           <Route path="/taxa/:id" element={<TaxonDetailPage />} />
           <Route path="/assets/:id" element={<AssetDetailPage />} />
           <Route

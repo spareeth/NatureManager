@@ -9,7 +9,8 @@
     "label": "Main",
     "assets": "Assets",
     "taxa": "Taxa",
-    "controlPoints": "Control points"
+    "controlPoints": "Control points",
+    "work": "Work"
   },
   "map": {
     "heading": "Site map",
@@ -486,6 +487,121 @@
       "cad": "CAD drawing",
       "design": "Design",
       "gcp_file": "GCP file"
+    }
+  },
+  "wo": {
+    "heading": "Work orders",
+    "views": "Views",
+    "view": {
+      "inbox": "Inbox",
+      "board": "Board",
+      "calendar": "Calendar",
+      "map": "Map"
+    },
+    "status": {
+      "requested": "Requested",
+      "approved": "Approved",
+      "scheduled": "Scheduled",
+      "in_progress": "In progress",
+      "on_hold": "On hold",
+      "completed": "Completed",
+      "verified": "Verified",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "report": "Report a problem",
+    "reportTitle": "Report a problem",
+    "whatIsWrong": "What is wrong?",
+    "details": "Details",
+    "urgency": "Urgency",
+    "priority": {
+      "P1": "P1 urgent (safety, major damage)",
+      "P2": "P2 high",
+      "P3": "P3 normal",
+      "P4": "P4 low"
+    },
+    "send": "Send request",
+    "titleRequired": "Say briefly what is wrong.",
+    "slaBreached": "SLA breached",
+    "overdue": "Overdue",
+    "unassigned": "Not assigned",
+    "inboxEmpty": "No requests waiting.",
+    "openRequests": "Open requests",
+    "schedule": "Schedule",
+    "approve": "Approve",
+    "reject": "Reject",
+    "scheduleTitle": "Schedule",
+    "assignee": "Assigned to",
+    "team": "Team",
+    "day": "Day",
+    "time": "Start time",
+    "minutes": "Minutes",
+    "assignRequired": "Choose a person or a team.",
+    "prevWeek": "Previous week",
+    "thisWeek": "This week",
+    "nextWeek": "Next week",
+    "bulkMove": "Move this day",
+    "bulkMovePrompt": "Move all open work of {{day}} to which day? (yyyy-mm-dd)",
+    "moved": "Moved to {{status}}.",
+    "replanned": "Re-planned.",
+    "bulkMoved_one": "{{count}} work order moved to {{to}}.",
+    "bulkMoved_other": "{{count}} work orders moved to {{to}}.",
+    "open": "Open",
+    "notFound": "Work order not found.",
+    "back": "Back to work orders",
+    "actions": "Actions",
+    "reason": "Reason",
+    "confirm": "Confirm",
+    "type": "Type",
+    "types": {
+      "preventive": "Preventive",
+      "reactive": "Reactive",
+      "inspection": "Inspection",
+      "project": "Project"
+    },
+    "sourceLabel": "Source",
+    "sources": {
+      "pm": "Preventive schedule",
+      "request": "Request",
+      "observation": "Observation",
+      "alert": "Alert",
+      "manual": "Created by a planner"
+    },
+    "location": "Bed",
+    "assets": "Assets",
+    "sop": "SOP",
+    "planned": "Planned",
+    "due": "Due",
+    "slaDue": "Response due",
+    "raised": "Raised",
+    "actualMinutes": "Actual minutes",
+    "completionNotes": "Completion notes",
+    "history": "History",
+    "eventMove": "{{from}} to {{to}}",
+    "system": "System",
+    "raisedEvent": "Created",
+    "action": {
+      "requested": {
+        "approved": "Approve",
+        "cancelled": "Reject"
+      },
+      "scheduled": {
+        "in_progress": "Start"
+      },
+      "in_progress": {
+        "on_hold": "Put on hold",
+        "completed": "Complete"
+      },
+      "on_hold": {
+        "in_progress": "Resume"
+      },
+      "completed": {
+        "verified": "Verify",
+        "in_progress": "Fail verification"
+      },
+      "verified": {
+        "closed": "Close"
+      }
     }
   }
 }

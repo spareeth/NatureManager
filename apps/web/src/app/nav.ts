@@ -12,6 +12,7 @@ export const NAV: NavItem[] = [
   { path: '/', labelKey: 'nav.map' },
   { path: '/assets', labelKey: 'nav.assets' },
   { path: '/taxa', labelKey: 'nav.taxa' },
+  { path: '/work', labelKey: 'nav.work' },
   {
     path: '/field',
     labelKey: 'nav.field',

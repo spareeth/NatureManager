@@ -13,6 +13,8 @@ import { canEditAssets } from '../auth/canEdit';
 import { useTypeName } from '../assets/useTypeNames';
 import { LabelDialog } from '../labels/LabelDialog';
 import { assetUrl } from '../labels/qrPayload';
+import { RequestForm } from '../work/RequestForm';
+import { useNavigate } from 'react-router-dom';
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   if (children == null || children === '' || children === false) return null;
@@ -30,6 +32,8 @@ export function AssetDetailPage() {
   const { current } = useOrg();
   const typeName = useTypeName();
   const [printing, setPrinting] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const navigate = useNavigate();
   const asset = useQuery({
     queryKey: ['asset', id],
     enabled: !!id,
@@ -95,6 +99,23 @@ export function AssetDetailPage() {
         {t('assets.back')}
       </Link>
       {printing && <LabelDialog ids={[a.id]} count={1} onClose={() => setPrinting(false)} />}
+      {reporting && current && (
+        <div className="mb-3 mt-2 max-w-lg">
+          <RequestForm
+            orgId={current.organisationId}
+            siteId={a.site_id}
+            asset={{
+              id: a.id,
+              tag_code: a.tag_code,
+              location_id: a.location?.id ?? null,
+              lon: a.lon,
+              lat: a.lat,
+            }}
+            onCancel={() => setReporting(false)}
+            onDone={(wo) => navigate(`/work/${wo.id}`)}
+          />
+        </div>
+      )}
       <header className="mt-2 flex flex-wrap items-baseline gap-3">
         <h1 className="font-mono text-2xl font-semibold" dir="ltr">
           {a.tag_code}
@@ -116,6 +137,13 @@ export function AssetDetailPage() {
           className="ms-auto rounded border px-3 py-1 text-sm"
         >
           {t('labels.printOne')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setReporting(true)}
+          className="rounded border px-3 py-1 text-sm"
+        >
+          {t('wo.report')}
         </button>
         {current && canEditAssets(current.roles) && (
           <span className="flex gap-3 text-sm">

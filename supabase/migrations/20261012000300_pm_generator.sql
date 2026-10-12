@@ -177,8 +177,14 @@ begin
 
     for per in select * from pm_periods(s.rule, coalesce((s.rule ->> 'start')::date, (s.created_at at time zone 'Asia/Dubai')::date),
                                         today, until_d, working) loop
-      -- days still open in this period
-      per.days := array(select d from unnest(per.days) d where d between today and until_d order by d);
+      -- pm_periods returns days up to until_d; a period may run past it, so take its full days.
+      per.days := array(select d from pm_periods(s.rule, coalesce((s.rule ->> 'start')::date, (s.created_at at time zone 'Asia/Dubai')::date),
+                                                 per.period_start, per.period_start + 31, working) q, unnest(q.days) d
+                        where q.period_start = per.period_start order by d);
+      -- The period's days from today on, including days past the horizon: work is spread over the
+      -- whole period, and only what lands inside the horizon is created now (the rest on later
+      -- nights). Spreading over a horizon-cut period would crowd its first days.
+      per.days := array(select d from unnest(per.days) d where d >= today order by d);
       continue when cardinality(per.days) = 0;
       -- work already on each day for this schedule
       select coalesce(jsonb_object_agg(d, n), '{}') into load from (
@@ -211,6 +217,7 @@ begin
             n_over := n_over + 1;
           end if;
         end if;
+        exit when day > until_d;   -- beyond the horizon: later nights create it
         load := jsonb_set(load, array[day::text], to_jsonb(coalesce((load ->> day::text)::int, 0) + 1));
 
         select l.site_id into site from location l where l.id = t.location_id;

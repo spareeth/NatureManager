@@ -941,6 +941,9 @@ isOneToOne: false
 "next_wo_number":
 { Args: { "p_org": string }; Returns: string
                            },
+"org_sla_hours":
+{ Args: { "p_org": string,"p_priority": string }; Returns: number
+                           },
 "org_today":
 { Args: { "p_org": string }; Returns: string
                            },
@@ -1018,6 +1021,15 @@ isOneToOne: false
 "wo_autoclose":
 { Args: { "p_after"?: string }; Returns: number
                            },
+"wo_board":
+{ Args: { "p_from"?: string,"p_limit"?: number,"p_open_only"?: boolean,"p_site": string,"p_status"?: (Database["public"]['Enums']["wo_status"])[],"p_to"?: string }; Returns: Json
+                           },
+"wo_bulk_move":
+{ Args: { "p_from": string,"p_site": string,"p_to": string }; Returns: number
+                           },
+"wo_detail":
+{ Args: { "p_wo": string }; Returns: Json
+                           },
 "wo_is_mine":
 { Args: { "p_assignee": string,"p_org": string,"p_team": string }; Returns: boolean
                            },
@@ -1025,6 +1037,15 @@ isOneToOne: false
 { Args: { "p_wo": string }; Returns: {
               "input_type": string,"seq": number,"step_id": string,"text": Json
             }[]
+                           },
+"wo_people":
+{ Args: { "p_org": string }; Returns: Json
+                           },
+"wo_replan":
+{ Args: { "p_assignee"?: string,"p_keep_assignment"?: boolean,"p_start": string,"p_team"?: string,"p_wo": string }; Returns: undefined
+                           },
+"wo_schedule":
+{ Args: { "p_assignee": string,"p_minutes"?: number,"p_note"?: string,"p_start": string,"p_team": string,"p_wo": string }; Returns: Json
                            },
 "wo_transition":
 { Args: { "p_client_uuid"?: string,"p_geom"?: unknown,"p_note"?: string,"p_to": Database["public"]['Enums']["wo_status"],"p_wo": string }; Returns: Json
