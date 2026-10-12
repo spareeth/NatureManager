@@ -374,6 +374,8 @@ create table pm_schedule (
   rule jsonb not null,                   -- {"freq":"weekly","interval":1,"byweekday":[0,1,2,3,4]}
                                          -- {"freq":"daily"} {"freq":"monthly","bymonthday":[1]}
                                          -- {"season":{"from_month":10,"to_month":4}}
+                                         -- optional: "interval":N, "start":"yyyy-mm-dd" (anchor),
+                                         -- "each":"bed" (one work order per bed under the location)
   max_per_day int,                       -- load spreading
   horizon_days int not null default 14,
   active boolean not null default true,
@@ -421,7 +423,8 @@ create table work_order_event (
   work_order_id uuid not null references work_order,
   from_status wo_status, to_status wo_status not null,
   note text, geom geometry(Point,4326),
-  actor uuid not null, at timestamptz not null default now(),
+  actor uuid, at timestamptz not null default now(),   -- null only for system events (12 Oct 2026)
+  source text not null default 'user',   -- user, system
   client_uuid uuid unique
 );
 
@@ -469,7 +472,22 @@ As built (migration `20261012000200_wo_transition.sql`, task 2.2):
 - Writes the event (from, to, note, GPS, actor, client_uuid). A repeated `client_uuid` returns the first
   result with `replayed: true`; reusing it for a different transition is refused.
 - `wo_allowed_transitions(p_wo)` lists the transitions the caller may make now (for the UI).
-- Not yet: verified to closed automatically after 24 h (needs a system actor for the event; task 2.3).
+
+As built (migration `20261012000300_pm_generator.sql`, task 2.3):
+
+- `pm_generate(org, until)`: periods from `pm_periods` (daily every N days; weekly ISO weeks every N, on
+  `byweekday` 0 = Monday or the working days from `organisation.settings.work_week`; monthly every N on
+  `bymonthday` or working days; `season` windows may wrap the year end), targets from `pm_targets` (asset;
+  live assets of a type in a location and below it; a location, or with `"each"` every location of that kind
+  below it). Load spreading: a period's work is divided evenly over its open days, never above
+  `max_per_day`; the rest goes to the last day and is reported as `over_capacity`.
+- Idempotent: each work order's `client_uuid` is derived from schedule, target and period, so re-runs
+  create nothing and a job moved to another day is not recreated. Status `scheduled` when the template has
+  a team, else `approved`; SOP pinned to the latest approved version of the template SOP's code; 07:00
+  Dubai start, due the same day. Managers and field managers may run it; signed-in others are refused.
+- `wo_autoclose()`: verified for more than 24 h becomes closed with a system event (`actor` null,
+  `source = 'system'`; user events must have an actor).
+- `pg_cron`: `pm-generate-nightly` (`pm_generate_all`, 00:30 Dubai) and `wo-autoclose-hourly`.
 
 ## 6. Observations
 

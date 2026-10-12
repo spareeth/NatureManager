@@ -841,13 +841,13 @@ isOneToOne: false
                   ]
                 },"work_order_event": {
                   Row: {
-                    "actor": string,"at": string,"client_uuid": string | null,"from_status": Database["public"]['Enums']["wo_status"] | null,"geom": unknown,"id": string,"note": string | null,"organisation_id": string,"to_status": Database["public"]['Enums']["wo_status"],"work_order_id": string
+                    "actor": string | null,"at": string,"client_uuid": string | null,"from_status": Database["public"]['Enums']["wo_status"] | null,"geom": unknown,"id": string,"note": string | null,"organisation_id": string,"source": string,"to_status": Database["public"]['Enums']["wo_status"],"work_order_id": string
                   }
                   Insert: {
-                    "actor": string,"at"?: string,"client_uuid"?: string | null,"from_status"?: Database["public"]['Enums']["wo_status"] | null,"geom"?: unknown,"id"?: string,"note"?: string | null,"organisation_id": string,"to_status": Database["public"]['Enums']["wo_status"],"work_order_id": string
+                    "actor"?: string | null,"at"?: string,"client_uuid"?: string | null,"from_status"?: Database["public"]['Enums']["wo_status"] | null,"geom"?: unknown,"id"?: string,"note"?: string | null,"organisation_id": string,"source"?: string,"to_status": Database["public"]['Enums']["wo_status"],"work_order_id": string
                   }
                   Update: {
-                    "actor"?: string,"at"?: string,"client_uuid"?: string | null,"from_status"?: Database["public"]['Enums']["wo_status"] | null,"geom"?: unknown,"id"?: string,"note"?: string | null,"organisation_id"?: string,"to_status"?: Database["public"]['Enums']["wo_status"],"work_order_id"?: string
+                    "actor"?: string | null,"at"?: string,"client_uuid"?: string | null,"from_status"?: Database["public"]['Enums']["wo_status"] | null,"geom"?: unknown,"id"?: string,"note"?: string | null,"organisation_id"?: string,"source"?: string,"to_status"?: Database["public"]['Enums']["wo_status"],"work_order_id"?: string
                   }
                   Relationships: [
                     {
@@ -920,6 +920,9 @@ isOneToOne: false
 "has_role_anywhere":
 { Args: { "r": string }; Returns: boolean
                            },
+"in_season":
+{ Args: { "d": string,"p_rule": Json }; Returns: boolean
+                           },
 "map_asset_detail":
 { Args: { "p_site": string,"p_tag": string }; Returns: Json
                            },
@@ -937,6 +940,28 @@ isOneToOne: false
                            },
 "next_wo_number":
 { Args: { "p_org": string }; Returns: string
+                           },
+"org_today":
+{ Args: { "p_org": string }; Returns: string
+                           },
+"org_working_days":
+{ Args: { "p_org": string }; Returns: (number)[]
+                           },
+"pm_generate":
+{ Args: { "p_org": string,"p_until"?: string }; Returns: Json
+                           },
+"pm_generate_all":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
+"pm_periods":
+{ Args: { "p_anchor": string,"p_from": string,"p_rule": Json,"p_to": string,"p_working": (number)[] }; Returns: {
+              "days": (string)[],"period_start": string
+            }[]
+                           },
+"pm_targets":
+{ Args: { "p_schedule": string }; Returns: {
+              "asset_id": string,"label": string,"location_id": string
+            }[]
                            },
 "resolve_location":
 { Args: { "p_geom": unknown,"p_site"?: string }; Returns: string
@@ -982,10 +1007,16 @@ isOneToOne: false
 "taxon_tag_code":
 { Args: { "p_org": string,"p_taxon": string }; Returns: string
                            },
+"weekday0":
+{ Args: { "d": string }; Returns: number
+                           },
 "wo_allowed_transitions":
 { Args: { "p_wo": string }; Returns: {
               "note_required": boolean,"to_status": Database["public"]['Enums']["wo_status"]
             }[]
+                           },
+"wo_autoclose":
+{ Args: { "p_after"?: string }; Returns: number
                            },
 "wo_is_mine":
 { Args: { "p_assignee": string,"p_org": string,"p_team": string }; Returns: boolean
