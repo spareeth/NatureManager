@@ -7,7 +7,7 @@ select plan(22);
 -- Start from the seed alone, even when the local database also holds migrated Hortis data.
 -- Rolled back with the rest of the test.
 delete from media; delete from asset_status_change; delete from asset; delete from accession;
-delete from org_taxon; delete from taxon; delete from audit_log;
+delete from item_request; delete from item; delete from org_taxon; delete from taxon; delete from audit_log;
 
 create temp table tg as
   select s.id as site, s.organisation_id as org from site s join organisation o on o.id = s.organisation_id

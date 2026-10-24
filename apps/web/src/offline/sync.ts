@@ -80,6 +80,18 @@ export const handlers: Handlers = {
         .eq('id', it.woId!),
     );
   },
+  async items(it) {
+    // The outbox id is the request's client_uuid and each line carries its own id, so a replay
+    // adds nothing twice (ir_add_wo_items).
+    check(
+      await supabase.rpc('ir_add_wo_items', {
+        p_wo: it.woId!,
+        p_client_uuid: it.id,
+        p_lines: p(it).lines,
+        p_submit: true,
+      }),
+    );
+  },
   async request(it) {
     const v = p(it);
     check(
@@ -120,12 +132,13 @@ type Pack = {
   days: Record<string, DayJob[]>;
   jobs: FieldJob[];
   assets: CachedAsset[];
+  items: { id: string; code: string; name: string; category: string; unit: string }[];
   bbox: BBox | null;
 };
 
 /** Keep today's and tomorrow's work, its jobs and the assets of those zones on the phone, and warm the
  *  map tile cache for the site once. */
-export async function refreshPack(siteId: string, basemapUrl?: string | null) {
+export async function refreshPack(siteId: string, orgId?: string, basemapUrl?: string | null) {
   const today = dubaiDate(new Date());
   const pack = check<Pack>(
     await supabase.rpc('field_offline_pack', {
@@ -144,6 +157,7 @@ export async function refreshPack(siteId: string, basemapUrl?: string | null) {
     );
     await db.assets.clear();
     await db.assets.bulkPut(pack.assets);
+    if (orgId) await db.kv.put({ key: `items:${orgId}`, value: pack.items, savedAt });
     await db.kv.put({
       key: `pack:${siteId}`,
       value: { jobs: pack.jobs.length, assets: pack.assets.length },

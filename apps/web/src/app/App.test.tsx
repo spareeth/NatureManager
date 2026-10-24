@@ -60,7 +60,7 @@ describe('shell', () => {
 
   it('green team sees map and field app, not members', () => {
     renderApp({ memberships: [membership(['green_team'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work', 'Field app']);
+    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work', 'Field app', 'Requests']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
@@ -72,6 +72,7 @@ describe('shell', () => {
       'Taxa',
       'Work',
       'Field app',
+      'Requests',
       'Planning',
       'Control points',
       'Members',
@@ -87,7 +88,7 @@ describe('shell', () => {
 
   it('owner cannot open the field app', () => {
     renderApp({ path: '/field', memberships: [membership(['owner'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work']);
+    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work', 'Requests']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 

@@ -1,4 +1,10 @@
-import { isAnswered, type FieldJob, type JobStep, type Material } from '../field/api';
+import {
+  isAnswered,
+  type FieldJob,
+  type JobItemRequest,
+  type JobStep,
+  type Material,
+} from '../field/api';
 import type { WoStatus } from '../work/model';
 import type { OutboxItem } from './db';
 
@@ -48,6 +54,14 @@ export function applyPending(job: FieldJob, items: OutboxItem[]): FieldJob {
         taken_at: p.takenAt as string,
         blobId: p.mediaId as string,
       } as LocalPhoto);
+    if (it.kind === 'items')
+      j = {
+        ...j,
+        item_requests: [
+          ...(j.item_requests ?? []),
+          { id: it.id, number: '', status: 'queued', lines: p.lines as JobItemRequest['lines'] },
+        ],
+      };
     if (it.kind === 'answer') {
       const s = j.steps.find((x) => x.id === p.stepId);
       if (s) {

@@ -12,7 +12,8 @@ create temp table rls_exempt (tbl text primary key, why text);
 insert into rls_exempt values
   ('organisation', 'tenant root, scoped by id'),
   ('taxon', 'shared across organisations by design (DATA_MODEL section 3)'),
-  ('wo_transition_rule', 'SRS 3.4.1 transition table, the same for every organisation; read-only');
+  ('wo_transition_rule', 'SRS 3.4.1 transition table, the same for every organisation; read-only'),
+  ('ir_transition_rule', 'PROCUREMENT_HANDOFF item request lifecycle, the same for every organisation; read-only');
 
 -- Security definer functions that are allowed to bypass RLS. Anything new must be reviewed and
 -- added here.
@@ -25,7 +26,10 @@ insert into definer_allowlist values
   ('next_wo_number'), ('work_order_before_write'), ('wo_is_mine'),
   -- task 2.2: the only path to change work order status and write events; checks membership
   -- and roles itself.
-  ('wo_transition');
+  ('wo_transition'),
+  -- task 2.10: item request numbering and status guard, the only path to change item request
+  -- status (checks membership and roles itself), and the asset trigger that drafts replacements.
+  ('next_ir_number'), ('item_request_before_write'), ('ir_transition'), ('asset_draft_replacement');
 
 create temp view public_tables as
   select c.relname::text as tbl,
@@ -61,7 +65,7 @@ select is(
 select is(
   (select coalesce(array_agg(tablename || '.' || policyname order by 1), '{}') from pg_policies
    where schemaname = 'public' and (qual = 'true' or with_check = 'true')
-     and tablename not in ('taxon', 'wo_transition_rule')),
+     and tablename not in ('taxon', 'wo_transition_rule', 'ir_transition_rule')),
   '{}'::text[], 'no policy is unconditionally true (except shared reference data reads)');
 
 select is(
@@ -137,6 +141,16 @@ insert into work_order_event (organisation_id, work_order_id, to_status, actor)
 select org, '20000000-0000-0000-0000-0000000000b4', 'scheduled', '10000000-0000-0000-0000-000000000002' from terra;
 insert into sop_response (organisation_id, work_order_id, sop_step_id, value)
 select org, '20000000-0000-0000-0000-0000000000b4', '20000000-0000-0000-0000-0000000000b2', 'true' from terra;
+-- Item requests (task 2.10): item, a request with a line (numbering row), its event and an outbox row.
+insert into item (id, organisation_id, code, name, category, unit)
+select '20000000-0000-0000-0000-0000000000c1', org, 'RLS-ITEM', 'RLS item', 'other', 'each' from terra;
+insert into item_request (id, organisation_id, site_id, source, requested_by)
+select '20000000-0000-0000-0000-0000000000c2', org, site, 'manager', '10000000-0000-0000-0000-000000000002' from terra;
+insert into item_request_line (organisation_id, item_request_id, line_no, item_id, description, reason, quantity, unit)
+select org, '20000000-0000-0000-0000-0000000000c2', 1, '20000000-0000-0000-0000-0000000000c1', 'RLS line', 'maintain', 1, 'each' from terra;
+insert into item_request_event (organisation_id, item_request_id, to_status, actor)
+select org, '20000000-0000-0000-0000-0000000000c2', 'draft', '10000000-0000-0000-0000-000000000002' from terra;
+insert into integration_outbox (organisation_id, topic, payload) select org, 'rls', '{}' from terra;
 
 select is(
   (select coalesce(array_agg(tbl order by tbl), '{}') from (
@@ -154,7 +168,7 @@ declare
   n bigint;
   out text[] := '{}';
 begin
-  for t in select tbl, has_org from public_tables where tbl not in ('taxon', 'wo_transition_rule') order by tbl loop
+  for t in select tbl, has_org from public_tables where tbl not in ('taxon', 'wo_transition_rule', 'ir_transition_rule') order by tbl loop
     if p_op = 'select' then
       execute format('select count(*) from %I where %s is distinct from $1', t.tbl,
                      case when t.has_org then 'organisation_id' else 'id' end)

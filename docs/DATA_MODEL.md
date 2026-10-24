@@ -715,6 +715,35 @@ create table integration_receiver (
 Trigger on `asset.status` to `dead`/`removed`: draft an `item_request` (source `plant_death`)
 with one `replace` line for the same taxon and location.
 
+As built (migration `20261024000200_item_requests.sql`, task 2.10):
+
+- `item_request.requested_by` is nullable, only for system drafts (`source` `plant_death` or `inspection`)
+  made with no signed-in user, such as the Hortis import (decision 24 Oct 2026, like the work order event
+  actor). When a person changes the asset, they are the requester.
+- `item_request_line` and `item_request_event` carry `organisation_id` (rule 1); all tables have created and
+  updated columns; composite keys keep items, assets, locations and work orders inside one organisation.
+  Deleting an asset, item, location or work order clears the link and keeps the request and its lines.
+  `item.unit` also allows `m2`. Numbering: `IR-YYYY-NNNNNN` per organisation and year (`ir_number_seq`).
+- Status changes only through `ir_transition()` (a trigger refuses any other change). Rules are in the
+  shared table `ir_transition_rule` (PROCUREMENT_HANDOFF section 3): submit or cancel by the requester or a
+  planner; approve or reject (reason required) by a manager, or a field manager while the estimated total is
+  within `organisation.settings.ir_field_manager_limit_aed` (default 0; lines without a cost count as 0);
+  nobody approves their own request; `approved` to `sent` only by the hand-off (task 2.11); acknowledged,
+  rejected by receiver (reason required) and fulfilled by hand by a manager. Submitting needs a line, and
+  lines change only while the request is a draft. `approved` writes the `integration_outbox` row
+  (`item_request.approved`, payload in the PROCUREMENT_HANDOFF line format) in the same transaction.
+- Auto-drafts (FR-REQ-03): status `dead` or `removed` (source `plant_death`), condition dropping to 1 or 2,
+  or a built asset going `out_of_service` (source `inspection`) draft one `replace` line for the asset with
+  the plant item of its taxon, unless a replacement for that asset is already open. The migration backfills
+  the existing data (9 dead plants and 9 in condition Poor from Hortis).
+- `item_generate_plants(org)`: one active plant item per taxon (code `PLT-<in-house code>`), idempotent;
+  the Hortis promote step runs it before assets.
+- `ir_add_wo_items(p_wo, p_client_uuid, p_lines, p_submit)`: items needed from a work order on the phone,
+  replay-safe (request by `client_uuid`, lines by id). `field_job` lists the job's item requests, and the
+  offline pack carries the active catalogue.
+- RLS: members read; `item` by manager; requests and lines by their requester (working roles) or a planner;
+  events and the outbox are written by `ir_transition()` only; the outbox is readable by managers.
+
 ## 9. Audit
 
 `audit_log(organisation_id, table_name, row_id, action, old jsonb, new jsonb, actor, at)` written

@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(18);
 delete from media; delete from asset_status_change; delete from asset; delete from accession;
-delete from org_taxon; delete from taxon; delete from audit_log;
+delete from item_request; delete from item; delete from org_taxon; delete from taxon; delete from audit_log;
 
 create temp table tg as select s.id site, s.organisation_id org from site s join organisation o on o.id = s.organisation_id where o.slug = 'terra';
 grant select on tg to authenticated;

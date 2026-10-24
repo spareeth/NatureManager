@@ -31,7 +31,7 @@ select is(org_working_days((select id from organisation where slug = 'terra')), 
 -- Start from the seed alone, even when the local database also holds migrated Hortis data
 -- (rolled back with the test).
 delete from work_order_event; delete from sop_response; delete from work_order_asset; delete from work_order; delete from pm_schedule;
-delete from media; delete from asset_status_change; delete from asset; delete from accession; delete from org_taxon; delete from taxon;
+delete from media; delete from asset_status_change; delete from asset; delete from accession; delete from item_request; delete from item; delete from org_taxon; delete from taxon;
 create temp table tg as select o.id org, org_today(o.id) today, (select id from team where name = 'Green Team East') east
   from organisation o where o.slug = 'terra';
 grant select on tg to authenticated;

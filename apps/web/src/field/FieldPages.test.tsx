@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '../i18n';
@@ -226,10 +226,12 @@ describe('field app', () => {
     renderAt('/field/jobs/w1');
     fireEvent.change(await screen.findByLabelText('Notes'), { target: { value: 'Weeded' } });
     fireEvent.change(screen.getByLabelText('Minutes worked'), { target: { value: '45' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Add item' }));
-    fireEvent.change(screen.getByLabelText('Item'), { target: { value: ' mulch ' } });
-    fireEvent.change(screen.getByLabelText('Qty'), { target: { value: '2' } });
-    fireEvent.change(screen.getByLabelText('Unit'), { target: { value: 'm3' } });
+    // the work record has its own item, quantity and unit fields (the items-needed form has others)
+    const rec = within(screen.getByRole('region', { name: 'Work record' }));
+    fireEvent.click(rec.getByRole('button', { name: 'Add item' }));
+    fireEvent.change(rec.getByLabelText('Item'), { target: { value: ' mulch ' } });
+    fireEvent.change(rec.getByLabelText('Qty'), { target: { value: '2' } });
+    fireEvent.change(rec.getByLabelText('Unit'), { target: { value: 'm3' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save record' }));
     await waitFor(() =>
       expect(api.saveJobRecord).toHaveBeenCalledWith(expect.objectContaining({ id: 'w1' }), {

@@ -77,6 +77,28 @@ export type JobStep = {
   blobId?: string;
 };
 export type Material = { item: string; qty?: number; unit?: string };
+export type ItemLine = {
+  id: string;
+  item_id: string | null;
+  description: string;
+  quantity: number;
+  unit: string;
+  reason: 'maintain' | 'replace' | 'procure_new';
+  asset_id: string | null;
+};
+export type JobItemRequest = {
+  id: string;
+  number: string;
+  status: string;
+  lines: Pick<ItemLine, 'description' | 'quantity' | 'unit' | 'reason'>[];
+};
+export type CatalogueItem = {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  unit: string;
+};
 export type FieldJob = Omit<WoDetail, 'sop' | 'materials'> & {
   mine: boolean;
   organisation_id: string;
@@ -91,6 +113,8 @@ export type FieldJob = Omit<WoDetail, 'sop' | 'materials'> & {
   } | null;
   steps: JobStep[];
   missing: number[];
+  /** Item requests raised from this job (FR-REQ-04); queued ones have no number yet. */
+  item_requests?: JobItemRequest[];
   photos: {
     id: string;
     path: string | null;
@@ -240,6 +264,29 @@ export async function queueRequest(v: {
   kickSync();
   return { id, number: '' };
 }
+
+/** Items needed for the job (FR-REQ-04): queued, then sent as one submitted request linked to the job. */
+export async function queueJobItems(job: JobRef, lines: Omit<ItemLine, 'id'>[]) {
+  await enqueue('items', job.id, { lines: lines.map((l) => ({ ...l, id: crypto.randomUUID() })) });
+  kickSync();
+}
+
+/** Active item catalogue; kept on the phone (offline pack and each online read). */
+export const fetchCatalogue = async (orgId: string) =>
+  readThrough(
+    async () =>
+      check<CatalogueItem[]>(
+        await supabase
+          .from('item')
+          .select('id, code, name, category, unit')
+          .eq('organisation_id', orgId)
+          .eq('active', true)
+          .order('category')
+          .order('name'),
+      ),
+    (list) => db.kv.put({ key: `items:${orgId}`, value: list, savedAt: new Date().toISOString() }),
+    async () => (await db.kv.get(`items:${orgId}`))?.value as CatalogueItem[] | undefined,
+  );
 
 export async function signedPhoto(bucket: 'photos' | 'sop-media', path: string) {
   try {

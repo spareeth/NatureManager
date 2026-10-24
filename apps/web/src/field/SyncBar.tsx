@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { db } from '../offline/db';
+import { useOrg } from '../org/context';
 import { discardItem, retryItem, useOutbox, wakeQueue } from '../offline/outbox';
 import { refreshPack, startSync } from '../offline/sync';
 import { kickSync } from '../offline/kick';
@@ -25,6 +26,7 @@ function useOnline() {
 export function SyncBar({ siteId }: { siteId?: string }) {
   const { t, i18n } = useTranslation();
   const online = useOnline();
+  const { current } = useOrg();
   const items = useOutbox();
   const queryClient = useQueryClient();
   // Shift data: refreshed when the field app opens with network, and on request.
@@ -41,7 +43,7 @@ export function SyncBar({ siteId }: { siteId?: string }) {
     enabled: !!siteId && online,
     staleTime: 10 * 60_000,
     retry: false,
-    queryFn: () => refreshPack(siteId!),
+    queryFn: () => refreshPack(siteId!, current?.organisationId),
   });
   const pack = fresh.data ?? saved.data ?? null;
   const pending = items.filter((i) => i.status === 'pending');

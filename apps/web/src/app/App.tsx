@@ -16,6 +16,8 @@ import { TaxonDetailPage } from '../pages/TaxonDetailPage';
 import { ControlPointsPage } from '../pages/ControlPointsPage';
 import { WorkPage } from '../pages/WorkPage';
 import { WorkOrderPage } from '../pages/WorkOrderPage';
+import { RequestsPage } from '../pages/RequestsPage';
+import { RequestDetailPage } from '../pages/RequestDetailPage';
 import { PlanPage } from '../pages/PlanPage';
 import { SopEditorPage } from '../pages/SopEditorPage';
 import { canEditAssets } from '../auth/canEdit';
@@ -121,6 +123,8 @@ export function App() {
               </RequireRole>
             }
           />
+          <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/requests/:id" element={<RequestDetailPage />} />
           <Route
             path="/plan"
             element={

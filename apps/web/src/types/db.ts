@@ -489,6 +489,403 @@ export type Database = {
           },
         ];
       };
+      integration_outbox: {
+        Row: {
+          attempts: number;
+          channel: string | null;
+          created_at: string;
+          delivered_at: string | null;
+          id: number;
+          last_error: string | null;
+          organisation_id: string;
+          payload: NonNullable<Json>;
+          topic: string;
+        };
+        Insert: {
+          attempts?: number;
+          channel?: string | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          id?: never;
+          last_error?: string | null;
+          organisation_id: string;
+          payload: NonNullable<Json>;
+          topic: string;
+        };
+        Update: {
+          attempts?: number;
+          channel?: string | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          id?: never;
+          last_error?: string | null;
+          organisation_id?: string;
+          payload?: NonNullable<Json>;
+          topic?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'integration_outbox_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ir_number_seq: {
+        Row: {
+          last_value: number;
+          organisation_id: string;
+          year: number;
+        };
+        Insert: {
+          last_value?: number;
+          organisation_id: string;
+          year: number;
+        };
+        Update: {
+          last_value?: number;
+          organisation_id?: string;
+          year?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ir_number_seq_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      ir_transition_rule: {
+        Row: {
+          from_status: Database['public']['Enums']['item_request_status'];
+          note_required: boolean;
+          requester_allowed: boolean;
+          roles: string[];
+          system_only: boolean;
+          to_status: Database['public']['Enums']['item_request_status'];
+        };
+        Insert: {
+          from_status: Database['public']['Enums']['item_request_status'];
+          note_required?: boolean;
+          requester_allowed: boolean;
+          roles: string[];
+          system_only?: boolean;
+          to_status: Database['public']['Enums']['item_request_status'];
+        };
+        Update: {
+          from_status?: Database['public']['Enums']['item_request_status'];
+          note_required?: boolean;
+          requester_allowed?: boolean;
+          roles?: string[];
+          system_only?: boolean;
+          to_status?: Database['public']['Enums']['item_request_status'];
+        };
+        Relationships: [];
+      };
+      item: {
+        Row: {
+          active: boolean;
+          category: string;
+          code: string;
+          created_at: string;
+          created_by: string | null;
+          external_code: string | null;
+          id: string;
+          name: string;
+          organisation_id: string;
+          spec: NonNullable<Json>;
+          taxon_id: string | null;
+          unit: string;
+          updated_at: string;
+        };
+        Insert: {
+          active?: boolean;
+          category: string;
+          code: string;
+          created_at?: string;
+          created_by?: string | null;
+          external_code?: string | null;
+          id?: string;
+          name: string;
+          organisation_id: string;
+          spec?: NonNullable<Json>;
+          taxon_id?: string | null;
+          unit: string;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          category?: string;
+          code?: string;
+          created_at?: string;
+          created_by?: string | null;
+          external_code?: string | null;
+          id?: string;
+          name?: string;
+          organisation_id?: string;
+          spec?: NonNullable<Json>;
+          taxon_id?: string | null;
+          unit?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'item_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'item_taxon_id_fkey';
+            columns: ['taxon_id'];
+            isOneToOne: false;
+            referencedRelation: 'taxon';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      item_request: {
+        Row: {
+          approved_at: string | null;
+          approved_by: string | null;
+          client_uuid: string | null;
+          created_at: string;
+          external_ref: string | null;
+          id: string;
+          location_id: string | null;
+          needed_by: string | null;
+          notes: string | null;
+          number: string;
+          organisation_id: string;
+          requested_by: string | null;
+          sent_batch_id: string | null;
+          site_id: string;
+          source: string;
+          status: Database['public']['Enums']['item_request_status'];
+          updated_at: string;
+          work_order_id: string | null;
+        };
+        Insert: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          client_uuid?: string | null;
+          created_at?: string;
+          external_ref?: string | null;
+          id?: string;
+          location_id?: string | null;
+          needed_by?: string | null;
+          notes?: string | null;
+          number: string;
+          organisation_id: string;
+          requested_by?: string | null;
+          sent_batch_id?: string | null;
+          site_id: string;
+          source: string;
+          status?: Database['public']['Enums']['item_request_status'];
+          updated_at?: string;
+          work_order_id?: string | null;
+        };
+        Update: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          client_uuid?: string | null;
+          created_at?: string;
+          external_ref?: string | null;
+          id?: string;
+          location_id?: string | null;
+          needed_by?: string | null;
+          notes?: string | null;
+          number?: string;
+          organisation_id?: string;
+          requested_by?: string | null;
+          sent_batch_id?: string | null;
+          site_id?: string;
+          source?: string;
+          status?: Database['public']['Enums']['item_request_status'];
+          updated_at?: string;
+          work_order_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'item_request_location_id_fkey';
+            columns: ['location_id'];
+            isOneToOne: false;
+            referencedRelation: 'location';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'item_request_location_id_organisation_id_fkey';
+            columns: ['location_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'location';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'item_request_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'item_request_site_id_fkey';
+            columns: ['site_id'];
+            isOneToOne: false;
+            referencedRelation: 'site';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'item_request_work_order_id_organisation_id_fkey';
+            columns: ['work_order_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'work_order';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
+      item_request_event: {
+        Row: {
+          actor: string | null;
+          actor_system: string | null;
+          at: string;
+          from_status: Database['public']['Enums']['item_request_status'] | null;
+          id: string;
+          item_request_id: string;
+          note: string | null;
+          organisation_id: string;
+          to_status: Database['public']['Enums']['item_request_status'];
+        };
+        Insert: {
+          actor?: string | null;
+          actor_system?: string | null;
+          at?: string;
+          from_status?: Database['public']['Enums']['item_request_status'] | null;
+          id?: string;
+          item_request_id: string;
+          note?: string | null;
+          organisation_id: string;
+          to_status: Database['public']['Enums']['item_request_status'];
+        };
+        Update: {
+          actor?: string | null;
+          actor_system?: string | null;
+          at?: string;
+          from_status?: Database['public']['Enums']['item_request_status'] | null;
+          id?: string;
+          item_request_id?: string;
+          note?: string | null;
+          organisation_id?: string;
+          to_status?: Database['public']['Enums']['item_request_status'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'item_request_event_item_request_id_organisation_id_fkey';
+            columns: ['item_request_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'item_request';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'item_request_event_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      item_request_line: {
+        Row: {
+          asset_id: string | null;
+          created_at: string;
+          currency: string | null;
+          description: string;
+          est_unit_cost: number | null;
+          id: string;
+          item_id: string | null;
+          item_request_id: string;
+          line_no: number;
+          organisation_id: string;
+          quantity: number;
+          reason: string;
+          unit: string;
+          updated_at: string;
+        };
+        Insert: {
+          asset_id?: string | null;
+          created_at?: string;
+          currency?: string | null;
+          description: string;
+          est_unit_cost?: number | null;
+          id?: string;
+          item_id?: string | null;
+          item_request_id: string;
+          line_no: number;
+          organisation_id: string;
+          quantity: number;
+          reason: string;
+          unit: string;
+          updated_at?: string;
+        };
+        Update: {
+          asset_id?: string | null;
+          created_at?: string;
+          currency?: string | null;
+          description?: string;
+          est_unit_cost?: number | null;
+          id?: string;
+          item_id?: string | null;
+          item_request_id?: string;
+          line_no?: number;
+          organisation_id?: string;
+          quantity?: number;
+          reason?: string;
+          unit?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'item_request_line_asset_id_organisation_id_fkey';
+            columns: ['asset_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'asset';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'item_request_line_item_id_organisation_id_fkey';
+            columns: ['item_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'item';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'item_request_line_item_request_id_fkey';
+            columns: ['item_request_id'];
+            isOneToOne: false;
+            referencedRelation: 'item_request';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'item_request_line_item_request_id_organisation_id_fkey';
+            columns: ['item_request_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'item_request';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'item_request_line_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       line_feature: {
         Row: {
           created_at: string;
@@ -1857,6 +2254,33 @@ export type Database = {
       has_role: { Args: { org: string; r: string }; Returns: boolean };
       has_role_anywhere: { Args: { r: string }; Returns: boolean };
       in_season: { Args: { d: string; p_rule: Json }; Returns: boolean };
+      ir_add_wo_items: {
+        Args: { p_client_uuid: string; p_lines: Json; p_submit?: boolean; p_wo: string };
+        Returns: Json;
+      };
+      ir_allowed_transitions: {
+        Args: { p_ir: string };
+        Returns: {
+          note_required: boolean;
+          to_status: Database['public']['Enums']['item_request_status'];
+        }[];
+      };
+      ir_detail: { Args: { p_ir: string }; Returns: Json };
+      ir_list: {
+        Args: { p_site: string; p_status?: Database['public']['Enums']['item_request_status'][] };
+        Returns: Json;
+      };
+      ir_payload: { Args: { p_ir: string }; Returns: Json };
+      ir_total: { Args: { p_ir: string }; Returns: number };
+      ir_transition: {
+        Args: {
+          p_ir: string;
+          p_note?: string;
+          p_to: Database['public']['Enums']['item_request_status'];
+        };
+        Returns: Json;
+      };
+      item_generate_plants: { Args: { p_org: string }; Returns: number };
       map_asset_detail: { Args: { p_site: string; p_tag: string }; Returns: Json };
       map_assets: {
         Args: {
@@ -1875,6 +2299,7 @@ export type Database = {
         Args: { p_lat: number; p_lon: number; p_max_m?: number; p_site: string };
         Returns: Json;
       };
+      next_ir_number: { Args: { p_org: string }; Returns: string };
       next_wo_number: { Args: { p_org: string }; Returns: string };
       org_sla_hours: { Args: { p_org: string; p_priority: string }; Returns: number };
       org_today: { Args: { p_org: string }; Returns: string };
@@ -2030,6 +2455,16 @@ export type Database = {
         | 'removed'
         | 'out_of_service'
         | 'disposed';
+      item_request_status:
+        | 'draft'
+        | 'submitted'
+        | 'approved'
+        | 'rejected'
+        | 'sent'
+        | 'acknowledged'
+        | 'rejected_by_receiver'
+        | 'fulfilled'
+        | 'cancelled';
       location_kind: 'zone' | 'bed' | 'habitat' | 'water_body' | 'building' | 'sub_area' | 'other';
       wo_status:
         | 'requested'
@@ -2166,6 +2601,17 @@ export const Constants = {
         'removed',
         'out_of_service',
         'disposed',
+      ],
+      item_request_status: [
+        'draft',
+        'submitted',
+        'approved',
+        'rejected',
+        'sent',
+        'acknowledged',
+        'rejected_by_receiver',
+        'fulfilled',
+        'cancelled',
       ],
       location_kind: ['zone', 'bed', 'habitat', 'water_body', 'building', 'sub_area', 'other'],
       wo_status: [

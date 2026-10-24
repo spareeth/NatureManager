@@ -9,8 +9,9 @@ Upserts on the legacy keys (taxon name + authorship, accession number, Hortis
 Hortis stays the master until cut-over, so Hortis fields are overwritten on re-run; a tag, once
 loaded, is kept (curator re-tags are applied separately). Refuses to run while rejects exist.
 
-Dead plants are loaded with status dead. Replacement item requests are drafted in
-data/hortis/out/replacement_requests_draft.csv until item requests exist (task 2.10).
+Dead plants are loaded with status dead. The asset trigger (task 2.10) drafts a replacement item
+request for each dead plant and each plant in condition Poor; validate.py still writes
+data/hortis/out/replacement_requests_draft.csv as a review list.
 """
 
 from __future__ import annotations
@@ -66,6 +67,11 @@ UPSERTS = {
     # Tagged records keep their Hortis point; bed-level records go to a point inside the bed
     # (st_pointonsurface, so it is inside even for crescent-shaped beds). Points outside every
     # bed keep the Hortis bed and record the distance as position accuracy.
+    # Plant items from the taxa (task 2.10), before assets so the replacement drafts that the asset
+    # trigger makes for dead and poor plants point at the right item. Idempotent.
+    "plant_items": """
+      select true as inserted from generate_series(1, item_generate_plants(cast(:org as uuid)))
+    """,
     "assets": """
       with src as (
         select a.rec, l.id as location_id, l.site_id, l.geom as bed_geom,

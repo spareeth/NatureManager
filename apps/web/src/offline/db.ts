@@ -4,7 +4,7 @@ import type { DayJob, FieldJob, ScannedAsset } from '../field/api';
 // Field app offline store (FR-FLD-04, CLAUDE.md rule 5). Reads are cached here; every field write
 // goes to the outbox first and is sent by the sync worker, each item with a client UUID.
 
-export type OutboxKind = 'transition' | 'answer' | 'photo' | 'record' | 'request';
+export type OutboxKind = 'transition' | 'answer' | 'photo' | 'record' | 'request' | 'items';
 export type OutboxItem = {
   seq?: number;
   /** Client-generated UUID: the idempotency key sent with the write. */

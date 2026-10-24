@@ -160,6 +160,21 @@ describe('overlay of queued changes', () => {
     expect(j.completion_notes).toBe('done');
     expect(JOB.steps[0]!.value).toBeNull(); // the cached copy is not changed
   });
+  it('shows queued item requests on the job', () => {
+    const j = applyPending(JOB, [
+      item(1, 'items', {
+        lines: [{ id: 'l1', description: 'Mulch', quantity: 2, unit: 'm3', reason: 'maintain' }],
+      }),
+    ]);
+    expect(j.item_requests).toEqual([
+      {
+        id: 'u1',
+        number: '',
+        status: 'queued',
+        lines: [{ id: 'l1', description: 'Mulch', quantity: 2, unit: 'm3', reason: 'maintain' }],
+      },
+    ]);
+  });
   it('ignores failed items and other jobs', () => {
     const j = applyPending(JOB, [
       item(1, 'transition', { to: 'in_progress' }, 'failed'),

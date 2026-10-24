@@ -5,11 +5,25 @@ const paths = (roles: Parameters<typeof visibleNav>[0]) => visibleNav(roles).map
 
 describe('role-aware nav', () => {
   it('owner is read-only: map and assets', () => {
-    expect(paths(['owner'])).toEqual(['/', '/assets', '/taxa', '/work']);
+    expect(paths(['owner'])).toEqual(['/', '/assets', '/taxa', '/work', '/requests']);
   });
   it('green team and field engineers get the field app, not members', () => {
-    expect(paths(['green_team'])).toEqual(['/', '/assets', '/taxa', '/work', '/field']);
-    expect(paths(['field_engineer'])).toEqual(['/', '/assets', '/taxa', '/work', '/field']);
+    expect(paths(['green_team'])).toEqual([
+      '/',
+      '/assets',
+      '/taxa',
+      '/work',
+      '/field',
+      '/requests',
+    ]);
+    expect(paths(['field_engineer'])).toEqual([
+      '/',
+      '/assets',
+      '/taxa',
+      '/work',
+      '/field',
+      '/requests',
+    ]);
   });
   it('managers and field managers see members', () => {
     expect(paths(['manager'])).toEqual([
@@ -18,6 +32,7 @@ describe('role-aware nav', () => {
       '/taxa',
       '/work',
       '/field',
+      '/requests',
       '/plan',
       '/control-points',
       '/members',
@@ -28,15 +43,23 @@ describe('role-aware nav', () => {
       '/taxa',
       '/work',
       '/field',
+      '/requests',
       '/plan',
       '/control-points',
       '/members',
     ]);
   });
   it('several roles combine', () => {
-    expect(paths(['owner', 'curator'])).toEqual(['/', '/assets', '/taxa', '/work', '/field']);
+    expect(paths(['owner', 'curator'])).toEqual([
+      '/',
+      '/assets',
+      '/taxa',
+      '/work',
+      '/field',
+      '/requests',
+    ]);
   });
   it('no roles still sees items open to every member', () => {
-    expect(paths([])).toEqual(['/', '/assets', '/taxa', '/work']);
+    expect(paths([])).toEqual(['/', '/assets', '/taxa', '/work', '/requests']);
   });
 });

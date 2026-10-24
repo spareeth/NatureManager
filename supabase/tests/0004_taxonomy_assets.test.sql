@@ -6,7 +6,7 @@ select plan(31);
 -- Start from the seed alone, even when the local database also holds migrated Hortis data.
 -- Rolled back with the rest of the test.
 delete from media; delete from asset_status_change; delete from asset; delete from accession;
-delete from org_taxon; delete from taxon; delete from audit_log;
+delete from item_request; delete from item; delete from org_taxon; delete from taxon; delete from audit_log;
 
 -- Fixtures (as postgres) --------------------------------------------------------
 insert into auth.users (id, email) values
