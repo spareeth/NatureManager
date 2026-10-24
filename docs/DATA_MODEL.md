@@ -538,6 +538,12 @@ As built (migration `20261013000300_field_offline.sql`, task 2.8):
   `work_order.id` for requests raised offline. No table changes.
 - Status events of offline work carry the time they reached the server, not the time on the phone.
 
+As built (migration `20261024000100_wo_verify.sql`, task 2.9): `wo_verify_queue(p_site)` lists completed
+work orders with who completed them and `can_verify` (false for the assignee, their team and whoever
+completed it). The supervisor checklist (work done as the SOP says, photos show the result, site left clean)
+is a fixed list in the field app; a pass writes the ticked items into the `verified` event note, a fail is
+`completed` to `in_progress` with the reason as the note (`wo_transition` requires it). No table changes.
+
 ## 6. Observations
 
 ```sql

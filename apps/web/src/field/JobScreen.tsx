@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useOrg } from '../org/context';
-import { db } from '../offline/db';
+import { photoUrl } from './photos';
 import { useOutbox } from '../offline/outbox';
 import { applyPending, fieldMoves } from '../offline/overlay';
 import { PriorityTag, StatusPill } from '../work/badges';
@@ -22,15 +22,6 @@ import {
   type JobStep,
   type Material,
 } from './api';
-
-/** A photo still on the phone (not yet synced) shows from the offline store; others by signed URL. */
-async function photoUrl(path: string | null, blobId?: string) {
-  if (blobId) {
-    const b = await db.blobs.get(blobId);
-    if (b) return URL.createObjectURL(b.blob);
-  }
-  return path ? signedPhoto('photos', path) : null;
-}
 
 const BTN = 'min-h-12 rounded-lg px-4 text-lg font-semibold';
 
@@ -86,6 +77,12 @@ export function JobScreen() {
     note_required: false,
   }));
   const missing = j.steps.filter((s) => j.missing.includes(s.seq));
+  // A failed verification (completed back to in progress) and its reason, while the job is reopened.
+  const last = j.events[0];
+  const sentBack =
+    j.status === 'in_progress' && last?.from === 'completed' && last.to === 'in_progress'
+      ? last
+      : null;
 
   const move = (to: WoStatus, noteRequired: boolean) => {
     let note: string | undefined;
@@ -118,6 +115,11 @@ export function JobScreen() {
         {j.description && <p className="mt-2 whitespace-pre-line">{j.description}</p>}
       </header>
 
+      {sentBack && (
+        <p role="note" className="rounded border-2 border-red-700 bg-red-50 p-2 text-red-900">
+          <strong>{t('fieldApp.sentBack', { name: sentBack.by ?? '-' })}</strong> {sentBack.note}
+        </p>
+      )}
       {message && (
         <p
           role={message.kind === 'error' ? 'alert' : 'status'}

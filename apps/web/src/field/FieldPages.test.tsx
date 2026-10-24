@@ -240,6 +240,28 @@ describe('field app', () => {
     );
   });
 
+  it('shows why a job was sent back after a failed verification', async () => {
+    api.fetchJob.mockResolvedValue({
+      data: {
+        ...JOB,
+        events: [
+          {
+            at: '2026-11-02T10:00:00Z',
+            from: 'completed',
+            to: 'in_progress',
+            note: 'Mulch missing',
+            source: 'user',
+            by: 'Terra Field Manager',
+          },
+        ],
+      },
+      offline: false,
+    });
+    renderAt('/field/jobs/w1');
+    expect(await screen.findByText('Sent back by Terra Field Manager:')).toBeInTheDocument();
+    expect(screen.getByText('Mulch missing')).toBeInTheDocument();
+  });
+
   it('isAnswered follows the database completeness rule', () => {
     expect(isAnswered({ input_type: 'tick', value: false, media_id: null })).toBe(false);
     expect(isAnswered({ input_type: 'tick', value: true, media_id: null })).toBe(true);

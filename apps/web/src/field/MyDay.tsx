@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import L from 'leaflet';
 import { LeafletMap } from '../components/LeafletMap';
 import { useCurrentSite } from '../org/useSite';
+import { useOrg } from '../org/context';
 import { addDays, dubaiDate, STATUS_COLOURS } from '../work/model';
 import { PriorityTag, StatusPill } from '../work/badges';
 import { useOutbox } from '../offline/outbox';
@@ -26,6 +27,8 @@ export function MyDay() {
     queryFn: () => fetchMyDay(site!.id, day),
   });
   const today = dubaiDate(new Date());
+  const { current } = useOrg();
+  const planner = !!current?.roles.some((r) => r === 'manager' || r === 'field_manager');
   const outbox = useOutbox();
   const list = jobs.data ? withPending(jobs.data.data, outbox) : undefined;
 
@@ -58,6 +61,14 @@ export function MyDay() {
       >
         {t('fieldApp.scan')}
       </Link>
+      {planner && (
+        <Link
+          to="/field/verify"
+          className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-green-800 text-lg font-semibold text-green-900"
+        >
+          {t('verify.heading')}
+        </Link>
+      )}
       <div className="mt-2 flex gap-2">
         <button
           type="button"

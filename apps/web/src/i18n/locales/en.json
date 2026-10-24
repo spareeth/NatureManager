@@ -826,6 +826,32 @@
     "queuedMove": "Moved to {{status}}.",
     "requestQueued": "Request saved. It is sent as soon as there is network.",
     "signOutPending": "{{count}} changes have not been sent yet and will be lost if you sign out. Sign out anyway?",
-    "notOffline": "Not available offline. Open it once with network to keep it on this phone."
+    "notOffline": "Not available offline. Open it once with network to keep it on this phone.",
+    "sentBack": "Sent back by {{name}}:"
+  },
+  "verify": {
+    "heading": "Verify work",
+    "notAllowed": "Only managers and field managers verify work.",
+    "empty": "Nothing waiting for verification.",
+    "ownJob": "your team's job",
+    "ownJobLong": "You did this job (or it belongs to your team), so someone else must verify it.",
+    "doneBy": "done by {{name}}",
+    "photoCount_one": "{{count}} photo",
+    "photoCount_other": "{{count}} photos",
+    "yes": "Yes",
+    "no": "No",
+    "noPhoto": "No photo",
+    "notCompleted": "This job is {{status}}, not waiting for verification.",
+    "checklist": "Checklist",
+    "check": {
+      "sop": "Work done as the SOP says",
+      "photos": "Photos show the finished work",
+      "site": "Site left clean and safe"
+    },
+    "pass": "Pass, verified",
+    "fail": "Fail, send back",
+    "reason": "What needs fixing?",
+    "sendBack": "Send back to the team",
+    "cancel": "Cancel"
   }
 }

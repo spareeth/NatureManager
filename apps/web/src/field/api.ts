@@ -256,3 +256,28 @@ export function isAnswered(step: Pick<JobStep, 'input_type' | 'value' | 'media_i
   if (step.input_type === 'tick') return step.value === true;
   return step.value !== null && step.value !== undefined && step.value !== '';
 }
+
+export type VerifyItem = {
+  id: string;
+  number: string;
+  title: string;
+  priority: string;
+  wo_type: string;
+  location_code: string | null;
+  completed_at: string;
+  completed_by_name: string | null;
+  assignee_name: string | null;
+  team_name: string | null;
+  photos: number;
+  steps: number;
+  can_verify: boolean;
+};
+
+/** Completed jobs waiting for verification (FR-WO-10); the last copy is kept for offline use. */
+export const fetchVerifyQueue = async (siteId: string) =>
+  readThrough(
+    async () => check<VerifyItem[]>(await supabase.rpc('wo_verify_queue', { p_site: siteId })),
+    (list) =>
+      db.kv.put({ key: `verify:${siteId}`, value: list, savedAt: new Date().toISOString() }),
+    async () => (await db.kv.get(`verify:${siteId}`))?.value as VerifyItem[] | undefined,
+  );

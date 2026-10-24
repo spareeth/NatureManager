@@ -51,7 +51,7 @@ export function SyncBar({ siteId }: { siteId?: string }) {
   // When the queue empties, show the server's view again.
   useEffect(() => {
     if (!online || pending.length > 0) return;
-    for (const key of ['field-job', 'field-day', 'field-scan'])
+    for (const key of ['field-job', 'field-day', 'field-scan', 'field-verify'])
       void queryClient.invalidateQueries({ queryKey: [key] });
   }, [online, pending.length, queryClient]);
 

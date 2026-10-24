@@ -2016,6 +2016,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      wo_verify_queue: { Args: { p_site: string }; Returns: Json };
     };
     Enums: {
       asset_class: 'living' | 'built';

@@ -3,6 +3,7 @@ import { JobScreen } from '../field/JobScreen';
 import { MyDay } from '../field/MyDay';
 import { ScanScreen } from '../field/ScanScreen';
 import { SyncBar } from '../field/SyncBar';
+import { VerifyQueue, VerifyScreen } from '../field/Verify';
 import { useCurrentSite } from '../org/useSite';
 
 /** Field app (FR-FLD): My day and the job screen. Large touch targets throughout (FR-FLD-06). */
@@ -15,6 +16,8 @@ export function FieldPage() {
         <Route index element={<MyDay />} />
         <Route path="jobs/:id" element={<JobScreen />} />
         <Route path="scan" element={<ScanScreen />} />
+        <Route path="verify" element={<VerifyQueue />} />
+        <Route path="verify/:id" element={<VerifyScreen />} />
       </Routes>
     </div>
   );
