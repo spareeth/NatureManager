@@ -57,6 +57,23 @@ transaction as the `approved` transition (transactional outbox pattern), so noth
 | Webhook | Later | POST JSON per approved request to a configured URL, HMAC-signed, retries with backoff |
 | ERP connector | Later | Mapping to the confirmed ERP once known |
 
+### As built (task 2.11)
+
+- Export: Requests, Hand-off tab (managers). "Export XLSX" or "Export CSV" takes every approved, unsent line
+  as one batch and marks the requests sent. Earlier batches can be downloaded again. CSV is UTF-8 with a byte
+  order mark; text that a spreadsheet would run as a formula is prefixed with `'`. Scheduled email is not
+  built yet (needs the receiving mailbox and an email service).
+- Pull API, a Supabase Edge Function (`supabase/functions/api`) with the receiver's key in the `X-Api-Key`
+  header (or `Authorization: Bearer tgk_...`):
+  - `GET <supabase url>/functions/v1/api/v1/item-requests?status=approved&since=<ISO>`: approved, unsent
+    requests, returned once as one batch and marked sent. `status=sent` lists sent requests not yet
+    acknowledged and can be read again.
+  - `POST <supabase url>/functions/v1/api/v1/item-requests/{number or id}/ack` with
+    `{"external_ref": "...", "status": "acknowledged" | "rejected_by_receiver" | "fulfilled", "note": "..."}`
+    (a note is required for `rejected_by_receiver`).
+  - Answers: 200, 400 (bad input), 401 (missing or wrong key), 404 (unknown request).
+- Receivers and keys: Hand-off tab, "Add receiver" shows the key once; "New key" replaces it at once.
+
 ### Export / API line format (v1)
 
 | Field | Example |

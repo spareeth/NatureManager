@@ -870,7 +870,8 @@
     "tabs": "Item request views",
     "tab": {
       "requests": "Requests",
-      "catalogue": "Item catalogue"
+      "catalogue": "Item catalogue",
+      "handoff": "Hand-off"
     },
     "status": {
       "draft": "Draft",
@@ -970,5 +971,26 @@
     "lineForm": "Line",
     "freeText": "Not in the catalogue (free text)",
     "assetTag": "Asset tag (being maintained or replaced)"
+  },
+  "handoff": {
+    "waiting": "Approved, not yet sent",
+    "summary": "{{lines}} lines in {{requests}} requests",
+    "exportXlsx": "Export XLSX",
+    "exportCsv": "Export CSV",
+    "confirm": "Export {{count}} lines? They are marked sent with a new batch id and leave this list.",
+    "nothing": "Nothing waiting to send.",
+    "exported": "Exported {{count}} lines as batch {{batch}}.",
+    "batches": "Sent batches",
+    "noBatches": "No batches sent yet.",
+    "batchCounts": "{{requests}} requests, {{lines}} lines",
+    "receivers": "Pull API receivers",
+    "receiversHelp": "A receiving system calls GET /functions/v1/api/v1/item-requests with its API key in the X-Api-Key header, and POST .../item-requests/{number}/ack to acknowledge.",
+    "keyOnce": "API key for {{name}}. Copy it now: it is not shown again.",
+    "rotate": "New key",
+    "rotateConfirm": "Make a new key for {{name}}? The current key stops working at once.",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "newReceiver": "Add receiver",
+    "receiverName": "Receiver name"
   }
 }

@@ -930,7 +930,8 @@
     "tabs": "عروض طلبات المواد",
     "tab": {
       "requests": "الطلبات",
-      "catalogue": "دليل المواد"
+      "catalogue": "دليل المواد",
+      "handoff": "التسليم"
     },
     "status": {
       "draft": "مسودة",
@@ -1038,5 +1039,26 @@
     "lineForm": "بند",
     "freeText": "غير موجودة في الدليل (نص حر)",
     "assetTag": "رمز الأصل (للصيانة أو الاستبدال)"
+  },
+  "handoff": {
+    "waiting": "معتمدة ولم ترسل بعد",
+    "summary": "{{lines}} بند في {{requests}} طلب",
+    "exportXlsx": "تصدير XLSX",
+    "exportCsv": "تصدير CSV",
+    "confirm": "تصدير {{count}} بند؟ تسجل كمرسلة برقم دفعة جديد وتخرج من هذه القائمة.",
+    "nothing": "لا يوجد ما يرسل.",
+    "exported": "صدر {{count}} بند في الدفعة {{batch}}.",
+    "batches": "الدفعات المرسلة",
+    "noBatches": "لم ترسل أي دفعة بعد.",
+    "batchCounts": "{{requests}} طلب، {{lines}} بند",
+    "receivers": "مستلمو واجهة السحب",
+    "receiversHelp": "يستدعي النظام المستلم GET /functions/v1/api/v1/item-requests مع مفتاحه في الترويسة X-Api-Key، و POST .../item-requests/{number}/ack لتأكيد الاستلام.",
+    "keyOnce": "مفتاح الواجهة لـ {{name}}. انسخه الآن: لن يظهر مرة أخرى.",
+    "rotate": "مفتاح جديد",
+    "rotateConfirm": "إنشاء مفتاح جديد لـ {{name}}؟ يتوقف المفتاح الحالي فورا.",
+    "deactivate": "تعطيل",
+    "activate": "تفعيل",
+    "newReceiver": "إضافة مستلم",
+    "receiverName": "اسم المستلم"
   }
 }

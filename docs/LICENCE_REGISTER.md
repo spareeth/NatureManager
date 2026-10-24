@@ -25,7 +25,10 @@ Anything else is flagged here before use. Update this file when adding a depende
 | QField / QFieldCloud | Surveys (separate tool) | GPL-2.0+ | OK, not linked into our code |
 | openMAINT, Atlas CMMS | Reference only | AGPL-3.0 | Do not copy code |
 | pyproj / PROJ | CRS transforms in scripts | MIT | OK |
-| SheetJS (xlsx) or openpyxl | Item request XLSX export | Apache-2.0 / MIT | OK |
+| SheetJS (xlsx) or openpyxl | Item request XLSX export | Apache-2.0 / MIT | Not used: the npm release of SheetJS is old (0.18.5) with known advisories; see write-excel-file |
+| write-excel-file 4.1 | Item request XLSX export in the browser (task 2.11) | MIT | OK |
+| fflate 0.8 | Zip for write-excel-file | MIT | OK |
+| Supabase Edge Runtime (Deno) | Pull API function `supabase/functions/api` (task 2.11) | MIT | OK |
 | React Router (react-router-dom) | Web routing | MIT | OK |
 | Tailwind CSS, @tailwindcss/vite | Web styling | MIT | OK |
 | i18next, react-i18next | Localisation (NFR-07) | MIT | OK |

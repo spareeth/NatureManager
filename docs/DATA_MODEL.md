@@ -744,6 +744,20 @@ As built (migration `20261024000200_item_requests.sql`, task 2.10):
 - RLS: members read; `item` by manager; requests and lines by their requester (working roles) or a planner;
   events and the outbox are written by `ir_transition()` only; the outbox is readable by managers.
 
+As built (migration `20261024000300_handoff.sql`, task 2.11):
+
+- `integration_receiver` as above, plus created and updated columns and `unique (organisation_id, name)`.
+  The API key is shown once; only its sha256 is kept, and clients cannot read `api_key_hash` (column grants).
+  Managers manage receivers (`receiver_create`, `receiver_rotate_key`).
+- `ir_export_rows(org, batch)` gives the line format v1 (approved and unsent, or one batch).
+  `ir_export(org)` (managers) and the pull API take every approved, unsent request as one batch: status
+  `sent` through `ir_system_transition()` (event `actor_system` `export` or `pull_api: <receiver>`),
+  `sent_batch_id` set, and the matching `integration_outbox` rows marked delivered with the channel, all in
+  one transaction. `ir_batches(org)` lists batches for downloading a file again.
+- Pull API: `api_item_requests(key, status, since)` and `api_ack(key, request, external_ref, status, note)`,
+  callable with the anon key; both check the receiver's API key and act only on its organisation.
+  Acknowledging the same reference again changes nothing.
+
 ## 9. Audit
 
 `audit_log(organisation_id, table_name, row_id, action, old jsonb, new jsonb, actor, at)` written

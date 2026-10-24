@@ -533,6 +533,53 @@ export type Database = {
           },
         ];
       };
+      integration_receiver: {
+        Row: {
+          active: boolean;
+          api_key_hash: string | null;
+          channel: string;
+          config: NonNullable<Json>;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          name: string;
+          organisation_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          active?: boolean;
+          api_key_hash?: string | null;
+          channel: string;
+          config?: NonNullable<Json>;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          name: string;
+          organisation_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          api_key_hash?: string | null;
+          channel?: string;
+          config?: NonNullable<Json>;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          name?: string;
+          organisation_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'integration_receiver_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       ir_number_seq: {
         Row: {
           last_value: number;
@@ -2192,6 +2239,41 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      api_ack: {
+        Args: {
+          p_external_ref: string;
+          p_key: string;
+          p_note?: string;
+          p_request: string;
+          p_status?: string;
+        };
+        Returns: Json;
+      };
+      api_item_requests: {
+        Args: { p_key: string; p_since?: string; p_status?: string };
+        Returns: Json;
+      };
+      api_receiver: {
+        Args: { p_key: string };
+        Returns: {
+          active: boolean;
+          api_key_hash: string | null;
+          channel: string;
+          config: NonNullable<Json>;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          name: string;
+          organisation_id: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'integration_receiver';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       asset_by_code: {
         Args: { p_code: string; p_org?: string };
         Returns: {
@@ -2265,12 +2347,28 @@ export type Database = {
           to_status: Database['public']['Enums']['item_request_status'];
         }[];
       };
+      ir_batches: { Args: { p_org: string }; Returns: Json };
       ir_detail: { Args: { p_ir: string }; Returns: Json };
+      ir_export: { Args: { p_org: string }; Returns: Json };
+      ir_export_rows: { Args: { p_batch?: string; p_org: string }; Returns: Json };
       ir_list: {
         Args: { p_site: string; p_status?: Database['public']['Enums']['item_request_status'][] };
         Returns: Json;
       };
       ir_payload: { Args: { p_ir: string }; Returns: Json };
+      ir_send_batch: {
+        Args: { p_actor_system: string; p_channel: string; p_ids: string[]; p_org: string };
+        Returns: string;
+      };
+      ir_system_transition: {
+        Args: {
+          p_actor_system: string;
+          p_ir: string;
+          p_note: string;
+          p_to: Database['public']['Enums']['item_request_status'];
+        };
+        Returns: undefined;
+      };
       ir_total: { Args: { p_ir: string }; Returns: number };
       ir_transition: {
         Args: {
@@ -2321,6 +2419,8 @@ export type Database = {
           location_id: string;
         }[];
       };
+      receiver_create: { Args: { p_name: string; p_org: string }; Returns: Json };
+      receiver_rotate_key: { Args: { p_receiver: string }; Returns: string };
       resolve_location: { Args: { p_geom: unknown; p_site?: string }; Returns: string };
       site_from_local: { Args: { p_site: string; p_x: number; p_y: number }; Returns: unknown };
       site_geom_from_local: { Args: { p_geom: unknown; p_site: string }; Returns: unknown };

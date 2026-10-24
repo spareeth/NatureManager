@@ -19,6 +19,7 @@ import {
   type Item,
 } from '../requests/api';
 import { IrStatusPill } from '../requests/IrStatusPill';
+import { HandoffPanel } from '../handoff/HandoffPanel';
 
 const WORKING = ['manager', 'field_manager', 'curator', 'green_team', 'field_engineer'];
 
@@ -26,7 +27,15 @@ const WORKING = ['manager', 'field_manager', 'curator', 'green_team', 'field_eng
 export function RequestsPage() {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const tab = params.get('tab') === 'catalogue' ? 'catalogue' : 'requests';
+  const { current } = useOrg();
+  const manager = !!current?.roles.includes('manager');
+  const tabs = manager
+    ? (['requests', 'catalogue', 'handoff'] as const)
+    : (['requests', 'catalogue'] as const);
+  const asked = params.get('tab');
+  const tab = (tabs as readonly string[]).includes(asked ?? '')
+    ? (asked as (typeof tabs)[number])
+    : 'requests';
   const setTab = (v: string) =>
     setParams(
       (p) => {
@@ -40,7 +49,7 @@ export function RequestsPage() {
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-xl font-semibold">{t('ir.heading')}</h1>
         <nav aria-label={t('ir.tabs')} className="flex gap-1 text-sm">
-          {(['requests', 'catalogue'] as const).map((v) => (
+          {tabs.map((v) => (
             <button
               key={v}
               type="button"
@@ -53,7 +62,15 @@ export function RequestsPage() {
           ))}
         </nav>
       </div>
-      <div className="mt-3">{tab === 'requests' ? <RequestList /> : <Catalogue />}</div>
+      <div className="mt-3">
+        {tab === 'requests' ? (
+          <RequestList />
+        ) : tab === 'catalogue' ? (
+          <Catalogue />
+        ) : (
+          current && <HandoffPanel orgId={current.organisationId} />
+        )}
+      </div>
     </section>
   );
 }

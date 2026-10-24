@@ -29,7 +29,10 @@ insert into definer_allowlist values
   ('wo_transition'),
   -- task 2.10: item request numbering and status guard, the only path to change item request
   -- status (checks membership and roles itself), and the asset trigger that drafts replacements.
-  ('next_ir_number'), ('item_request_before_write'), ('ir_transition'), ('asset_draft_replacement');
+  ('next_ir_number'), ('item_request_before_write'), ('ir_transition'), ('asset_draft_replacement'),
+  -- task 2.11: hand-off. System transitions and batching (not callable by clients), the manager
+  -- export (checks the role itself), and the pull API (checks the receiver's API key itself).
+  ('ir_system_transition'), ('ir_send_batch'), ('ir_export'), ('api_receiver'), ('api_item_requests'), ('api_ack');
 
 create temp view public_tables as
   select c.relname::text as tbl,
@@ -151,6 +154,7 @@ select org, '20000000-0000-0000-0000-0000000000c2', 1, '20000000-0000-0000-0000-
 insert into item_request_event (organisation_id, item_request_id, to_status, actor)
 select org, '20000000-0000-0000-0000-0000000000c2', 'draft', '10000000-0000-0000-0000-000000000002' from terra;
 insert into integration_outbox (organisation_id, topic, payload) select org, 'rls', '{}' from terra;
+insert into integration_receiver (organisation_id, name, channel) select org, 'RLS receiver', 'pull_api' from terra;
 
 select is(
   (select coalesce(array_agg(tbl order by tbl), '{}') from (
