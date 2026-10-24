@@ -3,25 +3,36 @@ import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useOrg } from '../org/context';
-import { fetchAllowed } from '../work/api';
+import { db } from '../offline/db';
+import { useOutbox } from '../offline/outbox';
+import { applyPending, fieldMoves } from '../offline/overlay';
 import { PriorityTag, StatusPill } from '../work/badges';
 import type { WoStatus } from '../work/model';
 import {
   answerStep,
   fetchJob,
   isAnswered,
+  NotOffline,
   moveJob,
   saveJobRecord,
+  addJobPhoto,
   signedPhoto,
-  uploadJobPhoto,
   type Bilingual,
   type FieldJob,
   type JobStep,
   type Material,
 } from './api';
 
+/** A photo still on the phone (not yet synced) shows from the offline store; others by signed URL. */
+async function photoUrl(path: string | null, blobId?: string) {
+  if (blobId) {
+    const b = await db.blobs.get(blobId);
+    if (b) return URL.createObjectURL(b.blob);
+  }
+  return path ? signedPhoto('photos', path) : null;
+}
+
 const BTN = 'min-h-12 rounded-lg px-4 text-lg font-semibold';
-const FIELD_ACTIONS: WoStatus[] = ['in_progress', 'on_hold', 'completed'];
 
 /** One job on the phone: start, SOP runner, photos, notes, materials, complete (FR-FLD-03). */
 export function JobScreen() {
@@ -30,7 +41,7 @@ export function JobScreen() {
   const { current } = useOrg();
   const queryClient = useQueryClient();
   const job = useQuery({ queryKey: ['field-job', id], queryFn: () => fetchJob(id!) });
-  const allowed = useQuery({ queryKey: ['wo-allowed', id], queryFn: () => fetchAllowed(id!) });
+  const outbox = useOutbox();
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const loc = (x: Bilingual | null | undefined) =>
@@ -39,7 +50,6 @@ export function JobScreen() {
   const refresh = () =>
     Promise.all([
       queryClient.invalidateQueries({ queryKey: ['field-job', id] }),
-      queryClient.invalidateQueries({ queryKey: ['wo-allowed', id] }),
       queryClient.invalidateQueries({ queryKey: ['field-day'] }),
     ]);
   const run = async (fn: () => Promise<unknown>, ok?: string) => {
@@ -60,16 +70,21 @@ export function JobScreen() {
   if (job.error)
     return (
       <p role="alert" className="p-4 text-red-700">
-        {job.error.message}
+        {job.error instanceof NotOffline ? t('fieldApp.notOffline') : job.error.message}
       </p>
     );
-  const j = job.data;
-  if (!j) return <p className="p-4">{t('fieldApp.notFound')}</p>;
+  if (!job.data.data) return <p className="p-4">{t('fieldApp.notFound')}</p>;
 
+  // The last known copy with the changes still waiting to sync applied on top.
+  const j = applyPending(job.data.data, outbox);
   const planner = !!current?.roles.some((r) => r === 'manager' || r === 'field_manager');
+  const fieldManager = !!current?.roles.includes('field_manager');
   const canWork = j.status === 'in_progress' && (j.mine || planner);
   const canRecord = (j.mine || planner) && ['in_progress', 'on_hold'].includes(j.status);
-  const moves = (allowed.data ?? []).filter((a) => FIELD_ACTIONS.includes(a.to_status));
+  const moves = fieldMoves(j.status, j.mine, fieldManager).map((to) => ({
+    to_status: to,
+    note_required: false,
+  }));
   const missing = j.steps.filter((s) => j.missing.includes(s.seq));
 
   const move = (to: WoStatus, noteRequired: boolean) => {
@@ -78,7 +93,10 @@ export function JobScreen() {
       note = window.prompt(t('fieldApp.reason')) ?? undefined;
       if (noteRequired && !note) return;
     }
-    void run(() => moveJob(j.id, to, note), t('wo.moved', { status: t(`wo.status.${to}`) }));
+    void run(
+      () => moveJob(j, to, note),
+      t('fieldApp.queuedMove', { status: t(`wo.status.${to}`) }),
+    );
   };
 
   return (
@@ -151,8 +169,8 @@ export function JobScreen() {
                 onAnswer={(a) => run(() => answerStep(j, s.id, a))}
                 onPhoto={(file) =>
                   run(async () => {
-                    const m = await uploadJobPhoto(j, file, loc(s.text));
-                    await answerStep(j, s.id, { mediaId: m.id });
+                    const mediaId = await addJobPhoto(j, file, loc(s.text));
+                    await answerStep(j, s.id, { mediaId });
                   })
                 }
               />
@@ -161,16 +179,12 @@ export function JobScreen() {
         </section>
       )}
 
-      <Photos
-        job={j}
-        disabled={!canRecord || busy}
-        onAdd={(f) => run(() => uploadJobPhoto(j, f))}
-      />
+      <Photos job={j} disabled={!canRecord || busy} onAdd={(f) => run(() => addJobPhoto(j, f))} />
       <RecordForm
         key={`${j.id}-${j.status}`}
         job={j}
         disabled={!canRecord || busy}
-        onSave={(v) => run(() => saveJobRecord(j.id, v), t('fieldApp.saved'))}
+        onSave={(v) => run(() => saveJobRecord(j, v), t('fieldApp.saved'))}
       />
 
       {moves.some((m) => m.to_status === 'completed') && missing.length > 0 && (
@@ -230,12 +244,12 @@ function StepRow({
   const [thumb, setThumb] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
-    if (step.media_path_answer)
-      void signedPhoto('photos', step.media_path_answer).then((u) => live && setThumb(u));
+    if (step.blobId || step.media_path_answer)
+      void photoUrl(step.media_path_answer, step.blobId).then((u) => live && setThumb(u));
     return () => {
       live = false;
     };
-  }, [step.media_path_answer]);
+  }, [step.media_path_answer, step.blobId]);
   const [guide, setGuide] = useState<string | null>(null);
   useEffect(() => {
     let live = true;
@@ -370,7 +384,7 @@ function Photos({
   useEffect(() => {
     let live = true;
     void Promise.all(
-      job.photos.map(async (p) => [p.id, await signedPhoto('photos', p.path)] as const),
+      job.photos.map(async (p) => [p.id, await photoUrl(p.path, p.blobId)] as const),
     ).then((pairs) => {
       if (live) setUrls(Object.fromEntries(pairs.filter((x): x is [string, string] => !!x[1])));
     });

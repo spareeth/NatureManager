@@ -5,6 +5,7 @@ import { useAuth } from '../auth/context';
 import { asRoles } from '../auth/roles';
 import { OrgContext, type OrgState } from './context';
 import { pickOrg, type Membership } from './pickOrg';
+import { cachedRead } from '../offline/cache';
 
 const STORAGE_KEY = 'tg.currentOrg';
 
@@ -55,7 +56,8 @@ export function OrgProvider({ children }: { children: ReactNode }) {
 
   const query = useQuery({
     queryKey: ['memberships', userId],
-    queryFn: () => fetchMemberships(userId!),
+    // Kept on the phone so the field app opens without network (FR-FLD-04).
+    queryFn: () => cachedRead(`memberships:${userId}`, () => fetchMemberships(userId!)),
     enabled: !!userId,
   });
 

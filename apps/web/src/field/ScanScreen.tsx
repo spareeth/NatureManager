@@ -2,11 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { assetByCode } from '../labels/api';
 import { useOrg } from '../org/context';
 import { RequestForm } from '../work/RequestForm';
 import { PriorityTag, StatusPill } from '../work/badges';
-import { fetchScan, moveJob, type ScanJob } from './api';
+import { moveJob, queueRequest, scanCode, type ScanJob } from './api';
 import { parseScan } from './scan';
 import { Scanner } from './Scanner';
 
@@ -24,19 +23,18 @@ export function ScanScreen() {
   const [reporting, setReporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const setCode = (c: string | null) => {
     setReporting(false);
     setError(null);
+    setNotice(null);
     setParams(c ? { code: c } : {}, { replace: true });
   };
   const found = useQuery({
     queryKey: ['field-scan', code, current?.organisationId],
     enabled: !!code,
-    queryFn: async () => {
-      const hit = await assetByCode(code!, current?.organisationId);
-      return hit ? fetchScan(hit.id) : null;
-    },
+    queryFn: async () => (await scanCode(code!, current?.organisationId)).data,
   });
 
   const start = async (job: ScanJob) => {
@@ -44,7 +42,7 @@ export function ScanScreen() {
     setError(null);
     try {
       if (job.status === 'scheduled' || job.status === 'on_hold')
-        await moveJob(job.id, 'in_progress');
+        await moveJob({ id: job.id, organisation_id: found.data!.organisation_id }, 'in_progress');
       navigate(`/field/jobs/${job.id}`);
     } catch (e) {
       setError((e as Error).message);
@@ -167,6 +165,11 @@ export function ScanScreen() {
             </p>
           )}
 
+          {notice && (
+            <p role="status" className="rounded bg-green-50 p-2 text-green-900">
+              {notice}
+            </p>
+          )}
           {reporting ? (
             <RequestForm
               orgId={found.data.organisation_id}
@@ -179,7 +182,11 @@ export function ScanScreen() {
                 lat: found.data.lat ?? undefined,
               }}
               onCancel={() => setReporting(false)}
-              onDone={(wo) => navigate(`/field/jobs/${wo.id}`)}
+              submit={queueRequest}
+              onDone={() => {
+                setReporting(false);
+                setNotice(t('fieldApp.requestQueued'));
+              }}
             />
           ) : (
             <button

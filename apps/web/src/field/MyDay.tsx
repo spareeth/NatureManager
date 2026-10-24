@@ -7,7 +7,10 @@ import { LeafletMap } from '../components/LeafletMap';
 import { useCurrentSite } from '../org/useSite';
 import { addDays, dubaiDate, STATUS_COLOURS } from '../work/model';
 import { PriorityTag, StatusPill } from '../work/badges';
-import { fetchMyDay, type DayJob } from './api';
+import { useOutbox } from '../offline/outbox';
+import type { OutboxItem } from '../offline/db';
+import type { WoStatus } from '../work/model';
+import { fetchMyDay, NotOffline, type DayJob } from './api';
 
 const TOUCH = 'min-h-12 min-w-12';
 
@@ -23,6 +26,8 @@ export function MyDay() {
     queryFn: () => fetchMyDay(site!.id, day),
   });
   const today = dubaiDate(new Date());
+  const outbox = useOutbox();
+  const list = jobs.data ? withPending(jobs.data.data, outbox) : undefined;
 
   return (
     <section className="mx-auto flex h-full max-w-xl flex-col p-3 text-base">
@@ -73,20 +78,29 @@ export function MyDay() {
       </div>
       {jobs.error && (
         <p role="alert" className="mt-2 text-red-700">
-          {jobs.error.message}
+          {jobs.error instanceof NotOffline ? t('fieldApp.notOffline') : jobs.error.message}
         </p>
       )}
       {jobs.isPending && site && <p className="mt-3">{t('common.loading')}</p>}
-      {jobs.data && jobs.data.length === 0 && (
+      {list && list.length === 0 && (
         <p className="mt-6 text-center text-gray-700">{t('fieldApp.noJobs')}</p>
       )}
-      {jobs.data && jobs.data.length > 0 && (
+      {list && list.length > 0 && (
         <div className="mt-3 min-h-0 flex-1">
-          {showMap ? <DayMap jobs={jobs.data} /> : <JobList jobs={jobs.data} />}
+          {showMap ? <DayMap jobs={list} /> : <JobList jobs={list} />}
         </div>
       )}
     </section>
   );
+}
+
+/** Status changes still waiting to sync show on the list at once. */
+function withPending(list: DayJob[], items: OutboxItem[]): DayJob[] {
+  const last = new Map<string, WoStatus>();
+  for (const i of items)
+    if (i.kind === 'transition' && i.status === 'pending' && i.woId)
+      last.set(i.woId, i.payload.to as WoStatus);
+  return list.map((j) => (last.has(j.id) ? { ...j, status: last.get(j.id)! } : j));
 }
 
 function JobList({ jobs }: { jobs: DayJob[] }) {

@@ -802,6 +802,30 @@
     "noOpenJobs": "No open jobs for this asset.",
     "continueJob": "Continue job",
     "viewJob": "View job",
-    "scanAgain": "Scan another"
+    "scanAgain": "Scan another",
+    "online": "Online",
+    "offline": "Offline",
+    "waiting_one": "{{count}} change waiting to send",
+    "waiting_other": "{{count}} changes waiting to send",
+    "allSent": "All changes sent",
+    "syncNow": "Send now",
+    "packSaved": "Offline data {{time}}: {{jobs}} jobs, {{assets}} assets",
+    "packNone": "No offline data yet",
+    "packUpdate": "Update offline data",
+    "failed_one": "{{count}} change was refused by the server",
+    "failed_other": "{{count}} changes were refused by the server",
+    "retry": "Retry",
+    "discard": "Discard",
+    "kind": {
+      "transition": "Status change",
+      "answer": "SOP answer",
+      "photo": "Photo",
+      "record": "Work record",
+      "request": "Request"
+    },
+    "queuedMove": "Moved to {{status}}.",
+    "requestQueued": "Request saved. It is sent as soon as there is network.",
+    "signOutPending": "{{count}} changes have not been sent yet and will be lost if you sign out. Sign out anyway?",
+    "notOffline": "Not available offline. Open it once with network to keep it on this phone."
   }
 }

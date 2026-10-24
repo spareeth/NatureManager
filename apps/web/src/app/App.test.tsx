@@ -106,10 +106,10 @@ describe('shell', () => {
     expect(screen.getByText('Terra')).toBeInTheDocument();
   });
 
-  it('sign out calls auth', () => {
+  it('sign out calls auth', async () => {
     const { auth } = renderApp({ memberships: [membership(['curator'])] });
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
-    expect(auth.signOut).toHaveBeenCalled();
+    await waitFor(() => expect(auth.signOut).toHaveBeenCalled());
   });
 });
 

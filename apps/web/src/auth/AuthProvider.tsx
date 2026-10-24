@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { clearOfflineStore } from '../offline/db';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import { AuthContext, type AuthState } from './context';
@@ -34,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async signOut() {
         await supabase.auth.signOut();
+        // Cached field data must not stay on a shared phone for the next user.
+        await clearOfflineStore().catch(() => undefined);
       },
     }),
     [session, loading],

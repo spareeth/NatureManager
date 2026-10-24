@@ -1,4 +1,5 @@
 import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import { db } from '../offline/db';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/context';
 import { useOrg } from '../org/context';
@@ -81,7 +82,15 @@ export function App() {
           </button>
           <button
             type="button"
-            onClick={() => void signOut()}
+            onClick={() =>
+              void (async () => {
+                // Unsent field changes are lost on sign-out (the offline store is cleared).
+                const waiting = await db.outbox.count().catch(() => 0);
+                if (waiting && !window.confirm(t('fieldApp.signOutPending', { count: waiting })))
+                  return;
+                await signOut();
+              })()
+            }
             className="min-h-12 text-sm underline sm:min-h-0"
           >
             {t('auth.signOut')}

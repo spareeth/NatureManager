@@ -11,7 +11,8 @@ Anything else is flagged here before use. Update this file when adding a depende
 | React, Vite, TanStack Query | Web | MIT | OK |
 | Leaflet | Map | BSD-2-Clause | OK |
 | react-leaflet | Map (React bindings) | Hippocratic-2.1 (all versions, 4.x and 5.x) | Not used. Decision 2026-09-28: plain Leaflet with in-house wrapper `apps/web/src/components/LeafletMap.tsx` |
-| Dexie | Offline store | Apache-2.0 | OK |
+| Dexie 4.4 | Offline store (field app, task 2.8) | Apache-2.0 | OK |
+| fake-indexeddb 6.2 (dev only) | IndexedDB for unit tests | Apache-2.0 | OK |
 | @zxing/browser 0.2.1 | QR/barcode scanning in the field app | MIT (corrected 2026-10-12, npm metadata) | OK |
 | @zxing/library 0.23.0 | Decoder used by @zxing/browser | Apache-2.0 | OK |
 | FastAPI | AI service | MIT | OK |

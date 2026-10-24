@@ -13,13 +13,12 @@ const api = vi.hoisted(() => ({
   fetchJob: vi.fn(),
   moveJob: vi.fn(),
   answerStep: vi.fn(),
-  uploadJobPhoto: vi.fn(),
+  addJobPhoto: vi.fn(),
   signedPhoto: vi.fn(),
   saveJobRecord: vi.fn(),
 }));
-const work = vi.hoisted(() => ({ fetchAllowed: vi.fn() }));
 vi.mock('./api', async (orig) => ({ ...(await orig<typeof import('./api')>()), ...api }));
-vi.mock('../work/api', () => work);
+vi.mock('./SyncBar', () => ({ SyncBar: () => null }));
 vi.mock('../org/useSite', () => ({
   useCurrentSite: () => ({ site: { id: 's1', code: 'TG', name: 'Terra Garden' } }),
 }));
@@ -129,34 +128,33 @@ const JOB: FieldJob = {
 beforeEach(() => {
   vi.clearAllMocks();
   api.signedPhoto.mockResolvedValue(null);
-  work.fetchAllowed.mockResolvedValue([
-    { to_status: 'on_hold', note_required: false },
-    { to_status: 'completed', note_required: false },
-  ]);
 });
 
 describe('field app', () => {
   it('My day lists jobs by location with step progress', async () => {
-    api.fetchMyDay.mockResolvedValue([
-      {
-        id: 'w1',
-        number: 'WO-1',
-        title: 'Bed care',
-        status: 'scheduled',
-        priority: 'P3',
-        wo_type: 'preventive',
-        planned_start: null,
-        due_at: null,
-        location_code: 'EG-01',
-        est_minutes: 60,
-        mine: true,
-        lon: null,
-        lat: null,
-        steps: 3,
-        answered: 1,
-        overdue: false,
-      },
-    ]);
+    api.fetchMyDay.mockResolvedValue({
+      offline: false,
+      data: [
+        {
+          id: 'w1',
+          number: 'WO-1',
+          title: 'Bed care',
+          status: 'scheduled',
+          priority: 'P3',
+          wo_type: 'preventive',
+          planned_start: null,
+          due_at: null,
+          location_code: 'EG-01',
+          est_minutes: 60,
+          mine: true,
+          lon: null,
+          lat: null,
+          steps: 3,
+          answered: 1,
+          overdue: false,
+        },
+      ],
+    });
     renderAt('/field');
     expect(await screen.findByText('EG-01')).toBeInTheDocument();
     expect(screen.getByText(/1 of 3 steps/)).toBeInTheDocument();
@@ -169,7 +167,7 @@ describe('field app', () => {
   });
 
   it('runs SOP steps and blocks complete until required steps are done', async () => {
-    api.fetchJob.mockResolvedValue(JOB);
+    api.fetchJob.mockResolvedValue({ data: JOB, offline: false });
     api.answerStep.mockResolvedValue(undefined);
     renderAt('/field/jobs/w1');
     expect(await screen.findAllByText(/Weed the bed/)).toHaveLength(2); // step and missing list
@@ -181,35 +179,49 @@ describe('field app', () => {
 
   it('completes once every required step is answered', async () => {
     api.fetchJob.mockResolvedValue({
-      ...JOB,
-      missing: [],
-      steps: JOB.steps.map((s) => ({
-        ...s,
-        value: s.input_type === 'tick' ? true : null,
-        media_id: s.input_type === 'photo' ? 'm1' : null,
-      })),
+      offline: false,
+      data: {
+        ...JOB,
+        missing: [],
+        steps: JOB.steps.map((s) => ({
+          ...s,
+          value: s.input_type === 'tick' ? true : null,
+          media_id: s.input_type === 'photo' ? 'm1' : null,
+        })),
+      },
     });
     api.moveJob.mockResolvedValue({});
     renderAt('/field/jobs/w1');
     const btn = await screen.findByRole('button', { name: 'Complete job' });
     await waitFor(() => expect(btn).toBeEnabled());
     fireEvent.click(btn);
-    await waitFor(() => expect(api.moveJob).toHaveBeenCalledWith('w1', 'completed', undefined));
+    await waitFor(() =>
+      expect(api.moveJob).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'w1' }),
+        'completed',
+        undefined,
+      ),
+    );
   });
 
   it('a scheduled job must be started before steps can be answered', async () => {
-    api.fetchJob.mockResolvedValue({ ...JOB, status: 'scheduled' });
-    work.fetchAllowed.mockResolvedValue([{ to_status: 'in_progress', note_required: false }]);
+    api.fetchJob.mockResolvedValue({ data: { ...JOB, status: 'scheduled' }, offline: false });
     api.moveJob.mockResolvedValue({});
     renderAt('/field/jobs/w1');
     expect(await screen.findByText('Start the job to answer the steps.')).toBeInTheDocument();
     expect(screen.getByRole('checkbox')).toBeDisabled();
     fireEvent.click(await screen.findByRole('button', { name: 'Start job' }));
-    await waitFor(() => expect(api.moveJob).toHaveBeenCalledWith('w1', 'in_progress', undefined));
+    await waitFor(() =>
+      expect(api.moveJob).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 'w1' }),
+        'in_progress',
+        undefined,
+      ),
+    );
   });
 
   it('saves notes, minutes and materials', async () => {
-    api.fetchJob.mockResolvedValue(JOB);
+    api.fetchJob.mockResolvedValue({ data: JOB, offline: false });
     api.saveJobRecord.mockResolvedValue(undefined);
     renderAt('/field/jobs/w1');
     fireEvent.change(await screen.findByLabelText('Notes'), { target: { value: 'Weeded' } });
@@ -220,7 +232,7 @@ describe('field app', () => {
     fireEvent.change(screen.getByLabelText('Unit'), { target: { value: 'm3' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save record' }));
     await waitFor(() =>
-      expect(api.saveJobRecord).toHaveBeenCalledWith('w1', {
+      expect(api.saveJobRecord).toHaveBeenCalledWith(expect.objectContaining({ id: 'w1' }), {
         completion_notes: 'Weeded',
         actual_minutes: 45,
         materials: [{ item: 'mulch', qty: 2, unit: 'm3' }],

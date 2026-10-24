@@ -6,10 +6,8 @@ import '../i18n';
 import { OrgContext, type OrgState } from '../org/context';
 import { ScanScreen } from './ScanScreen';
 
-const api = vi.hoisted(() => ({ fetchScan: vi.fn(), moveJob: vi.fn() }));
-const labels = vi.hoisted(() => ({ assetByCode: vi.fn() }));
+const api = vi.hoisted(() => ({ scanCode: vi.fn(), moveJob: vi.fn(), queueRequest: vi.fn() }));
 vi.mock('./api', () => api);
-vi.mock('../labels/api', () => labels);
 vi.mock('../work/api', () => ({ raiseRequest: vi.fn() }));
 // The camera is not available in tests; the screen gets a code as if it had been scanned.
 vi.mock('./Scanner', () => ({
@@ -86,13 +84,7 @@ function renderScan() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  labels.assetByCode.mockResolvedValue({
-    id: 'a1',
-    organisation_id: 'o1',
-    tag_code: 'WG07-T04_PRO',
-    matched: 'tag',
-  });
-  api.fetchScan.mockResolvedValue(ASSET);
+  api.scanCode.mockResolvedValue({ data: ASSET, offline: false });
   api.moveJob.mockResolvedValue({});
 });
 
@@ -101,7 +93,7 @@ describe('ScanScreen', () => {
     renderScan();
     fireEvent.click(screen.getByRole('button', { name: 'fake scan' }));
     expect(await screen.findByRole('heading', { name: 'WG07-T04_PRO' })).toBeInTheDocument();
-    expect(labels.assetByCode).toHaveBeenCalledWith('WG07-T04_PRO', 'o1');
+    expect(api.scanCode).toHaveBeenCalledWith('WG07-T04_PRO', 'o1');
     expect(screen.getByRole('link', { name: 'Open asset' })).toHaveAttribute('href', '/assets/a1');
     expect(screen.getByRole('link', { name: 'View job' })).toHaveAttribute(
       'href',
@@ -113,12 +105,14 @@ describe('ScanScreen', () => {
     renderScan();
     fireEvent.click(screen.getByRole('button', { name: 'fake scan' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Start job' }));
-    await waitFor(() => expect(api.moveJob).toHaveBeenCalledWith('w1', 'in_progress'));
+    await waitFor(() =>
+      expect(api.moveJob).toHaveBeenCalledWith({ id: 'w1', organisation_id: 'o1' }, 'in_progress'),
+    );
     expect(await screen.findByText('job page')).toBeInTheDocument();
   });
 
   it('a typed code that matches nothing says so', async () => {
-    labels.assetByCode.mockResolvedValue(null);
+    api.scanCode.mockResolvedValue({ data: null, offline: false });
     renderScan();
     fireEvent.change(screen.getByLabelText('Type a tag or barcode'), {
       target: { value: 'NOPE-1' },

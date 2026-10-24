@@ -2,16 +2,27 @@ import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { raiseRequest } from './api';
 
+type RequestInput = Parameters<typeof raiseRequest>[0];
+
 type Props = {
   orgId: string;
   siteId: string;
   asset?: { id: string; tag_code: string; location_id?: string | null; lon?: number; lat?: number };
   onDone: (wo: { id: string; number: string }) => void;
   onCancel: () => void;
+  /** How to send it; the field app queues it in the offline outbox. Default: insert now. */
+  submit?: (v: RequestInput) => Promise<{ id: string; number: string }>;
 };
 
 /** Report a problem: any member raises a request (FR-WO-06). */
-export function RequestForm({ orgId, siteId, asset, onDone, onCancel }: Props) {
+export function RequestForm({
+  orgId,
+  siteId,
+  asset,
+  onDone,
+  onCancel,
+  submit: send = raiseRequest,
+}: Props) {
   const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -25,7 +36,7 @@ export function RequestForm({ orgId, siteId, asset, onDone, onCancel }: Props) {
     setError(null);
     setBusy(true);
     try {
-      const wo = await raiseRequest({
+      const wo = await send({
         orgId,
         siteId,
         title: title.trim(),

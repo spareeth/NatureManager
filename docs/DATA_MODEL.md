@@ -527,6 +527,17 @@ with its open work orders (through `work_order_asset`), each marked `mine` for t
 team. The phone resolves the scanned text with `asset_by_code` (tag from the `/a/<tag>` label URL, or an
 existing barcode).
 
+As built (migration `20261013000300_field_offline.sql`, task 2.8):
+
+- `field_offline_pack(p_site, p_from, p_to)` returns what the phone keeps for a shift: My day per date, the
+  full job (`field_job`) for each of the user's jobs, the assets in the zones of those jobs, and the site
+  extent for the map tile cache.
+- Offline writes are replayed safely with client-generated ids: `wo_transition(..., p_client_uuid)` for
+  status changes, `sop_response` upserts on its key, `media.id` set on the phone (photo path
+  `<organisation_id>/wo/<work_order_id>/<media_id>.jpg`), and `work_order.client_uuid` plus a phone-made
+  `work_order.id` for requests raised offline. No table changes.
+- Status events of offline work carry the time they reached the server, not the time on the phone.
+
 ## 6. Observations
 
 ```sql

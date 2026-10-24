@@ -23,6 +23,26 @@ export default defineConfig({
         background_color: '#ffffff',
         icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
       },
+      workbox: {
+        // App shell offline: every route falls back to index.html (FR-FLD-04).
+        navigateFallback: '/index.html',
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            // Map tiles for the site (OpenStreetMap; the site orthophoto when configured). Google
+            // tiles are not matched: their terms forbid caching.
+            urlPattern: ({ url }) =>
+              url.hostname === 'tile.openstreetmap.org' || url.pathname.includes('/tiles/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tiles',
+              expiration: { maxEntries: 2000, maxAgeSeconds: 30 * 24 * 3600 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
     }),
   ],
   server: { port: 5173 },
