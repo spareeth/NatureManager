@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import setup_site_grid as g  # noqa: E402
+import setup_site_grid as g
 
 ROOT = Path(__file__).resolve().parents[2]
 

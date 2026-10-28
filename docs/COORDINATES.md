@@ -86,6 +86,13 @@ Uses:
 3. The app calls `site_from_local(site, x0 + dx, y0 + dy)` through an RPC and shows the result on the
    map before saving. Source of position is stored: `gps`, `rtk`, `offset`, `cad`, `hortis`, `bed_centroid`.
 
+As built (task 1.8): the map offers "Add by offset" (from a control point or a snapped bed corner),
+"Move on map" with a click or an offset, and "Move by offset" (dx, dy from the current position,
+also for planting group polygons through `asset_move_offset`). Bearings are clockwise from **grid
+north** (+y) (decision 11 Oct 2026): dx = d sin(b), dy = d cos(b). With rotation 0, grid north and
+true north differ by under 0.1 degrees here; compass bearings need the local magnetic declination
+added first. Typed positions (WGS 84, Dubai TM E/N, or grid x/y) are converted by `site_point`.
+
 ## 5. Open checks before Phase 1
 
 - [x] CRS of `TG_beds_new` and `TG_boundary`: CRS84 (WGS 84 lon/lat), checked 28 Sep 2026. Load directly as EPSG:4326.

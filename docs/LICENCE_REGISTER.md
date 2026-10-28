@@ -38,4 +38,8 @@ Anything else is flagged here before use. Update this file when adding a depende
 | Supabase CLI | Local dev stack | MIT | OK |
 | @supabase/supabase-js | Web client for Supabase Auth, REST, Storage | MIT | OK |
 | Shapely | Point-in-polygon and distances in scripts | BSD-3-Clause | OK |
+| Google Map Tiles API (satellite 2D tiles) | Satellite base layer (decision 1 Oct 2026) | Google Maps Platform terms, paid API with key | Check: official API only (no undocumented tile URLs); show viewport attribution; no offline caching of tiles, so not usable for the task 2.8 offline tile cache |
+| jsPDF (and its MIT deps fflate, fast-png; optional html2canvas MIT, canvg MIT, DOMPurify used under Apache-2.0) | Label sheet PDF | MIT | OK |
+| qrcode (node-qrcode) | QR codes on labels | MIT | OK |
+| pg8000 (and scramp, MIT-0) | Database driver for the migration scripts (psycopg2 and psycopg 3 are LGPL, avoided) | BSD-3-Clause | OK |
 | GDAL / OGR (system package, ogr2ogr) | Extract CAD (DXF) line work in scripts | MIT | OK, dev tool, not distributed |

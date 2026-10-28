@@ -61,7 +61,7 @@ def main() -> int:
             ok = got == [("terra", roles)]
             print(f"{'ok ' if ok else 'FAIL'} {email:26} {got}")
             failures += not ok
-        except Exception as exc:  # report and continue with the next user
+        except Exception as exc:  # noqa: BLE001 - report and continue with the next user
             print(f"FAIL {email:26} {exc}")
             failures += 1
     return 1 if failures else 0

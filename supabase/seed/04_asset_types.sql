@@ -1,93 +1,24 @@
--- Seed: Terra asset type catalogue (task 0.5, FR-AST-01, FR-AST-02).
--- attribute_schema is JSON Schema for asset.attributes; the asset form renders from it (task 1.4).
-insert into asset_type (organisation_id, asset_class, code, name, icon, attribute_schema)
-select o.id, t.cls::asset_class, t.code, t.name, t.icon, t.schema::jsonb
+-- Seed: Terra asset type catalogue (task 0.5, FR-AST-01, FR-AST-02; Arabic names task 1.4).
+-- attribute_schema is JSON Schema for asset.attributes; the asset form renders from it.
+-- Custom keywords: "x-title-ar" (Arabic label), "x-tag-prefix" (built asset tag prefix, e.g. VLV).
+insert into asset_type (organisation_id, asset_class, code, name, name_ar, icon, attribute_schema)
+select o.id, t.cls::asset_class, t.code, t.name, t.name_ar, t.icon, t.schema::jsonb
 from organisation o,
      (values
-  ('living', 'TREE', 'Tree', 'tree', '{
-     "type": "object",
-     "properties": {
-       "height_m": {"type": "number", "minimum": 0, "title": "Height (m)"},
-       "dbh_cm": {"type": "number", "minimum": 0, "title": "Trunk diameter at 1.3 m (cm)"},
-       "canopy_diameter_m": {"type": "number", "minimum": 0, "title": "Canopy diameter (m)"},
-       "multi_stem": {"type": "boolean", "title": "Multi-stem"}
-     }}'),
-  ('living', 'PLANT', 'Plant (shrub, perennial, succulent)', 'plant', '{
-     "type": "object",
-     "properties": {
-       "height_m": {"type": "number", "minimum": 0, "title": "Height (m)"},
-       "spread_m": {"type": "number", "minimum": 0, "title": "Spread (m)"},
-       "growth_form": {"type": "string", "enum": ["shrub", "perennial", "succulent", "climber", "grass", "annual"], "title": "Growth form"}
-     }}'),
-  ('living', 'GROUP', 'Planting group', 'group', '{
-     "type": "object",
-     "properties": {
-       "cover_percent": {"type": "number", "minimum": 0, "maximum": 100, "title": "Cover (%)"},
-       "spacing_m": {"type": "number", "minimum": 0, "title": "Spacing (m)"}
-     }}'),
-  ('built', 'VALVE', 'Irrigation valve', 'valve', '{
-     "type": "object",
-     "properties": {
-       "size_mm": {"type": "number", "minimum": 0, "title": "Size (mm)"},
-       "valve_type": {"type": "string", "enum": ["solenoid", "gate", "ball", "air_release", "pressure_reducing"], "title": "Valve type"},
-       "controller_station": {"type": "string", "title": "Controller station"}
-     }}'),
-  ('built', 'PUMP', 'Pump', 'pump', '{
-     "type": "object",
-     "properties": {
-       "power_kw": {"type": "number", "minimum": 0, "title": "Power (kW)"},
-       "flow_l_min": {"type": "number", "minimum": 0, "title": "Rated flow (L/min)"},
-       "manufacturer": {"type": "string", "title": "Manufacturer"},
-       "model": {"type": "string", "title": "Model"},
-       "serial": {"type": "string", "title": "Serial number"}
-     }}'),
-  ('built', 'CONTROLLER', 'Irrigation controller', 'controller', '{
-     "type": "object",
-     "properties": {
-       "stations": {"type": "integer", "minimum": 1, "title": "Stations"},
-       "manufacturer": {"type": "string", "title": "Manufacturer"},
-       "model": {"type": "string", "title": "Model"},
-       "serial": {"type": "string", "title": "Serial number"}
-     }}'),
-  ('built', 'BENCH', 'Bench', 'bench', '{
-     "type": "object",
-     "properties": {"material": {"type": "string", "enum": ["wood", "metal", "stone", "concrete", "composite"], "title": "Material"}}}'),
-  ('built', 'SIGN', 'Sign or label', 'sign', '{
-     "type": "object",
-     "properties": {
-       "sign_type": {"type": "string", "enum": ["species_label", "interpretive", "wayfinding", "safety"], "title": "Sign type"},
-       "has_qr": {"type": "boolean", "title": "Has QR code"}
-     }}'),
-  ('built', 'BIN', 'Bin', 'bin', '{
-     "type": "object",
-     "properties": {"stream": {"type": "string", "enum": ["general", "recycling", "green_waste"], "title": "Waste stream"}}}'),
-  ('built', 'CAMTRAP', 'Camera trap', 'camera', '{
-     "type": "object",
-     "properties": {
-       "model": {"type": "string", "title": "Model"},
-       "serial": {"type": "string", "title": "Serial number"},
-       "height_m": {"type": "number", "minimum": 0, "title": "Mount height (m)"},
-       "bearing_deg": {"type": "number", "minimum": 0, "maximum": 360, "title": "Bearing (degrees)"}
-     }}'),
-  ('built', 'SENSOR', 'Sensor', 'sensor', '{
-     "type": "object",
-     "properties": {
-       "measures": {"type": "array", "items": {"type": "string", "enum": ["soil_moisture", "soil_temperature", "air_temperature", "humidity", "pressure", "flow", "water_level", "dissolved_oxygen"]}, "title": "Measures"},
-       "model": {"type": "string", "title": "Model"},
-       "serial": {"type": "string", "title": "Serial number"}
-     }}'),
-  ('built', 'AERATOR', 'Aerator', 'aerator', '{
-     "type": "object",
-     "properties": {"power_kw": {"type": "number", "minimum": 0, "title": "Power (kW)"}}}'),
-  ('built', 'FOUNTAIN', 'Fountain or water feature', 'fountain', '{
-     "type": "object",
-     "properties": {"pump_power_kw": {"type": "number", "minimum": 0, "title": "Pump power (kW)"}}}'),
-  ('built', 'FENCE', 'Fence', 'fence', '{
-     "type": "object",
-     "properties": {
-       "material": {"type": "string", "title": "Material"},
-       "height_m": {"type": "number", "minimum": 0, "title": "Height (m)"}
-     }}'),
-  ('built', 'OTHER', 'Other built asset', 'other', '{"type": "object", "properties": {}}')
-     ) t(cls, code, name, icon, schema)
+  ('living', 'TREE', 'Tree', 'شجرة', 'tree', '{"type": "object", "properties": {"height_m": {"type": "number", "minimum": 0, "title": "Height (m)", "x-title-ar": "الارتفاع (م)"}, "dbh_cm": {"type": "number", "minimum": 0, "title": "Trunk diameter at 1.3 m (cm)", "x-title-ar": "قطر الجذع عند 1.3 م (سم)"}, "canopy_diameter_m": {"type": "number", "minimum": 0, "title": "Canopy diameter (m)", "x-title-ar": "قطر التاج (م)"}, "multi_stem": {"type": "boolean", "title": "Multi-stem", "x-title-ar": "متعدد السيقان"}}}'),
+  ('living', 'PLANT', 'Plant (shrub, perennial, succulent)', 'نبات (شجيرة، معمّرة، عصارية)', 'plant', '{"type": "object", "properties": {"height_m": {"type": "number", "minimum": 0, "title": "Height (m)", "x-title-ar": "الارتفاع (م)"}, "spread_m": {"type": "number", "minimum": 0, "title": "Spread (m)", "x-title-ar": "الانتشار (م)"}, "growth_form": {"type": "string", "enum": ["shrub", "perennial", "succulent", "climber", "grass", "annual"], "title": "Growth form", "x-title-ar": "شكل النمو"}}}'),
+  ('living', 'GROUP', 'Planting group', 'مجموعة زراعية', 'group', '{"type": "object", "properties": {"cover_percent": {"type": "number", "minimum": 0, "maximum": 100, "title": "Cover (%)", "x-title-ar": "نسبة التغطية (%)"}, "spacing_m": {"type": "number", "minimum": 0, "title": "Spacing (m)", "x-title-ar": "المسافة بين النباتات (م)"}}}'),
+  ('built', 'VALVE', 'Irrigation valve', 'صمام ري', 'valve', '{"type": "object", "properties": {"size_mm": {"type": "number", "minimum": 0, "title": "Size (mm)", "x-title-ar": "المقاس (مم)"}, "valve_type": {"type": "string", "enum": ["solenoid", "gate", "ball", "air_release", "pressure_reducing"], "title": "Valve type", "x-title-ar": "نوع الصمام"}, "controller_station": {"type": "string", "title": "Controller station", "x-title-ar": "محطة وحدة التحكم"}}, "x-tag-prefix": "VLV"}'),
+  ('built', 'PUMP', 'Pump', 'مضخة', 'pump', '{"type": "object", "properties": {"power_kw": {"type": "number", "minimum": 0, "title": "Power (kW)", "x-title-ar": "القدرة (كيلوواط)"}, "flow_l_min": {"type": "number", "minimum": 0, "title": "Rated flow (L/min)", "x-title-ar": "التدفق الاسمي (لتر/دقيقة)"}, "manufacturer": {"type": "string", "title": "Manufacturer", "x-title-ar": "الشركة المصنعة"}, "model": {"type": "string", "title": "Model", "x-title-ar": "الطراز"}, "serial": {"type": "string", "title": "Serial number", "x-title-ar": "الرقم التسلسلي"}}, "x-tag-prefix": "PMP"}'),
+  ('built', 'CONTROLLER', 'Irrigation controller', 'وحدة تحكم بالري', 'controller', '{"type": "object", "properties": {"stations": {"type": "integer", "minimum": 1, "title": "Stations", "x-title-ar": "عدد المحطات"}, "manufacturer": {"type": "string", "title": "Manufacturer", "x-title-ar": "الشركة المصنعة"}, "model": {"type": "string", "title": "Model", "x-title-ar": "الطراز"}, "serial": {"type": "string", "title": "Serial number", "x-title-ar": "الرقم التسلسلي"}}, "x-tag-prefix": "CTL"}'),
+  ('built', 'BENCH', 'Bench', 'مقعد', 'bench', '{"type": "object", "properties": {"material": {"type": "string", "enum": ["wood", "metal", "stone", "concrete", "composite"], "title": "Material", "x-title-ar": "المادة"}}, "x-tag-prefix": "BEN"}'),
+  ('built', 'SIGN', 'Sign or label', 'لافتة أو بطاقة', 'sign', '{"type": "object", "properties": {"sign_type": {"type": "string", "enum": ["species_label", "interpretive", "wayfinding", "safety"], "title": "Sign type", "x-title-ar": "نوع اللافتة"}, "has_qr": {"type": "boolean", "title": "Has QR code", "x-title-ar": "يحتوي رمز QR"}}, "x-tag-prefix": "SGN"}'),
+  ('built', 'BIN', 'Bin', 'حاوية نفايات', 'bin', '{"type": "object", "properties": {"stream": {"type": "string", "enum": ["general", "recycling", "green_waste"], "title": "Waste stream", "x-title-ar": "نوع النفايات"}}, "x-tag-prefix": "BIN"}'),
+  ('built', 'CAMTRAP', 'Camera trap', 'كاميرا رصد', 'camera', '{"type": "object", "properties": {"model": {"type": "string", "title": "Model", "x-title-ar": "الطراز"}, "serial": {"type": "string", "title": "Serial number", "x-title-ar": "الرقم التسلسلي"}, "height_m": {"type": "number", "minimum": 0, "title": "Mount height (m)", "x-title-ar": "ارتفاع التركيب (م)"}, "bearing_deg": {"type": "number", "minimum": 0, "maximum": 360, "title": "Bearing (degrees)", "x-title-ar": "الاتجاه (درجة)"}}, "x-tag-prefix": "CAM"}'),
+  ('built', 'SENSOR', 'Sensor', 'مستشعر', 'sensor', '{"type": "object", "properties": {"measures": {"type": "array", "items": {"type": "string", "enum": ["soil_moisture", "soil_temperature", "air_temperature", "humidity", "pressure", "flow", "water_level", "dissolved_oxygen"]}, "title": "Measures", "x-title-ar": "القياسات"}, "model": {"type": "string", "title": "Model", "x-title-ar": "الطراز"}, "serial": {"type": "string", "title": "Serial number", "x-title-ar": "الرقم التسلسلي"}}, "x-tag-prefix": "SEN"}'),
+  ('built', 'AERATOR', 'Aerator', 'جهاز تهوية', 'aerator', '{"type": "object", "properties": {"power_kw": {"type": "number", "minimum": 0, "title": "Power (kW)", "x-title-ar": "القدرة (كيلوواط)"}}, "x-tag-prefix": "AER"}'),
+  ('built', 'FOUNTAIN', 'Fountain or water feature', 'نافورة أو عنصر مائي', 'fountain', '{"type": "object", "properties": {"pump_power_kw": {"type": "number", "minimum": 0, "title": "Pump power (kW)", "x-title-ar": "قدرة المضخة (كيلوواط)"}}, "x-tag-prefix": "FTN"}'),
+  ('built', 'FENCE', 'Fence', 'سياج', 'fence', '{"type": "object", "properties": {"material": {"type": "string", "title": "Material", "x-title-ar": "المادة"}, "height_m": {"type": "number", "minimum": 0, "title": "Height (m)", "x-title-ar": "الارتفاع (م)"}}, "x-tag-prefix": "FEN"}'),
+  ('built', 'OTHER', 'Other built asset', 'أصل منشأ آخر', 'other', '{"type": "object", "properties": {}, "x-tag-prefix": "OTH"}')
+     ) t(cls, code, name, name_ar, icon, schema)
 where o.slug = 'terra';

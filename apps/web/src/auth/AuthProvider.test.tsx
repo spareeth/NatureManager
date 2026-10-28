@@ -32,13 +32,13 @@ function capture(): Promise<AuthState> {
 }
 
 describe('signInWithEmail', () => {
-  it('does not create users and redirects back to the app', async () => {
+  it('does not create users and returns to the page the user opened', async () => {
     signInWithOtp.mockResolvedValueOnce({ error: null });
     const auth = await capture();
     await auth.signInWithEmail('green1@terra.test');
     expect(signInWithOtp).toHaveBeenCalledWith({
       email: 'green1@terra.test',
-      options: { shouldCreateUser: false, emailRedirectTo: window.location.origin + '/' },
+      options: { shouldCreateUser: false, emailRedirectTo: window.location.href },
     });
   });
 
