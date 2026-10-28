@@ -35,6 +35,17 @@ create table team (
 
 Migration order note: create `team` before `membership` (shown after it here for reading order).
 
+As built (migration `20260928000100_tenancy.sql`):
+
+- `team` and `membership` also carry `created_at`, `created_by`, `updated_at` (rule above).
+- `membership.roles` is checked: non-empty and a subset of the six organisation roles.
+  `platform_admin` is not a membership role; operator work uses the service role.
+- `team.discipline` is checked: `living`, `built` or `both`.
+- `membership (team_id, organisation_id)` references `team (id, organisation_id)`, so a
+  member cannot be put in another organisation's team.
+- Writes are tightened: `membership` by `manager` only (no self-granted roles); `team` by
+  `manager` or `field_manager`; `organisation` update by `manager`, insert only by the service role.
+
 ### RLS pattern (apply to every business table)
 
 ```sql
@@ -117,6 +128,20 @@ create table line_feature (
 );
 ```
 
+As built (migration `20260928000200_spatial.sql`):
+
+- PostGIS is installed in the `extensions` schema.
+- All four tables carry `created_at`, `created_by`, `updated_at`; `location` has the audit trigger.
+- Cross-tenant integrity by composite keys: `(site_id, organisation_id)` references `site`, and
+  `location (parent_id, site_id)` references `location (id, site_id)`, so a parent is always in the
+  same site. Checks: `grid_scale > 0`, grid origin E and N both set or both null, valid geometry.
+- Writes: `site` (boundary and grid) by `manager`; `location`, `line_feature`, `control_point` by
+  `manager` or `field_manager`. Reads by any member.
+- `resolve_location(p_geom geometry, p_site uuid default null) returns uuid`: smallest location
+  covering the point (a bed wins over its zone); polygons use a point on their surface; any SRID
+  accepted. Security invoker, so RLS limits it to the caller's organisations; `p_site` narrows
+  it for service-role scripts.
+
 ## 3. Taxonomy
 
 ```sql
@@ -155,7 +180,10 @@ create table org_taxon (                 -- per-organisation attributes (Hortis 
 
 ```sql
 create type asset_class as enum ('living','built');
-create type asset_status as enum ('planned','active','declining','dead','removed','out_of_service','disposed');
+-- living: planned, planted, established, declining, dead, removed (FR-AST-09)
+-- built:  planned, active, out_of_service, removed, disposed
+create type asset_status as enum ('planned','planted','established','active','declining','dead',
+                                  'removed','out_of_service','disposed');
 
 create table asset_type (
   id uuid primary key default gen_random_uuid(),
@@ -229,6 +257,35 @@ create table media (
   caption text
 );
 ```
+
+As built (migration `20260928000300_taxonomy_assets.sql`):
+
+- `asset_status` merges the SRS plant lifecycle and the built-asset states (decision 28 Sep 2026).
+  A trigger rejects a status outside the asset's class; living assets must set `status`
+  explicitly because the column default `active` is a built status.
+- `asset` trigger keeps `local_x`, `local_y` (centroid for polygons) and sets `location_id` with
+  `resolve_location` when geom changes, unless the caller sets `location_id` explicitly (keeps the
+  named Hortis bed for points just outside it). Geometry must be a point or polygon.
+- Status history: a trigger writes `asset_status_change` on insert and on every status change.
+  Use `asset_set_status(p_asset, p_status, p_reason)` to record a reason. Clients cannot write the
+  history table.
+- Audit trigger on `asset` and `org_taxon` (keyed by `taxon_id`; `audit_row()` takes an optional
+  key column argument).
+- Checks: `taxon.rank` (adds `form`), `org_taxon.iucn_category` and `origin`,
+  `accession.provenance_type`, `asset.position_source`, `media.bucket` and `kind`, and
+  `media.path` starts with `<organisation_id>/`.
+- Composite keys keep asset site, location (same site), type, accession and parent, and
+  `asset_status_change` and `media` asset links, inside one organisation.
+- All tables carry `created_at`, `created_by`, `updated_at` (except `asset_status_change`, which has
+  `changed_at`, `changed_by`).
+- RLS: `taxon` read by any signed-in user, insert by a curator of any organisation, update and
+  delete by the service role only. `org_taxon` write by `curator` (FR-TAX-05). `asset_type` by
+  `manager`. `accession` by `manager` or `curator`. `asset` and `media` by every role except
+  `owner` (read-only).
+- Storage buckets `photos`, `sop-media`, `audio` (private). Objects live under
+  `<organisation_id>/...`; members read their organisation's folder, working roles upload,
+  managers delete.
+- Helpers `has_any_role(org, roles[])` and `has_role_anywhere(role)`.
 
 Tag code format (Terra in-house standard, kept from Hortis): `<ZONE><BED>-T<NN>_<SPECIES>`,
 e.g. `WG07-T04_PRO` = West Garden bed 07, tree 04, *Prosopis cineraria*. Planting groups without
@@ -522,6 +579,9 @@ with one `replace` line for the same taxon and location.
 
 `audit_log(organisation_id, table_name, row_id, action, old jsonb, new jsonb, actor, at)` written
 by a generic trigger on asset, org_taxon, location, sop, pm_schedule, alert_rule.
+Built as `audit_log (id bigint identity, ...)` with trigger function `audit_row()`; attach it in
+each table's migration. No-op updates are not logged. Readable by `manager` and `owner`;
+no client writes.
 
 ## 10. Key views
 

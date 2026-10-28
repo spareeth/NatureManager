@@ -58,8 +58,10 @@ returns geometry language sql stable as $$
 $$;
 ```
 
-`st_setsrid(..., 0)` is implicit for the local result. Test: for 100 random points inside the
-boundary, `site_from_local(site_to_local(g))` must return within 1 mm of `g`.
+The built `site_to_local` wraps the result in `st_setsrid(..., 0)` explicitly (PostGIS keeps
+SRID 3997 otherwise). Test (`supabase/tests/0003_spatial.test.sql`): 1,000 random points inside
+the real boundary, `site_from_local(site_to_local(g))` within 1 mm of `g`, for rotation 0 and for
+rotation 23.7 degrees with scale 1.0005.
 
 `asset.local_x`, `asset.local_y` (numeric, 2 decimals) are kept by a trigger on insert/update of
 `geom`, using the centroid for polygons.
@@ -87,7 +89,14 @@ Uses:
 ## 5. Open checks before Phase 1
 
 - [x] CRS of `TG_beds_new` and `TG_boundary`: CRS84 (WGS 84 lon/lat), checked 28 Sep 2026. Load directly as EPSG:4326.
-- [ ] CRS of the CAD drawing `92001-SDW-C144200-LT-200001(C).dxf` (likely EPSG:3997 or a UTM 40N variant; confirm in QGIS).
+- [x] CRS of the CAD drawing `92001-SDW-C144200-LT-200001(C).dxf`: **EPSG:3997 (Dubai Local TM), metres,
+      aligned with our layers**, checked 11 Oct 2026 with `scripts/gis/check_cad_alignment.sh`. The drawing
+      extents contain the TG boundary in EPSG:3997 (UTM 40N would put eastings near 300,000). Against the
+      CAD line work, the 1,448 bed polygon corners have a mean offset of 0.012 m E, -0.007 m N (no systematic
+      shift, no Helmert correction needed) and a median distance of 0.15 m (86% within 0.5 m, 97% within
+      1 m; same in every zone): the beds were traced from this drawing with about 15 cm scatter. The CAD
+      can be used as a basemap and for control point reference positions without transformation.
+      Visual check in QGIS (CAD extract over `TG_beds_new`, EPSG:3997) confirmed the match, 11 Oct 2026.
 - [x] Hortis tree points vs beds: 301 of 396 inside their bed; 95 outside all beds (median 0.7 m, max 5.9 m away).
       This is the positional error the site grid and control points are meant to remove. See `data/gis/README.md`.
 - [ ] Are there surveyed markers on site already?
