@@ -11,7 +11,8 @@ import { PriorityTag, StatusPill } from '../work/badges';
 import { useOutbox } from '../offline/outbox';
 import type { OutboxItem } from '../offline/db';
 import type { WoStatus } from '../work/model';
-import { fetchMyDay, NotOffline, type DayJob } from './api';
+import { fetchMyDay, NotOffline, readBasemaps, type DayJob } from './api';
+import { offlineBasemap, tileLayerFor } from '../map/basemaps';
 
 const TOUCH = 'min-h-12 min-w-12';
 
@@ -153,13 +154,23 @@ function DayMap({ jobs }: { jobs: DayJob[] }) {
   const onReady = useCallback((m: L.Map | null) => {
     setMap(m);
     if (!m) return;
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 22,
-      maxNativeZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(m);
     layer.current = L.layerGroup().addTo(m);
   }, []);
+  // Base map: the site's default when it may be stored offline, else the first that may (offline use).
+  const { site } = useCurrentSite();
+  const rows = useQuery({
+    queryKey: ['field-basemaps', site?.id],
+    enabled: !!site,
+    queryFn: () => readBasemaps(site!.id),
+  });
+  useEffect(() => {
+    if (!map || !rows.data) return;
+    const base = tileLayerFor(offlineBasemap(rows.data)).addTo(map);
+    base.bringToBack();
+    return () => {
+      map.removeLayer(base);
+    };
+  }, [map, rows.data]);
   useEffect(() => {
     const g = layer.current;
     if (!map || !g) return;

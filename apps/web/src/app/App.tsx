@@ -16,6 +16,7 @@ import { TaxonDetailPage } from '../pages/TaxonDetailPage';
 import { ControlPointsPage } from '../pages/ControlPointsPage';
 import { WorkPage } from '../pages/WorkPage';
 import { WorkOrderPage } from '../pages/WorkOrderPage';
+import { BasemapsPage } from '../pages/BasemapsPage';
 import { RequestsPage } from '../pages/RequestsPage';
 import { RequestDetailPage } from '../pages/RequestDetailPage';
 import { PlanPage } from '../pages/PlanPage';
@@ -120,6 +121,14 @@ export function App() {
             element={
               <RequireRole roles={roleOf('/field')}>
                 <FieldPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/basemaps"
+            element={
+              <RequireRole roles={roleOf('/basemaps')}>
+                <BasemapsPage />
               </RequireRole>
             }
           />

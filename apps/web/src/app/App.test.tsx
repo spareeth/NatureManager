@@ -75,6 +75,7 @@ describe('shell', () => {
       'Requests',
       'Planning',
       'Control points',
+      'Base maps',
       'Members',
     ]);
     expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();

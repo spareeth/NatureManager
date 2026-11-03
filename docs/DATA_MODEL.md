@@ -130,6 +130,29 @@ create table line_feature (
 );
 ```
 
+Base maps (migration `20261024000400_site_basemap.sql`, decision 24 Oct 2026): `site.basemap_url` is replaced
+by a list per site. `basemap_url` is kept (deprecated); a value is moved into the list as "Site orthophoto".
+
+```sql
+create table site_basemap (
+  id uuid primary key default gen_random_uuid(),
+  organisation_id uuid not null, site_id uuid not null references site,
+  name text not null,                    -- unique per site
+  kind text not null,                    -- xyz, google, esri
+  url text,                              -- xyz only, with {z} {x} {y}
+  attribution text,
+  min_zoom int, max_zoom int, max_native_zoom int,
+  offline_allowed boolean not null default false,  -- tiles may be stored on phones; never for google or esri
+  is_default boolean not null default false,       -- one active default per site
+  sort_order int, active boolean
+);
+```
+
+- Members read; managers edit (Base maps page). `site_basemap_set_default(id)` switches the default. Audited.
+- Google needs `VITE_GOOGLE_MAPS_API_KEY`, Esri `VITE_ESRI_API_KEY` (ArcGIS Location Platform); without
+  the key the layer is hidden. The field app map and the offline tile cache use only `offline_allowed` layers.
+- Each site gets OpenStreetMap, Google satellite (default) and Esri World Imagery (`site_basemap_defaults`).
+
 As built (migration `20260928000200_spatial.sql`):
 
 - PostGIS is installed in the `extensions` schema.

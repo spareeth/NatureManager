@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import L from 'leaflet';
 import type { FeatureCollection, MultiPolygon, Point } from 'geojson';
 import type { TFunction } from 'i18next';
-import type { AssetDetail, AssetProps, LocationProps, MapSite } from './api';
+import type { AssetDetail, AssetProps, LocationProps } from './api';
 import { statusColour, zoneColour } from './style';
 import { formatGrid } from './format';
 import { createSatelliteSession, viewportAttribution } from './googleTiles';
+import { FALLBACK, resolveBasemaps, tileLayerFor, type Basemap } from './basemaps';
 
 const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
 const BED_LABEL_MIN_ZOOM = 19;
@@ -17,28 +18,25 @@ export type MapLayers = {
   controls: L.LayerGroup;
 };
 
-/** Base layers and the layer switcher. Rebuilt when the language or site basemap changes. */
+/** Base layers (the site's list, site_basemap) and the layer switcher. Opens on the site default.
+ *  Rebuilt when the language or the list changes. */
 export function useBaseLayers(
   map: L.Map | null,
-  site: MapSite | undefined,
+  basemaps: Basemap[] | undefined,
   overlays: MapLayers | null,
   t: TFunction,
 ) {
   useEffect(() => {
-    if (!map || !overlays) return;
-    const bases: Record<string, L.TileLayer> = {
-      [t('map.layers.osm')]: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 22,
-        maxNativeZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
-      }),
-    };
-    if (site?.basemap_url) {
-      bases[t('map.layers.orthophoto')] = L.tileLayer(site.basemap_url, {
-        maxZoom: 22,
-        maxNativeZoom: 21,
-      });
-    }
+    if (!map || !overlays || !basemaps) return;
+    const { layers, defaultId } = resolveBasemaps(basemaps);
+    const googleRow = layers.find((b) => b.kind === 'google');
+    const bases: Record<string, L.TileLayer> = {};
+    // Standard layers are translated; a site's own layers keep their name.
+    const label = (b: Basemap) => t(`map.layers.named.${b.name}`, { defaultValue: b.name });
+    for (const b of layers) if (b.kind !== 'google') bases[label(b)] = tileLayerFor(b);
+    // Shown until Google's session is ready when Google is the default.
+    const first = layers.find((b) => b.kind !== 'google') ?? FALLBACK;
+    if (!bases[label(first)]) bases[label(first)] = tileLayerFor(first);
 
     let google: L.TileLayer | null = null;
     let shownAttribution: string | null = null;
@@ -64,8 +62,9 @@ export function useBaseLayers(
       }
     };
 
-    const active = Object.values(bases)[0]!;
-    active.addTo(map);
+    const defaultRow = layers.find((b) => b.id === defaultId)!;
+    const opening = defaultRow.kind === 'google' ? bases[label(first)]! : bases[label(defaultRow)]!;
+    opening.addTo(map);
     const control = L.control.layers(bases, {
       [t('map.layers.beds')]: overlays.beds,
       [t('map.layers.zones')]: overlays.zones,
@@ -75,12 +74,20 @@ export function useBaseLayers(
     control.addTo(map);
 
     let onMove: (() => void) | null = null;
-    if (GOOGLE_KEY) {
+    if (googleRow && GOOGLE_KEY) {
       createSatelliteSession(GOOGLE_KEY)
         .then((s) => {
           if (cancelled) return;
-          google = L.tileLayer(s.tileUrl, { maxZoom: 22, maxNativeZoom: 21 });
-          control.addBaseLayer(google, t('map.layers.satellite'));
+          google = L.tileLayer(s.tileUrl, {
+            maxZoom: googleRow.max_zoom,
+            maxNativeZoom: googleRow.max_native_zoom,
+          });
+          control.addBaseLayer(google, label(googleRow));
+          if (defaultRow.kind === 'google' && map.hasLayer(opening)) {
+            map.removeLayer(opening);
+            google.addTo(map);
+            void updateAttribution(s.session);
+          }
           onMove = () => {
             clearAttribution();
             void updateAttribution(s.session);
@@ -98,7 +105,7 @@ export function useBaseLayers(
       Object.values(bases).forEach((l) => l.remove());
       google?.remove();
     };
-  }, [map, site?.basemap_url, overlays, t]);
+  }, [map, basemaps, overlays, t]);
 }
 
 const escapeHtml = (s: string) =>

@@ -35,6 +35,7 @@ describe('role-aware nav', () => {
       '/requests',
       '/plan',
       '/control-points',
+      '/basemaps',
       '/members',
     ]);
     expect(paths(['field_manager'])).toEqual([

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCurrentSite } from '../org/useSite';
 import { listControlPoints } from '../geo/api';
 import { fetchAssetDetail, fetchAssets, fetchLocations, fetchMapSite } from '../map/api';
+import { fetchBasemaps } from '../map/basemaps';
 import { CursorReadout } from '../map/CursorReadout';
 import { Legend } from '../map/Legend';
 import { MapEditor } from '../map/MapEditor';
@@ -59,6 +60,11 @@ export function MapPage() {
     enabled: !!siteId,
     queryFn: () => fetchMapSite(siteId!),
   });
+  const basemaps = useQuery({
+    queryKey: ['basemaps', siteId],
+    enabled: !!siteId,
+    queryFn: () => fetchBasemaps(siteId!),
+  });
   const locations = useQuery({
     queryKey: ['map-locations', siteId],
     enabled: !!siteId,
@@ -95,7 +101,7 @@ export function MapPage() {
     setMap(m);
   }, []);
 
-  useBaseLayers(map, site.data, overlays, t);
+  useBaseLayers(map, basemaps.data, overlays, t);
 
   // Fit the site once it loads.
   useEffect(() => {

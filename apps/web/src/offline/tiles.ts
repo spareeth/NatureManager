@@ -1,6 +1,5 @@
-// Map tiles for the site, cached for offline use (FR-FLD-04). Only tile servers whose terms allow it:
-// OpenStreetMap (a few dozen tiles for Terra Garden) and the site's own orthophoto. Google tiles are
-// never stored (Google Maps Platform terms forbid caching).
+// Map tiles for the site, cached for offline use (FR-FLD-04). Only layers of site_basemap marked
+// offline_allowed (OpenStreetMap, our own orthophoto); Google and Esri are never stored (their terms).
 
 export type BBox = [number, number, number, number]; // west, south, east, north (degrees)
 

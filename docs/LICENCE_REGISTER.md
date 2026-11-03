@@ -48,3 +48,5 @@ Anything else is flagged here before use. Update this file when adding a depende
 | qrcode (node-qrcode) | QR codes on labels | MIT | OK |
 | pg8000 (and scramp, MIT-0) | Database driver for the migration scripts (psycopg2 and psycopg 3 are LGPL, avoided) | BSD-3-Clause | OK |
 | GDAL / OGR (system package, ogr2ogr) | Extract CAD (DXF) line work in scripts | MIT | OK, dev tool, not distributed |
+| Esri World Imagery (ArcGIS Location Platform basemap tiles) | Optional online base map | Esri terms, needs an ArcGIS account and API key; attribution shown | Online only; not stored offline (Esri allows offline only through its tile package export). Confirm the account terms before production |
+| OpenStreetMap tiles | Base map, cached for offline use on phones | ODbL data; tile usage policy | About 40 tiles for Terra Garden (zoom 15 to 19). For production use our own orthophoto or a commercial tile service |

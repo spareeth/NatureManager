@@ -5,6 +5,7 @@ import { db, dayKey, type CachedAsset, type OutboxItem } from './db';
 import { setKick } from './kick';
 import { processOutbox, wakeQueue, type Handlers } from './outbox';
 import { OSM_TILES, warmTiles, type BBox } from './tiles';
+import { fetchBasemaps, offlineTemplates } from '../map/basemaps';
 
 // Sync worker (FR-FLD-04, NFR-03): sends the outbox in order, each write keyed by its client UUID so
 // a replay after a lost answer changes nothing. Runs on start, when the phone comes back online,
@@ -138,7 +139,7 @@ type Pack = {
 
 /** Keep today's and tomorrow's work, its jobs and the assets of those zones on the phone, and warm the
  *  map tile cache for the site once. */
-export async function refreshPack(siteId: string, orgId?: string, basemapUrl?: string | null) {
+export async function refreshPack(siteId: string, orgId?: string) {
   const today = dubaiDate(new Date());
   const pack = check<Pack>(
     await supabase.rpc('field_offline_pack', {
@@ -164,9 +165,13 @@ export async function refreshPack(siteId: string, orgId?: string, basemapUrl?: s
       savedAt,
     });
   });
-  const tilesKey = `tiles:${siteId}`;
-  if (pack.bbox && !(await db.kv.get(tilesKey))) {
-    const n = await warmTiles(pack.bbox, [OSM_TILES, ...(basemapUrl ? [basemapUrl] : [])]);
+  // Base maps of the site, kept for the field map; tiles only of layers that may be stored offline.
+  const basemaps = await fetchBasemaps(siteId).catch(() => null);
+  if (basemaps) await db.kv.put({ key: `basemaps:${siteId}`, value: basemaps, savedAt });
+  const templates = basemaps ? offlineTemplates(basemaps) : [OSM_TILES];
+  const tilesKey = `tiles:${siteId}:${templates.join('|')}`;
+  if (pack.bbox && templates.length && !(await db.kv.get(tilesKey))) {
+    const n = await warmTiles(pack.bbox, templates);
     if (n > 0) await db.kv.put({ key: tilesKey, value: n, savedAt });
   }
   return { jobs: pack.jobs.length, assets: pack.assets.length, savedAt };

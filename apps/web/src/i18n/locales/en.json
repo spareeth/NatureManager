@@ -12,7 +12,8 @@
     "controlPoints": "Control points",
     "work": "Work",
     "plan": "Planning",
-    "requests": "Requests"
+    "requests": "Requests",
+    "basemaps": "Base maps"
   },
   "map": {
     "heading": "Site map",
@@ -30,7 +31,12 @@
       "beds": "Beds",
       "zones": "Zones",
       "assets": "Assets",
-      "controlPoints": "Control points"
+      "controlPoints": "Control points",
+      "named": {
+        "OpenStreetMap": "OpenStreetMap",
+        "Google satellite": "Google satellite",
+        "Esri World Imagery": "Esri World Imagery"
+      }
     },
     "zones": {
       "EG": "East Garden",
@@ -992,5 +998,48 @@
     "activate": "Activate",
     "newReceiver": "Add receiver",
     "receiverName": "Receiver name"
+  },
+  "basemaps": {
+    "heading": "Base maps",
+    "help": "The layers the map offers for this site, in this order. The map opens on the default. Layers marked for offline use are kept on phones for the field app; Google and Esri imagery are online only (their terms do not allow storing tiles).",
+    "name": "Name",
+    "kind": "Kind",
+    "zoom": "Zoom",
+    "native": "tiles to {{z}}",
+    "offline": "Offline on phones",
+    "default": "Default",
+    "yes": "Yes",
+    "onlineOnly": "Online only",
+    "isDefault": "Default",
+    "makeDefault": "Make default",
+    "defaultSet": "Default changed.",
+    "up": "Move up",
+    "down": "Move down",
+    "edit": "Edit",
+    "add": "Add base map",
+    "noKey": "no API key: hidden",
+    "inactive": "inactive",
+    "saved": "Saved.",
+    "deleted": "Deleted.",
+    "deleteConfirm": "Delete this base map?",
+    "kindName": {
+      "xyz": "Tile server (XYZ)",
+      "google": "Google satellite",
+      "esri": "Esri World Imagery"
+    },
+    "form": "Base map",
+    "url": "Tile URL",
+    "urlHelp": "Use https:// and include {z}, {x} and {y}.",
+    "attribution": "Attribution (shown on the map)",
+    "min_zoom": "Min zoom",
+    "max_zoom": "Max zoom",
+    "max_native_zoom": "Tiles up to zoom",
+    "offlineAllowed": "May be stored on phones for offline use",
+    "active": "Active",
+    "keyNote": "Needs its API key in the app settings (.env.local); hidden when the key is missing. Never stored offline.",
+    "offlineNote": "Only tick this when the tile server's terms allow storing tiles (our own imagery, OpenStreetMap for this small site).",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete"
   }
 }

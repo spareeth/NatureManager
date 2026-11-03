@@ -30,10 +30,12 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
-            // Map tiles for the site (OpenStreetMap; the site orthophoto when configured). Google
-            // tiles are not matched: their terms forbid caching.
+            // Map tiles of layers that may be stored offline (site_basemap.offline_allowed:
+            // OpenStreetMap, our own orthophoto): any .../{z}/{x}/{y}[.ext] tile path. Google and Esri
+            // tiles are never matched: their terms forbid caching.
             urlPattern: ({ url }) =>
-              url.hostname === 'tile.openstreetmap.org' || url.pathname.includes('/tiles/'),
+              !/(^|\.)(googleapis\.com|arcgis\.com|arcgisonline\.com)$/.test(url.hostname) &&
+              /\/\d{1,2}\/\d+\/\d+(\.(png|jpe?g|webp))?$/.test(url.pathname),
             handler: 'CacheFirst',
             options: {
               cacheName: 'tiles',

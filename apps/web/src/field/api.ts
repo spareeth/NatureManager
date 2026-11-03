@@ -7,6 +7,7 @@ import { isTransient } from '../offline/errors';
 import { enqueue } from '../offline/outbox';
 import { kickSync } from '../offline/kick';
 import { compressImage } from './image';
+import { fetchBasemaps, type Basemap } from '../map/basemaps';
 
 // Field app data. Reads go to the server and fall back to the offline store when there is no
 // network; writes go to the outbox first (CLAUDE.md rule 5) and are sent by the sync worker.
@@ -287,6 +288,17 @@ export const fetchCatalogue = async (orgId: string) =>
     (list) => db.kv.put({ key: `items:${orgId}`, value: list, savedAt: new Date().toISOString() }),
     async () => (await db.kv.get(`items:${orgId}`))?.value as CatalogueItem[] | undefined,
   );
+
+/** The site's base maps; the copy kept by the offline pack when there is no network. */
+export const readBasemaps = async (siteId: string) =>
+  (
+    await readThrough(
+      () => fetchBasemaps(siteId),
+      (rows) =>
+        db.kv.put({ key: `basemaps:${siteId}`, value: rows, savedAt: new Date().toISOString() }),
+      async () => ((await db.kv.get(`basemaps:${siteId}`))?.value as Basemap[] | undefined) ?? [],
+    )
+  ).data;
 
 export async function signedPhoto(bucket: 'photos' | 'sop-media', path: string) {
   try {

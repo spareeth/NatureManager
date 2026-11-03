@@ -1483,6 +1483,81 @@ export type Database = {
           },
         ];
       };
+      site_basemap: {
+        Row: {
+          active: boolean;
+          attribution: string | null;
+          created_at: string;
+          created_by: string | null;
+          id: string;
+          is_default: boolean;
+          kind: string;
+          max_native_zoom: number;
+          max_zoom: number;
+          min_zoom: number;
+          name: string;
+          offline_allowed: boolean;
+          organisation_id: string;
+          site_id: string;
+          sort_order: number;
+          updated_at: string;
+          url: string | null;
+        };
+        Insert: {
+          active?: boolean;
+          attribution?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          is_default?: boolean;
+          kind: string;
+          max_native_zoom?: number;
+          max_zoom?: number;
+          min_zoom?: number;
+          name: string;
+          offline_allowed?: boolean;
+          organisation_id: string;
+          site_id: string;
+          sort_order?: number;
+          updated_at?: string;
+          url?: string | null;
+        };
+        Update: {
+          active?: boolean;
+          attribution?: string | null;
+          created_at?: string;
+          created_by?: string | null;
+          id?: string;
+          is_default?: boolean;
+          kind?: string;
+          max_native_zoom?: number;
+          max_zoom?: number;
+          min_zoom?: number;
+          name?: string;
+          offline_allowed?: boolean;
+          organisation_id?: string;
+          site_id?: string;
+          sort_order?: number;
+          updated_at?: string;
+          url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'site_basemap_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'site_basemap_site_id_organisation_id_fkey';
+            columns: ['site_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'site';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
       sop: {
         Row: {
           approved_at: string | null;
@@ -2422,6 +2497,8 @@ export type Database = {
       receiver_create: { Args: { p_name: string; p_org: string }; Returns: Json };
       receiver_rotate_key: { Args: { p_receiver: string }; Returns: string };
       resolve_location: { Args: { p_geom: unknown; p_site?: string }; Returns: string };
+      site_basemap_defaults: { Args: { p_site: string }; Returns: undefined };
+      site_basemap_set_default: { Args: { p_basemap: string }; Returns: undefined };
       site_from_local: { Args: { p_site: string; p_x: number; p_y: number }; Returns: unknown };
       site_geom_from_local: { Args: { p_geom: unknown; p_site: string }; Returns: unknown };
       site_local_xy: {
