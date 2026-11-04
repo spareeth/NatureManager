@@ -5,8 +5,8 @@ import { useState } from 'react';
 // Official artwork only, from public/brand/ (see README there). Until the files are added, the names
 // are shown as text.
 const FILES = {
-  white: { terra: '/brand/terra-white.svg', ecd: '/brand/ecd-white.svg' },
-  colour: { terra: '/brand/terra-colour.svg', ecd: '/brand/ecd-colour.svg' },
+  white: { terra: '/brand/terra-white.png', ecd: '/brand/ecd-white.png' },
+  colour: { terra: '/brand/terra-colour.png', ecd: '/brand/ecd-colour.png' },
 };
 
 function Logo({ src, alt, height }: { src: string; alt: string; height: number }) {
@@ -36,7 +36,8 @@ export function BrandLockup({
     <span className="flex items-center gap-3" dir="ltr" data-testid="brand-lockup">
       <Logo src={f.terra} alt="Terra" height={height} />
       <span aria-hidden className={`w-px self-stretch ${rule}`} />
-      <Logo src={f.ecd} alt="Expo City Dubai" height={height} />
+      {/* The Expo City Dubai artwork has more space around it; a little taller keeps the two balanced. */}
+      <Logo src={f.ecd} alt="Expo City Dubai" height={Math.round(height * 1.35)} />
     </span>
   );
 }

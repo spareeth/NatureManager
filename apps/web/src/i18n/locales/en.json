@@ -1107,5 +1107,9 @@
     "note": "Voice note",
     "noMic": "The microphone is not available.",
     "unsupported": "Voice notes are not supported in this browser."
+  },
+  "site": {
+    "project": "Project",
+    "comingSoon": "{{name}} (coming soon)"
   }
 }

@@ -27,6 +27,7 @@ import { Centered, Loading, RequireRole } from './guards';
 import { NAV, visibleNav } from './nav';
 import { PhoneMenu } from './PhoneMenu';
 import { BrandLockup } from '../components/BrandLockup';
+import { SitePicker } from '../components/SitePicker';
 
 const roleOf = (path: string) => NAV.find((n) => n.path === path)?.roles;
 
@@ -74,6 +75,7 @@ export function App() {
     })();
   const userControls = (
     <>
+      <SitePicker large />
       <OrgSwitcher />
       <span className="w-full text-sm opacity-90">
         {current.displayName} ({current.roles.map((r) => t(`roles.${r}`)).join(', ')})
@@ -97,8 +99,8 @@ export function App() {
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2">
           <span className="flex items-center gap-4">
             <BrandLockup />
-            <span className="hidden border-s border-white/30 ps-4 font-light sm:inline">
-              {t('app.title')}
+            <span className="hidden border-s border-white/30 ps-4 sm:inline">
+              <SitePicker />
             </span>
           </span>
           {/* Desktop: the full menu and the user controls. Phone: PhoneMenu below. */}
