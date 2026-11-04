@@ -7,6 +7,7 @@ import { isTransient } from '../offline/errors';
 import { enqueue } from '../offline/outbox';
 import { kickSync } from '../offline/kick';
 import { compressImage } from './image';
+import { audioExt } from '../work/media';
 import { fetchBasemaps, type Basemap } from '../map/basemaps';
 
 // Field app data. Reads go to the server and fall back to the offline store when there is no
@@ -256,6 +257,7 @@ export async function queueRequest(v: {
   title: string;
   description: string | null;
   priority: string;
+  woType?: 'reactive' | 'project';
   assetId?: string | null;
   locationId?: string | null;
   geom?: string | null;
@@ -299,6 +301,79 @@ export const readBasemaps = async (siteId: string) =>
       async () => ((await db.kv.get(`basemaps:${siteId}`))?.value as Basemap[] | undefined) ?? [],
     )
   ).data;
+
+export type OpenRequest = {
+  id: string;
+  number: string;
+  title: string;
+  status: WoStatus;
+  priority: string;
+  wo_type: string;
+  location_code: string | null;
+  created_at: string;
+  created_by_name: string | null;
+  mine: boolean;
+  lon: number | null;
+  lat: number | null;
+};
+export type MyRequest = {
+  kind: 'work' | 'items';
+  id: string;
+  number: string;
+  title: string | null;
+  status: string;
+  wo_type: string | null;
+  location_code: string | null;
+  created_at: string;
+  planned_start: string | null;
+  note: string | null;
+};
+export type FieldRequests = { open: OpenRequest[]; mine: MyRequest[] };
+
+/** Open requests of the site and the ones I raised; the offline pack keeps a copy. */
+export const fetchFieldRequests = async (siteId: string) =>
+  readThrough(
+    async () => check<FieldRequests>(await supabase.rpc('field_requests', { p_site: siteId })),
+    (v) => db.kv.put({ key: `requests:${siteId}`, value: v, savedAt: new Date().toISOString() }),
+    async () => (await db.kv.get(`requests:${siteId}`))?.value as FieldRequests | undefined,
+  );
+
+/** A request's photos and voice note from the field app: kept on the phone and queued behind the
+ *  queued request (same outbox, in order), so they work offline. */
+export async function queueAttachments(
+  orgId: string,
+  woId: string,
+  a: { photos: File[]; voice: Blob | null },
+) {
+  for (const f of a.photos) {
+    const blob = await compressImage(f);
+    const mediaId = crypto.randomUUID();
+    await db.blobs.put({ id: mediaId, blob });
+    await enqueue('photo', woId, {
+      org: orgId,
+      mediaId,
+      path: `${orgId}/wo/${woId}/${mediaId}.jpg`,
+      caption: null,
+      takenAt: new Date().toISOString(),
+    });
+  }
+  if (a.voice) {
+    const mediaId = crypto.randomUUID();
+    const type = a.voice.type || 'audio/webm';
+    await db.blobs.put({ id: mediaId, blob: a.voice });
+    await enqueue('photo', woId, {
+      org: orgId,
+      mediaId,
+      path: `${orgId}/wo/${woId}/${mediaId}.${audioExt(type)}`,
+      caption: 'voice note',
+      takenAt: new Date().toISOString(),
+      bucket: 'audio',
+      kind: 'audio',
+      contentType: type,
+    });
+  }
+  kickSync();
+}
 
 export async function signedPhoto(bucket: 'photos' | 'sop-media', path: string) {
   try {

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrg } from '../org/context';
 import { RequestForm } from '../work/RequestForm';
 import { PriorityTag, StatusPill } from '../work/badges';
-import { moveJob, queueRequest, scanCode, type ScanJob } from './api';
+import { moveJob, queueAttachments, queueRequest, scanCode, type ScanJob } from './api';
 import { parseScan } from './scan';
 import { Scanner } from './Scanner';
 
@@ -183,6 +183,7 @@ export function ScanScreen() {
               }}
               onCancel={() => setReporting(false)}
               submit={queueRequest}
+              attach={queueAttachments}
               onDone={() => {
                 setReporting(false);
                 setNotice(t('fieldApp.requestQueued'));

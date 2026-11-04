@@ -1,6 +1,81 @@
 @import 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
 
+/* Terra, Expo City Dubai style guide (4 Nov 2026), web platform rules.
+   The app's green scale is mapped to the Terra palette, so every existing green-800 control and
+   header turns forest, and tints turn mint. */
+@theme {
+  --color-forest: #14312c;
+  --color-teal: #19baa9;
+  --color-mint: #70ded5;
+  --color-aqua: #49c4b2;
+  --color-terra-blue: #2fa3c7;
+  --color-amber-brand: #ffb800;
+  --color-muted: #5c6b68;
+  --color-subtle: #9aa8a5;
+  --color-hairline: #d5e9e8;
+  --color-green-50: #f2faf9; /* soft mint */
+  --color-green-100: #e7f5f3; /* mint tint */
+  --color-green-200: #d5e9e8;
+  --color-green-700: #1e443c;
+  --color-green-800: #14312c; /* forest */
+  --color-green-900: #14312c;
+  /* Expo Sans is licensed for Expo City Dubai hosting only; elsewhere the system font is used. */
+  --font-sans: 'Expo Sans Std', 'Expo Arabic', system-ui, sans-serif;
+}
+
+body {
+  color: #14312c;
+}
+
+/* Primary buttons: pills with the brand gradient, uppercase and letter-spaced. */
+button.bg-green-800,
+a.bg-green-800,
+label.bg-green-800 {
+  background-image: linear-gradient(330deg, #2fa3c7, #49c4b2);
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+/* Pressed toggles (list/map, tabs) stay solid forest pills, not gradient. */
+button[aria-pressed='true'].bg-green-800,
+button[aria-selected='true'].bg-green-800 {
+  background-image: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+:lang(ar) button.bg-green-800,
+:lang(ar) a.bg-green-800 {
+  letter-spacing: normal;
+}
+
+/* Links in content take the teal accent. */
+main a:not([class*='bg-']):not(.leaflet-control-zoom-in):not(.leaflet-control-zoom-out) {
+  color: #127d72;
+}
+
+/* Focus: a 2 px teal outline, offset 2 px. Selection: mint. */
+:focus-visible {
+  outline: 2px solid #19baa9;
+  outline-offset: 2px;
+}
+::selection {
+  background: #70ded5;
+  color: #14312c;
+}
+
+/* Panels: square, tinted, no shadow (map overlays keep theirs for legibility). */
+main .shadow:not(.absolute) {
+  box-shadow: none;
+}
+
+/* Two-tone heading: bold forest lead, light teal trail. */
+.two-tone .trail {
+  font-weight: 300;
+  color: #19baa9;
+}
+
 .bed-label {
   direction: ltr;
   unicode-bidi: isolate;

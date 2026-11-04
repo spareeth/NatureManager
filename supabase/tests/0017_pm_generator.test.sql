@@ -35,6 +35,11 @@ delete from media; delete from asset_status_change; delete from asset; delete fr
 create temp table tg as select o.id org, org_today(o.id) today, (select id from team where name = 'Green Team East') east
   from organisation o where o.slug = 'terra';
 grant select on tg to authenticated;
+-- The current week's beds are spread over the working days left in it (generated mid-week: more a day);
+-- later weeks get 15 / 5 = 3 a day. So the busiest day depends on today's weekday (Monday or weekend: 3).
+create temp table busiest as select case when weekday0(today) between 1 and 4
+  then ceil(15.0 / (5 - weekday0(today)))::int else 3 end as n from tg;
+grant select on busiest to authenticated;
 insert into sop (id, organisation_id, code, version, title, status, approved_at)
 select v.id::uuid, org, 'SOP-BED', v.ver, '{"en": "Bed care"}', v.st, case when v.st = 'approved' then now() end from tg,
   (values ('f1000000-0000-0000-0000-0000000000c1', 1, 'approved'), ('f1000000-0000-0000-0000-0000000000c2', 2, 'approved'),
@@ -52,8 +57,8 @@ select 'f1000000-0000-0000-0000-0000000000b1', org, 'f1000000-0000-0000-0000-000
 select is((select count(*)::int from pm_targets('f1000000-0000-0000-0000-0000000000b1')), 15, '"each": "bed" targets the 15 North Garden beds');
 select ok((select (pm_generate(org) ->> 'created')::int > 0 from tg), 'first run creates work orders');
 select is((select (pm_generate(org) ->> 'created')::int from tg), 0, 'second run creates nothing (idempotent)');
-select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), 3,
-  'work is spread evenly: at most 3 beds a day');
+select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), (select n from busiest),
+  'work is spread evenly: 3 beds a day (more on the days left this week when generated mid-week)');
 select is((select count(*)::int from work_order where extract(isodow from planned_start at time zone 'Asia/Dubai') > 5), 0, 'no weekend work');
 select results_eq($$select distinct status::text, source, (sop_id = 'f1000000-0000-0000-0000-0000000000c2') from work_order$$,
   $$values ('scheduled'::text, 'pm'::text, true)$$,
@@ -66,11 +71,11 @@ select ok((select bool_and(to_char(planned_start at time zone 'Asia/Dubai', 'HH2
 delete from work_order_event; delete from work_order_asset; delete from work_order where pm_schedule_id = 'f1000000-0000-0000-0000-0000000000b1';
 select is((select (pm_generate(org, today - weekday0(today) + 7) ->> 'over_capacity')::int from tg), 0,
   'a horizon cut mid-week reports no overflow');
-select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), 3,
-  'the cut day gets only its share (3), not the whole week');
+select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), (select n from busiest),
+  'the cut day gets only its share, not the whole week');
 select is((select (pm_generate(org) ->> 'created')::int > 0 from tg), true, 'a later run adds the rest of that week');
-select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), 3,
-  'and still 3 a day');
+select is((select max(n)::int from (select count(*) n from work_order group by (planned_start at time zone 'Asia/Dubai')::date) x), (select n from busiest),
+  'and still an even share a day');
 
 -- A manager moves a job to another day: the next run does not recreate it.
 update work_order set planned_start = planned_start + interval '1 day', planned_end = planned_end + interval '1 day'

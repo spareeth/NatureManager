@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { JobScreen } from '../field/JobScreen';
 import { MyDay } from '../field/MyDay';
 import { ScanScreen } from '../field/ScanScreen';
+import { RequestsScreen } from '../field/Requests';
 import { SyncBar } from '../field/SyncBar';
 import { VerifyQueue, VerifyScreen } from '../field/Verify';
 import { useCurrentSite } from '../org/useSite';
@@ -16,6 +17,7 @@ export function FieldPage() {
         <Route index element={<MyDay />} />
         <Route path="jobs/:id" element={<JobScreen />} />
         <Route path="scan" element={<ScanScreen />} />
+        <Route path="requests" element={<RequestsScreen />} />
         <Route path="verify" element={<VerifyQueue />} />
         <Route path="verify/:id" element={<VerifyScreen />} />
       </Routes>

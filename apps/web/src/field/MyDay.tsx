@@ -11,7 +11,14 @@ import { PriorityTag, StatusPill } from '../work/badges';
 import { useOutbox } from '../offline/outbox';
 import type { OutboxItem } from '../offline/db';
 import type { WoStatus } from '../work/model';
-import { fetchMyDay, NotOffline, readBasemaps, type DayJob } from './api';
+import {
+  fetchFieldRequests,
+  fetchMyDay,
+  NotOffline,
+  readBasemaps,
+  type DayJob,
+  type OpenRequest,
+} from './api';
 import { offlineBasemap, tileLayerFor } from '../map/basemaps';
 
 const TOUCH = 'min-h-12 min-w-12';
@@ -22,6 +29,13 @@ export function MyDay() {
   const { site } = useCurrentSite();
   const [day, setDay] = useState(() => dubaiDate(new Date()));
   const [showMap, setShowMap] = useState(false);
+  // Open requests of the site: the button count and squares on the map.
+  const requests = useQuery({
+    queryKey: ['field-requests', site?.id],
+    enabled: !!site,
+    queryFn: () => fetchFieldRequests(site!.id),
+  });
+  const open = requests.data?.data.open ?? NO_REQUESTS;
   const jobs = useQuery({
     queryKey: ['field-day', site?.id, day],
     enabled: !!site,
@@ -70,6 +84,12 @@ export function MyDay() {
           {t('verify.heading')}
         </Link>
       )}
+      <Link
+        to="/field/requests"
+        className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-amber-600 text-lg font-semibold text-amber-900"
+      >
+        {t('fieldReq.button', { count: open.length })}
+      </Link>
       <div className="mt-2 flex gap-2">
         <button
           type="button"
@@ -94,12 +114,12 @@ export function MyDay() {
         </p>
       )}
       {jobs.isPending && site && <p className="mt-3">{t('common.loading')}</p>}
-      {list && list.length === 0 && (
+      {list && list.length === 0 && !showMap && (
         <p className="mt-6 text-center text-gray-700">{t('fieldApp.noJobs')}</p>
       )}
-      {list && list.length > 0 && (
+      {list && (list.length > 0 || showMap) && (
         <div className="mt-3 min-h-0 flex-1">
-          {showMap ? <DayMap jobs={list} /> : <JobList jobs={list} />}
+          {showMap ? <DayMap jobs={list} requests={open} /> : <JobList jobs={list} />}
         </div>
       )}
     </section>
@@ -148,7 +168,9 @@ function JobList({ jobs }: { jobs: DayJob[] }) {
   );
 }
 
-function DayMap({ jobs }: { jobs: DayJob[] }) {
+const NO_REQUESTS: OpenRequest[] = [];
+
+function DayMap({ jobs, requests = NO_REQUESTS }: { jobs: DayJob[]; requests?: OpenRequest[] }) {
   const layer = useRef<L.LayerGroup | null>(null);
   const [map, setMap] = useState<L.Map | null>(null);
   const onReady = useCallback((m: L.Map | null) => {
@@ -191,8 +213,24 @@ function DayMap({ jobs }: { jobs: DayJob[] }) {
         )
         .addTo(g);
     }
+    // Open requests: small squares (jobs are large circles).
+    for (const r of requests) {
+      if (r.lat == null || r.lon == null) continue;
+      pts.push([r.lat, r.lon]);
+      L.marker([r.lat, r.lon], {
+        icon: L.divIcon({
+          className: 'work-marker',
+          html: '<span style="display:block;width:16px;height:16px;border:2px solid #fff;background:#d97706;box-shadow:0 0 2px #000"></span>',
+          iconSize: [16, 16],
+        }),
+      })
+        .bindPopup(
+          `<strong>${r.location_code ?? ''}</strong> ${r.title.replace(/</g, '&lt;')}<br><a href="/field/jobs/${r.id}">${r.number}</a>`,
+        )
+        .addTo(g);
+    }
     if (pts.length) map.fitBounds(pts, { maxZoom: 19, padding: [30, 30] });
-  }, [map, jobs]);
+  }, [map, jobs, requests]);
   return (
     <LeafletMap onReady={onReady} preferCanvas={false} className="h-[60vh] w-full rounded border" />
   );

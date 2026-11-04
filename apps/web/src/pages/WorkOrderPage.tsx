@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { WoAttachments } from '../work/Attachments';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -191,6 +192,10 @@ export function WorkOrderPage() {
           <Row label={t('wo.actualMinutes')}>{w.actual_minutes}</Row>
           <Row label={t('wo.completionNotes')}>{w.completion_notes}</Row>
         </dl>
+      </div>
+
+      <div className="mt-6">
+        <WoAttachments woId={w.id} />
       </div>
 
       <h2 className="mt-6 font-semibold">{t('wo.history')}</h2>

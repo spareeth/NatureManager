@@ -42,12 +42,14 @@ export const handlers: Handlers = {
         .upsert(row as never, { onConflict: 'work_order_id,sop_step_id' }),
     );
   },
+  // Photos, and voice notes (payload kind 'audio', bucket 'audio').
   async photo(it) {
+    const bucket = p(it).bucket ?? 'photos';
     const blob = (await db.blobs.get(p(it).mediaId))?.blob;
     if (blob) {
       const up = await supabase.storage
-        .from('photos')
-        .upload(p(it).path, blob, { contentType: 'image/jpeg' });
+        .from(bucket)
+        .upload(p(it).path, blob, { contentType: p(it).contentType ?? 'image/jpeg' });
       // Same path on a replay: "already exists" means the first attempt arrived.
       const status = Number((up.error as { statusCode?: string } | null)?.statusCode ?? 0);
       if (up.error && status !== 409 && !/exists|duplicate/i.test(up.error.message))
@@ -58,9 +60,9 @@ export const handlers: Handlers = {
         {
           id: p(it).mediaId,
           organisation_id: p(it).org,
-          bucket: 'photos',
+          bucket,
           path: p(it).path,
-          kind: 'photo',
+          kind: p(it).kind ?? 'photo',
           work_order_id: it.woId,
           taken_at: p(it).takenAt,
           caption: p(it).caption,
@@ -103,7 +105,7 @@ export const handlers: Handlers = {
           number: '', // assigned by the database
           site_id: v.siteId,
           source: 'request',
-          wo_type: 'reactive',
+          wo_type: v.woType ?? 'reactive',
           title: v.title,
           description: v.description,
           priority: v.priority,
@@ -134,6 +136,7 @@ type Pack = {
   jobs: FieldJob[];
   assets: CachedAsset[];
   items: { id: string; code: string; name: string; category: string; unit: string }[];
+  requests: unknown;
   bbox: BBox | null;
 };
 
@@ -159,6 +162,7 @@ export async function refreshPack(siteId: string, orgId?: string) {
     await db.assets.clear();
     await db.assets.bulkPut(pack.assets);
     if (orgId) await db.kv.put({ key: `items:${orgId}`, value: pack.items, savedAt });
+    await db.kv.put({ key: `requests:${siteId}`, value: pack.requests, savedAt });
     await db.kv.put({
       key: `pack:${siteId}`,
       value: { jobs: pack.jobs.length, assets: pack.assets.length },

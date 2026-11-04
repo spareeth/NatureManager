@@ -13,7 +13,9 @@
     "work": "Work",
     "plan": "Planning",
     "requests": "Requests",
-    "basemaps": "Base maps"
+    "basemaps": "Base maps",
+    "phone": "Quick menu",
+    "more": "More"
   },
   "map": {
     "heading": "Site map",
@@ -36,7 +38,8 @@
         "OpenStreetMap": "OpenStreetMap",
         "Google satellite": "Google satellite",
         "Esri World Imagery": "Esri World Imagery"
-      }
+      },
+      "work": "Open work"
     },
     "zones": {
       "EG": "East Garden",
@@ -74,7 +77,13 @@
     "submit": "Send sign-in link",
     "sending": "Sending...",
     "sent": "If {{email}} belongs to a staff account, a sign-in link is on its way. Check your inbox.",
-    "error": "Could not send the link: {{message}}"
+    "error": "Could not send the link: {{message}}",
+    "link": {
+      "expired": "That sign-in link has expired or was already used. Each link works once, and only the newest link sent to you is valid. Enter your email for a new one.",
+      "failed": "That sign-in link did not work. Enter your email for a new one."
+    },
+    "lead": "Terra Garden",
+    "trail": "management"
   },
   "auth": {
     "signOut": "Sign out"
@@ -612,7 +621,29 @@
       "verified": {
         "closed": "Close"
       }
-    }
+    },
+    "kind": {
+      "label": "Kind of request",
+      "reactive": "Fix a problem",
+      "project": "Improvement or modification"
+    },
+    "atPoint": "At the spot picked on the map ({{lat}}, {{lon}}).",
+    "place": "Where (bed or zone)",
+    "placeNone": "Not sure",
+    "whatShouldChange": "What should change?",
+    "itemsHint": "Parts, materials or plants to buy?",
+    "itemsLink": "Raise an item request instead.",
+    "reportHere": "Report a problem here",
+    "pickSpot": "Click the map where the problem is. Esc to cancel.",
+    "cancelPick": "Cancel",
+    "openWork": "Open work",
+    "mapHelp": "Shown: open work orders with a place. Preventive jobs sit in the middle of their bed; requests sit where they were reported. Click the map to report something at that spot.",
+    "reportedAs": "Request {{number}} raised.",
+    "attachments": "Photos and voice note (optional)",
+    "addPhoto": "Add photo",
+    "removePhoto": "Remove photo",
+    "attachFailed": "The request was saved, but the photos or voice note did not upload: {{message}}",
+    "attachmentsTitle": "Photos and voice notes"
   },
   "plan": {
     "heading": "Planning",
@@ -1041,5 +1072,40 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete"
+  },
+  "fieldReq": {
+    "heading": "Requests",
+    "tab": {
+      "open_one": "Open ({{count}})",
+      "open_other": "Open ({{count}})",
+      "mine_one": "Mine ({{count}})",
+      "mine_other": "Mine ({{count}})"
+    },
+    "search": "Search title, bed or number",
+    "openHelp": "Reported and not yet scheduled, most urgent first. Check here before reporting the same thing again.",
+    "noneOpen": "No open requests.",
+    "noneMine": "You have not raised any requests in the last 30 days.",
+    "byMe": "by me",
+    "by": "by {{name}}",
+    "scheduledFor": "Scheduled for {{day}}",
+    "work": "Work",
+    "items": "Items",
+    "note": "Note",
+    "button": "Requests ({{count}} open)"
+  },
+  "places": {
+    "label": "Filter by place",
+    "all": "All",
+    "none": "No place",
+    "bed": "Bed",
+    "allBeds": "All beds"
+  },
+  "voice": {
+    "record": "Record voice note",
+    "stop": "Stop",
+    "delete": "Delete",
+    "note": "Voice note",
+    "noMic": "The microphone is not available.",
+    "unsupported": "Voice notes are not supported in this browser."
   }
 }

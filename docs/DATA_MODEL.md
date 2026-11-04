@@ -567,6 +567,23 @@ completed it). The supervisor checklist (work done as the SOP says, photos show 
 is a fixed list in the field app; a pass writes the ticked items into the `verified` event note, a fail is
 `completed` to `in_progress` with the reason as the note (`wo_transition` requires it). No table changes.
 
+As built (migration `20261103000100_work_order_place.sql`, 3 Nov 2026): every work order with a place
+shows on the maps. Trigger `work_order_place`: a point without a location gets its bed or zone
+(`resolve_location`), and a location without a point gets a point inside it. Requests can be raised from
+the map (a picked spot or an asset's popup); anyone may raise a request as `reactive` (fix a problem) or
+`project` (improvement or modification), and planners approve it as before.
+
+As built (migration `20261104000100_field_requests.sql`, 4 Nov 2026): `field_requests(p_site)` gives the
+field app its Requests screen: `open` (work requests requested or approved and not yet scheduled, visible to
+every member, most urgent first) and `mine` (my work requests and item requests, open or closed in the last
+30 days, with the latest event note). The offline pack carries it as `requests`.
+
+Requests with photos and a voice note (4 Nov 2026, no table change): "Report a problem" takes up to 3 photos
+(compressed to 1600 px) and one voice note (up to 2 minutes, recorded in the browser). They are `media` rows
+on the work order (`kind` photo or audio, buckets `photos` and `audio`, path
+`<organisation_id>/wo/<work_order_id>/<media_id>.<ext>`). From the field app they are queued in the offline
+outbox behind the request.
+
 ## 6. Observations
 
 ```sql

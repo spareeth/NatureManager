@@ -20,6 +20,8 @@ import {
 } from '../requests/api';
 import { IrStatusPill } from '../requests/IrStatusPill';
 import { HandoffPanel } from '../handoff/HandoffPanel';
+import { PlaceFilterBar } from '../components/PlaceFilterBar';
+import { ALL_PLACES, placeMatches, type PlaceFilter } from '../work/places';
 
 const WORKING = ['manager', 'field_manager', 'curator', 'green_team', 'field_engineer'];
 
@@ -82,6 +84,7 @@ function RequestList() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<'open' | IrStatus | 'all'>('open');
   const [creating, setCreating] = useState(false);
+  const [place, setPlace] = useState<PlaceFilter>(ALL_PLACES);
   const status = filter === 'open' ? OPEN_STATUSES : filter === 'all' ? undefined : [filter];
   const list = useQuery({
     queryKey: ['ir-list', site?.id, filter],
@@ -128,6 +131,15 @@ function RequestList() {
           onDone={(id) => navigate(`/requests/${id}`)}
         />
       )}
+      {list.data && (
+        <div className="mt-2">
+          <PlaceFilterBar
+            value={place}
+            onChange={setPlace}
+            codes={list.data.map((r) => r.location_code)}
+          />
+        </div>
+      )}
       {list.error && (
         <p role="alert" className="mt-2 text-red-700">
           {list.error.message}
@@ -149,31 +161,33 @@ function RequestList() {
             </tr>
           </thead>
           <tbody>
-            {list.data.map((r) => (
-              <tr key={r.id} className="border-t" data-testid={`ir-${r.number}`}>
-                <td className="p-1">
-                  <Link to={`/requests/${r.id}`} className="font-mono underline">
-                    {r.number}
-                  </Link>
-                </td>
-                <td className="p-1">
-                  <IrStatusPill status={r.status} />
-                </td>
-                <td className="p-1">
-                  {t(`ir.sourceName.${r.source}`)}
-                  {r.work_order_number && ` (${r.work_order_number})`}
-                </td>
-                <td className="p-1">{r.location_code ?? '-'}</td>
-                <td className="max-w-md truncate p-1" title={r.summary ?? ''}>
-                  {r.summary ?? '-'}
-                </td>
-                <td className="p-1 text-end">
-                  {r.total_aed ? `${r.total_aed.toFixed(2)} AED` : '-'}
-                </td>
-                <td className="p-1">{r.needed_by ?? '-'}</td>
-                <td className="p-1">{r.requested_by_name ?? t('ir.system')}</td>
-              </tr>
-            ))}
+            {list.data
+              .filter((r) => placeMatches(r.location_code, place))
+              .map((r) => (
+                <tr key={r.id} className="border-t" data-testid={`ir-${r.number}`}>
+                  <td className="p-1">
+                    <Link to={`/requests/${r.id}`} className="font-mono underline">
+                      {r.number}
+                    </Link>
+                  </td>
+                  <td className="p-1">
+                    <IrStatusPill status={r.status} />
+                  </td>
+                  <td className="p-1">
+                    {t(`ir.sourceName.${r.source}`)}
+                    {r.work_order_number && ` (${r.work_order_number})`}
+                  </td>
+                  <td className="p-1">{r.location_code ?? '-'}</td>
+                  <td className="max-w-md truncate p-1" title={r.summary ?? ''}>
+                    {r.summary ?? '-'}
+                  </td>
+                  <td className="p-1 text-end">
+                    {r.total_aed ? `${r.total_aed.toFixed(2)} AED` : '-'}
+                  </td>
+                  <td className="p-1">{r.needed_by ?? '-'}</td>
+                  <td className="p-1">{r.requested_by_name ?? t('ir.system')}</td>
+                </tr>
+              ))}
           </tbody>
         </table>
       )}

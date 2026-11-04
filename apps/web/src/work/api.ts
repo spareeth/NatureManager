@@ -124,6 +124,8 @@ export async function raiseRequest(v: {
   title: string;
   description: string | null;
   priority: string;
+  /** reactive: fix a problem; project: an improvement or modification (anyone may propose). */
+  woType?: 'reactive' | 'project';
   locationId?: string | null;
   assetId?: string | null;
   geom?: string | null;
@@ -136,7 +138,7 @@ export async function raiseRequest(v: {
         number: '', // assigned by the database (WO-YYYY-NNNNNN)
         site_id: v.siteId,
         source: 'request',
-        wo_type: 'reactive',
+        wo_type: v.woType ?? 'reactive',
         title: v.title,
         description: v.description,
         priority: v.priority,

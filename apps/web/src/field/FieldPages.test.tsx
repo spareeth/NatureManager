@@ -10,6 +10,7 @@ import { isAnswered, type FieldJob } from './api';
 
 const api = vi.hoisted(() => ({
   fetchMyDay: vi.fn(),
+  fetchFieldRequests: vi.fn(),
   fetchJob: vi.fn(),
   moveJob: vi.fn(),
   answerStep: vi.fn(),
@@ -127,6 +128,7 @@ const JOB: FieldJob = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  api.fetchFieldRequests.mockResolvedValue({ offline: false, data: { open: [], mine: [] } });
   api.signedPhoto.mockResolvedValue(null);
 });
 

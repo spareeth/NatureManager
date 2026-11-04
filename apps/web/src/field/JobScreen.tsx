@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrg } from '../org/context';
 import { photoUrl } from './photos';
 import { ItemsNeeded } from './ItemsNeeded';
+import { WoAttachments } from '../work/Attachments';
 import { useOutbox } from '../offline/outbox';
 import { applyPending, fieldMoves } from '../offline/overlay';
 import { PriorityTag, StatusPill } from '../work/badges';
@@ -182,6 +183,8 @@ export function JobScreen() {
         </section>
       )}
 
+      {/* Voice notes sent with the request (photos are in the Photos section). */}
+      <WoAttachments woId={j.id} kinds={['audio']} />
       <Photos job={j} disabled={!canRecord || busy} onAdd={(f) => run(() => addJobPhoto(j, f))} />
       <ItemsNeeded job={j} disabled={!canRecord} />
       <RecordForm

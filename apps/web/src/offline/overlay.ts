@@ -46,7 +46,7 @@ export function applyPending(job: FieldJob, items: OutboxItem[]): FieldJob {
         actual_minutes: (p.actual_minutes as number | null) ?? null,
         materials: (p.materials as Material[]) ?? [],
       };
-    if (it.kind === 'photo')
+    if (it.kind === 'photo' && p.kind !== 'audio')
       j.photos.push({
         id: p.mediaId as string,
         path: null,

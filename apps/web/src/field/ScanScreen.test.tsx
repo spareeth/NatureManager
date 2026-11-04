@@ -6,7 +6,12 @@ import '../i18n';
 import { OrgContext, type OrgState } from '../org/context';
 import { ScanScreen } from './ScanScreen';
 
-const api = vi.hoisted(() => ({ scanCode: vi.fn(), moveJob: vi.fn(), queueRequest: vi.fn() }));
+const api = vi.hoisted(() => ({
+  scanCode: vi.fn(),
+  moveJob: vi.fn(),
+  queueRequest: vi.fn(),
+  queueAttachments: vi.fn(),
+}));
 vi.mock('./api', () => api);
 vi.mock('../work/api', () => ({ raiseRequest: vi.fn() }));
 // The camera is not available in tests; the screen gets a code as if it had been scanned.

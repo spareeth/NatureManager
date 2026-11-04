@@ -8,6 +8,8 @@ import { bulkMove, fetchBoard, replan, transition } from '../work/api';
 import { addDays, dubaiDate, dubaiInstant, weekStart, type WoStatus } from '../work/model';
 import { BoardView, CalendarView, InboxView, WorkMapView } from '../work/views';
 import { RequestForm } from '../work/RequestForm';
+import { PlaceFilterBar } from '../components/PlaceFilterBar';
+import { ALL_PLACES, placeMatches, type PlaceFilter } from '../work/places';
 
 const VIEWS = ['inbox', 'board', 'calendar', 'map'] as const;
 type View = (typeof VIEWS)[number];
@@ -27,6 +29,9 @@ export function WorkPage() {
       : 'inbox';
   const week = params.get('week') ?? weekStart(dubaiDate(new Date()));
   const [reporting, setReporting] = useState(false);
+  const [place, setPlace] = useState<PlaceFilter>(ALL_PLACES);
+  // A spot clicked on the work map: report something there.
+  const [point, setPoint] = useState<{ lat: number; lon: number } | undefined>(undefined);
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
   const board = useQuery({
@@ -42,6 +47,8 @@ export function WorkPage() {
             })
           : fetchBoard(site!.id, { openOnly: true }),
   });
+  // Garden and bed filter applies to every view.
+  const shown = (board.data ?? []).filter((i) => placeMatches(i.location_code, place));
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['wo-board'] });
   const act = async <T,>(fn: () => Promise<T>, ok: string | ((result: T) => string)) => {
     setMessage(null);
@@ -87,7 +94,10 @@ export function WorkPage() {
         )}
         <button
           type="button"
-          onClick={() => setReporting(true)}
+          onClick={() => {
+            setPoint(undefined);
+            setReporting(true);
+          }}
           className="ms-auto rounded border border-green-800 px-3 py-1 text-sm text-green-900"
         >
           {t('wo.report')}
@@ -98,6 +108,7 @@ export function WorkPage() {
           <RequestForm
             orgId={current.organisationId}
             siteId={site.id}
+            point={point}
             onCancel={() => setReporting(false)}
             onDone={(wo) => {
               setReporting(false);
@@ -115,6 +126,15 @@ export function WorkPage() {
           {message.text}
         </p>
       )}
+      {board.data && (
+        <div className="mt-2">
+          <PlaceFilterBar
+            value={place}
+            onChange={setPlace}
+            codes={board.data.map((i) => i.location_code)}
+          />
+        </div>
+      )}
       {board.error && (
         <p role="alert" className="mt-2 text-red-700">
           {board.error.message}
@@ -125,17 +145,17 @@ export function WorkPage() {
           <>
             {!planner && <p className="mb-2 text-sm text-gray-600">{t('wo.openRequests')}</p>}
             <InboxView
-              items={(board.data ?? []).filter((i) => planner || i.status === 'requested')}
+              items={shown.filter((i) => planner || i.status === 'requested')}
               orgId={current.organisationId}
               onTransition={onTransition}
               onChanged={() => void refresh()}
             />
           </>
         ) : view === 'board' ? (
-          <BoardView items={board.data ?? []} onTransition={onTransition} />
+          <BoardView items={shown} onTransition={onTransition} />
         ) : view === 'calendar' ? (
           <CalendarView
-            items={board.data ?? []}
+            items={shown}
             week={week}
             onWeek={(w) =>
               setParams(
@@ -155,7 +175,13 @@ export function WorkPage() {
             }
           />
         ) : (
-          <WorkMapView items={board.data ?? []} />
+          <WorkMapView
+            items={shown}
+            onPick={(p) => {
+              setPoint(p);
+              setReporting(true);
+            }}
+          />
         )}
       </div>
     </section>

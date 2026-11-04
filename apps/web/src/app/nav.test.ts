@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { visibleNav } from './nav';
+import { phoneTabs, visibleNav } from './nav';
 
 const paths = (roles: Parameters<typeof visibleNav>[0]) => visibleNav(roles).map((i) => i.path);
 
@@ -62,5 +62,21 @@ describe('role-aware nav', () => {
   });
   it('no roles still sees items open to every member', () => {
     expect(paths([])).toEqual(['/', '/assets', '/taxa', '/work', '/requests']);
+  });
+});
+
+describe('phone tabs', () => {
+  const paths = (roles: Parameters<typeof visibleNav>[0]) => {
+    const { tabs, more } = phoneTabs(visibleNav(roles));
+    return [tabs.map((i) => i.path), more.map((i) => i.path)];
+  };
+  it('field roles: Field app, Map, Work; the rest under More', () => {
+    expect(paths(['green_team'])).toEqual([
+      ['/field', '/', '/work'],
+      ['/assets', '/taxa', '/requests'],
+    ]);
+  });
+  it('owner (no field app): Map, Work, Requests', () => {
+    expect(paths(['owner'])[0]).toEqual(['/', '/work', '/requests']);
   });
 });

@@ -344,7 +344,14 @@ export function InboxView({
 }
 
 /** Map of open work coloured by status (FR-WO-08). */
-export function WorkMapView({ items }: { items: BoardItem[] }) {
+/** Open work on a map. Clicking the map (not a marker) offers to report something at that spot. */
+export function WorkMapView({
+  items,
+  onPick,
+}: {
+  items: BoardItem[];
+  onPick?: (p: { lat: number; lon: number }) => void;
+}) {
   const { t } = useTranslation();
   const layer = useRef<L.LayerGroup | null>(null);
   const [map, setMap] = useState<L.Map | null>(null);
@@ -372,6 +379,7 @@ export function WorkMapView({ items }: { items: BoardItem[] }) {
         color: '#fff',
         fillColor: STATUS_COLOURS[i.status],
         fillOpacity: 1,
+        bubblingMouseEvents: false,
       })
         .bindPopup(
           `<strong>${i.number}</strong><br>${i.title.replace(/</g, '&lt;')}<br>${t(`wo.status.${i.status}`)}<br><a href="/work/${i.id}">${t('wo.open')}</a>`,
@@ -380,10 +388,22 @@ export function WorkMapView({ items }: { items: BoardItem[] }) {
     }
     if (pts.length) map.fitBounds(pts, { maxZoom: 19, padding: [30, 30] });
   }, [map, items, t]);
+  // Clicks on empty map (markers keep their own clicks for their popups).
+  useEffect(() => {
+    if (!map || !onPick) return;
+    const onClick = (e: L.LeafletMouseEvent) => onPick({ lat: e.latlng.lat, lon: e.latlng.lng });
+    map.on('click', onClick);
+    return () => {
+      map.off('click', onClick);
+    };
+  }, [map, onPick]);
   return (
     <div className="relative h-full">
       <LeafletMap onReady={onReady} className="h-full w-full rounded border" />
-      <ul className="absolute bottom-6 end-2 z-[1000] rounded bg-white/95 p-2 text-xs shadow">
+      <ul className="absolute bottom-6 end-2 z-[1000] max-w-xs rounded bg-white/95 p-2 text-xs shadow">
+        <li className="mb-1 text-gray-700" data-testid="work-map-help">
+          {t('wo.mapHelp')}
+        </li>
         {BOARD_COLUMNS.map((s) => (
           <li key={s} className="flex items-center gap-2">
             <span
