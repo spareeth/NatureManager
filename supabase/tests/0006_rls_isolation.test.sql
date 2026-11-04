@@ -157,6 +157,12 @@ insert into item_request_event (organisation_id, item_request_id, to_status, act
 select org, '20000000-0000-0000-0000-0000000000c2', 'draft', '10000000-0000-0000-0000-000000000002' from terra;
 insert into integration_outbox (organisation_id, topic, payload) select org, 'rls', '{}' from terra;
 insert into integration_receiver (organisation_id, name, channel) select org, 'RLS receiver', 'pull_api' from terra;
+-- Observations (task 3.1): an observation with an AI suggestion.
+insert into observation (id, organisation_id, site_id, obs_type, geom, observer, taxon_id)
+select '20000000-0000-0000-0000-0000000000e1', org, site, 'flora', pg_temp.lp(55, 55), '10000000-0000-0000-0000-000000000005',
+       '20000000-0000-0000-0000-0000000000d1' from terra;
+insert into ai_suggestion (organisation_id, observation_id, engine, rank, taxon_name, score)
+select org, '20000000-0000-0000-0000-0000000000e1', 'plantnet', 1, 'Rls fixturea', 0.9 from terra;
 
 select is(
   (select coalesce(array_agg(tbl order by tbl), '{}') from (

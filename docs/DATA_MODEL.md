@@ -632,6 +632,22 @@ create table ai_suggestion (
 );
 ```
 
+As built (migration `20261104000400_observations.sql`, task 3.1):
+
+- Both tables carry created and updated columns; composite keys keep site, location, asset, observation and
+  media inside one organisation. `observer` defaults to the signed-in user and must be them. Checks on
+  `obs_type`, `phenophase` (required for phenology), `verification`, `severity` 1 to 5, `count` and
+  `ai_suggestion.engine`, `rank` (from 1) and `score` (0 to 1); `measurements` is a JSON object.
+- `location_id` is set from the point (`resolve_location`) unless the caller names one, and again when the
+  point moves.
+- Verification (FR-OBS-04): observers record `ai_suggested` or `observer_confirmed`; only curators and managers
+  set `curator_verified` or `rejected`, which records `verified_by` and `verified_at`; a verified or rejected
+  observation is then changed by curators and managers only. System work without a user is not limited.
+- RLS: members read; working roles insert their own; the observer edits their own, curators and managers
+  any; deletes by curators and managers, or the observer while not verified. Suggestions are added by the
+  observation's observer or a curator or manager and never edited. `media.observation_id` now references
+  `observation` (on delete cascade). Audit trigger on `observation`.
+
 ## 7. Sensors and alerts
 
 ```sql

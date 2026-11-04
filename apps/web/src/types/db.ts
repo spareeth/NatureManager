@@ -98,6 +98,86 @@ export type Database = {
           },
         ];
       };
+      ai_suggestion: {
+        Row: {
+          created_at: string;
+          created_by: string | null;
+          engine: string;
+          id: string;
+          in_collection: boolean | null;
+          media_id: string | null;
+          model_version: string | null;
+          observation_id: string;
+          organisation_id: string;
+          rank: number;
+          raw: Json | null;
+          score: number;
+          taxon_id: string | null;
+          taxon_name: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by?: string | null;
+          engine: string;
+          id?: string;
+          in_collection?: boolean | null;
+          media_id?: string | null;
+          model_version?: string | null;
+          observation_id: string;
+          organisation_id: string;
+          rank: number;
+          raw?: Json | null;
+          score: number;
+          taxon_id?: string | null;
+          taxon_name: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string | null;
+          engine?: string;
+          id?: string;
+          in_collection?: boolean | null;
+          media_id?: string | null;
+          model_version?: string | null;
+          observation_id?: string;
+          organisation_id?: string;
+          rank?: number;
+          raw?: Json | null;
+          score?: number;
+          taxon_id?: string | null;
+          taxon_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'ai_suggestion_media_id_organisation_id_fkey';
+            columns: ['media_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'media';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'ai_suggestion_observation_id_organisation_id_fkey';
+            columns: ['observation_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'observation';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'ai_suggestion_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'ai_suggestion_taxon_id_fkey';
+            columns: ['taxon_id'];
+            isOneToOne: false;
+            referencedRelation: 'taxon';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       asset: {
         Row: {
           accession_id: string | null;
@@ -1146,6 +1226,13 @@ export type Database = {
             referencedColumns: ['id', 'organisation_id'];
           },
           {
+            foreignKeyName: 'media_observation_id_organisation_id_fkey';
+            columns: ['observation_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'observation';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
             foreignKeyName: 'media_organisation_id_fkey';
             columns: ['organisation_id'];
             isOneToOne: false;
@@ -1216,6 +1303,123 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'team';
             referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
+      observation: {
+        Row: {
+          asset_id: string | null;
+          behaviour: string | null;
+          client_uuid: string | null;
+          count: number | null;
+          created_at: string;
+          geom: unknown;
+          gps_accuracy_m: number | null;
+          id: string;
+          life_stage: string | null;
+          location_id: string | null;
+          measurements: NonNullable<Json>;
+          notes: string | null;
+          obs_type: string;
+          observed_at: string;
+          observer: string;
+          organisation_id: string;
+          phenophase: string | null;
+          severity: number | null;
+          site_id: string;
+          taxon_id: string | null;
+          updated_at: string;
+          verification: string;
+          verified_at: string | null;
+          verified_by: string | null;
+        };
+        Insert: {
+          asset_id?: string | null;
+          behaviour?: string | null;
+          client_uuid?: string | null;
+          count?: number | null;
+          created_at?: string;
+          geom: unknown;
+          gps_accuracy_m?: number | null;
+          id?: string;
+          life_stage?: string | null;
+          location_id?: string | null;
+          measurements?: NonNullable<Json>;
+          notes?: string | null;
+          obs_type: string;
+          observed_at?: string;
+          observer?: string;
+          organisation_id: string;
+          phenophase?: string | null;
+          severity?: number | null;
+          site_id: string;
+          taxon_id?: string | null;
+          updated_at?: string;
+          verification?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+        };
+        Update: {
+          asset_id?: string | null;
+          behaviour?: string | null;
+          client_uuid?: string | null;
+          count?: number | null;
+          created_at?: string;
+          geom?: unknown;
+          gps_accuracy_m?: number | null;
+          id?: string;
+          life_stage?: string | null;
+          location_id?: string | null;
+          measurements?: NonNullable<Json>;
+          notes?: string | null;
+          obs_type?: string;
+          observed_at?: string;
+          observer?: string;
+          organisation_id?: string;
+          phenophase?: string | null;
+          severity?: number | null;
+          site_id?: string;
+          taxon_id?: string | null;
+          updated_at?: string;
+          verification?: string;
+          verified_at?: string | null;
+          verified_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'observation_asset_id_organisation_id_fkey';
+            columns: ['asset_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'asset';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'observation_location_id_organisation_id_fkey';
+            columns: ['location_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'location';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'observation_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'observation_site_id_organisation_id_fkey';
+            columns: ['site_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'site';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'observation_taxon_id_fkey';
+            columns: ['taxon_id'];
+            isOneToOne: false;
+            referencedRelation: 'taxon';
+            referencedColumns: ['id'];
           },
         ];
       };
