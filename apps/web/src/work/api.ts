@@ -158,3 +158,10 @@ export async function raiseRequest(v: {
   }
   return row;
 }
+
+/** Planners change priority with a reason (kept in the history). */
+export async function setPriority(id: string, priority: string, reason: string) {
+  return check(
+    await supabase.rpc('wo_set_priority', { p_wo: id, p_priority: priority, p_reason: reason }),
+  );
+}

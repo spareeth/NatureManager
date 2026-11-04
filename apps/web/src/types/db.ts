@@ -2609,6 +2609,10 @@ export type Database = {
         };
         Returns: Json;
       };
+      wo_set_priority: {
+        Args: { p_priority: string; p_reason: string; p_wo: string };
+        Returns: Json;
+      };
       wo_transition: {
         Args: {
           p_client_uuid?: string;

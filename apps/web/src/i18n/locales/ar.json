@@ -675,7 +675,11 @@
     "addPhoto": "إضافة صورة",
     "removePhoto": "إزالة الصورة",
     "attachFailed": "تم حفظ الطلب، لكن لم ترفع الصور أو الملاحظة الصوتية: {{message}}",
-    "attachmentsTitle": "الصور والملاحظات الصوتية"
+    "attachmentsTitle": "الصور والملاحظات الصوتية",
+    "changePriority": "تغيير الأولوية",
+    "priorityReason": "السبب",
+    "priorityReasonRequired": "اذكر سبب التغيير.",
+    "savePriority": "حفظ الأولوية"
   },
   "plan": {
     "heading": "التخطيط",

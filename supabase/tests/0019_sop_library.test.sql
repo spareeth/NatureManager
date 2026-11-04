@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(19);
-delete from sop_response; delete from work_order_event; delete from work_order_asset; delete from work_order;
+delete from sop_response; delete from work_order_event; delete from work_order_asset; delete from media where work_order_id is not null; delete from work_order_asset; delete from work_order;
 delete from pm_schedule; delete from wo_template; delete from sop;
 
 create temp table tg as select s.id site, s.organisation_id org from site s join organisation o on o.id = s.organisation_id

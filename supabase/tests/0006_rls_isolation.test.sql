@@ -32,7 +32,9 @@ insert into definer_allowlist values
   ('next_ir_number'), ('item_request_before_write'), ('ir_transition'), ('asset_draft_replacement'),
   -- task 2.11: hand-off. System transitions and batching (not callable by clients), the manager
   -- export (checks the role itself), and the pull API (checks the receiver's API key itself).
-  ('ir_system_transition'), ('ir_send_batch'), ('ir_export'), ('api_receiver'), ('api_item_requests'), ('api_ack');
+  ('ir_system_transition'), ('ir_send_batch'), ('ir_export'), ('api_receiver'), ('api_item_requests'), ('api_ack'),
+  -- 4 Nov 2026: planners change priority; checks the role itself and writes the history event.
+  ('wo_set_priority');
 
 create temp view public_tables as
   select c.relname::text as tbl,

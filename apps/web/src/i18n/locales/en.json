@@ -643,7 +643,11 @@
     "addPhoto": "Add photo",
     "removePhoto": "Remove photo",
     "attachFailed": "The request was saved, but the photos or voice note did not upload: {{message}}",
-    "attachmentsTitle": "Photos and voice notes"
+    "attachmentsTitle": "Photos and voice notes",
+    "changePriority": "Change priority",
+    "priorityReason": "Reason",
+    "priorityReasonRequired": "Give a reason for the change.",
+    "savePriority": "Save priority"
   },
   "plan": {
     "heading": "Planning",

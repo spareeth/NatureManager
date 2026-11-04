@@ -3,7 +3,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 select plan(7);
 delete from item_request_event; delete from item_request_line; delete from item_request;
-delete from sop_response; delete from work_order_event; delete from work_order_asset; delete from work_order;
+delete from sop_response; delete from work_order_event; delete from work_order_asset; delete from media where work_order_id is not null; delete from work_order_asset; delete from work_order;
 create temp table tg as select s.id site, s.organisation_id org,
   (select id from location l where l.organisation_id = s.organisation_id and l.code = 'NG-02') bed
   from site s join organisation o on o.id = s.organisation_id where o.slug = 'terra' and s.code = 'TG';

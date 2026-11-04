@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(9);
-delete from sop_response; delete from work_order_event; delete from work_order_asset; delete from work_order;
+delete from sop_response; delete from work_order_event; delete from work_order_asset; delete from media where work_order_id is not null; delete from work_order_asset; delete from work_order;
 
 create temp table tg as select s.id site, s.organisation_id org,
   (select id from team t where t.organisation_id = s.organisation_id and t.name = 'Green Team East') east

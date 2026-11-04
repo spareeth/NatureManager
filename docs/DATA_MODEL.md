@@ -584,6 +584,11 @@ on the work order (`kind` photo or audio, buckets `photos` and `audio`, path
 `<organisation_id>/wo/<work_order_id>/<media_id>.<ext>`). From the field app they are queued in the offline
 outbox behind the request.
 
+Priority (migration `20261104000200_wo_priority.sql`, 4 Nov 2026): `wo_set_priority(p_wo, p_priority,
+p_reason)` lets managers and field managers change a work order's priority (reason required, not when
+closed or cancelled). It writes a `work_order_event` with the same from and to status and the note
+"Priority P3 to P1: reason". A trigger refuses any other change of `priority` by a signed-in user.
+
 ## 6. Observations
 
 ```sql

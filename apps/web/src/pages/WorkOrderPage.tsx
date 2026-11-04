@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { PriorityControl } from '../work/PriorityControl';
 import { WoAttachments } from '../work/Attachments';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -80,6 +81,9 @@ export function WorkOrderPage() {
       <p className="mt-1 text-lg">{w.title}</p>
 
       <div className="mt-3 flex flex-wrap gap-2" aria-label={t('wo.actions')}>
+        {planner && !['closed', 'cancelled'].includes(w.status) && (
+          <PriorityControl woId={w.id} current={w.priority} onDone={() => void refresh()} />
+        )}
         {canSchedule && !scheduling && (
           <button
             type="button"
@@ -207,10 +211,20 @@ export function WorkOrderPage() {
               className="absolute -start-[1.4rem] top-1.5 h-2.5 w-2.5 rounded-full bg-green-800"
             />
             <p>
-              {e.from
-                ? t('wo.eventMove', { from: t(`wo.status.${e.from}`), to: t(`wo.status.${e.to}`) })
-                : t(`wo.status.${e.to}`)}
-              {e.note ? `: ${e.note}` : ''}
+              {e.from === e.to && e.note ? (
+                // a change that kept the status, e.g. "Priority P3 to P1: reason"
+                e.note
+              ) : (
+                <>
+                  {e.from
+                    ? t('wo.eventMove', {
+                        from: t(`wo.status.${e.from}`),
+                        to: t(`wo.status.${e.to}`),
+                      })
+                    : t(`wo.status.${e.to}`)}
+                  {e.note ? `: ${e.note}` : ''}
+                </>
+              )}
             </p>
             <p className="text-xs text-gray-500">
               {when(e.at)} · {e.source === 'system' ? t('wo.system') : (e.by ?? '')}

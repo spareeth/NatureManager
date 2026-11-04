@@ -19,6 +19,7 @@ const api = vi.hoisted(() => ({
   replan: vi.fn(),
   bulkMove: vi.fn(),
   raiseRequest: vi.fn(),
+  setPriority: vi.fn(),
 }));
 vi.mock('../work/api', () => api);
 vi.mock('../org/useSite', () => ({
@@ -242,5 +243,49 @@ describe('work order page', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Verify' }));
     await waitFor(() => expect(api.transition).toHaveBeenCalledWith('w1', 'verified', undefined));
+  });
+
+  it('a planner changes the priority with a reason; the history shows it', async () => {
+    api.fetchWorkOrder.mockResolvedValue({
+      ...detail,
+      status: 'requested',
+      events: [
+        {
+          at: '2026-10-12T05:00:00Z',
+          from: 'requested',
+          to: 'requested',
+          note: 'Priority P3 to P1: Blocking the path',
+          source: 'user',
+          by: 'Terra Field Manager',
+        },
+      ],
+    });
+    api.fetchAllowed.mockResolvedValue([]);
+    api.setPriority.mockResolvedValue({ changed: true });
+    renderAt('/work/w1', ['field_manager']);
+    expect(await screen.findByTestId('wo-history')).toHaveTextContent(
+      'Priority P3 to P1: Blocking the path',
+    );
+    expect(screen.getByTestId('wo-history')).not.toHaveTextContent('Requested to Requested');
+    fireEvent.click(screen.getByRole('button', { name: 'Change priority' }));
+    const form = screen.getByRole('form', { name: 'Change priority' });
+    fireEvent.change(within(form).getByLabelText('Urgency'), { target: { value: 'P1' } });
+    fireEvent.click(within(form).getByRole('button', { name: 'Save priority' }));
+    expect(await within(form).findByText('Give a reason for the change.')).toBeInTheDocument();
+    fireEvent.change(within(form).getByLabelText('Reason'), {
+      target: { value: 'Blocking the path' },
+    });
+    fireEvent.click(within(form).getByRole('button', { name: 'Save priority' }));
+    await waitFor(() =>
+      expect(api.setPriority).toHaveBeenCalledWith('w1', 'P1', 'Blocking the path'),
+    );
+  });
+
+  it('only planners see Change priority', async () => {
+    api.fetchWorkOrder.mockResolvedValue({ ...detail, status: 'requested' });
+    api.fetchAllowed.mockResolvedValue([]);
+    renderAt('/work/w1', ['green_team']);
+    await screen.findByText('SOP-BED v2 · Bed care');
+    expect(screen.queryByRole('button', { name: 'Change priority' })).toBeNull();
   });
 });

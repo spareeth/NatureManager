@@ -92,8 +92,9 @@ defaults are:
 | P3 | Normal (default) | 3 days |
 | P4 | Low | 14 days |
 
-Planners cannot yet change a priority on screen after the request is raised; this is a proposed
-improvement.
+A manager or field manager can change the priority on the work order page (Change priority) until the
+job is closed or cancelled; a reason is required, and the change is kept in the job's history (for example
+"Priority P3 to P1: blocking the main path"). Nobody else can change it.
 
 **The role of SOPs.** An SOP sets how a job is done and how it is proven: one method for every team, the
 safety equipment and hazards shown first, answers recorded at each step (tick, measurement, choice or
