@@ -165,6 +165,9 @@ export function ScanScreen() {
             </p>
           )}
 
+          <Link to={`/field/observe?asset=${found.data.id}`} className={`${BTN} w-full border-2`}>
+            {t('obs.forAsset')}
+          </Link>
           {notice && (
             <p role="status" className="rounded bg-green-50 p-2 text-green-900">
               {notice}

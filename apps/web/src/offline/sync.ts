@@ -6,6 +6,7 @@ import { setKick } from './kick';
 import { processOutbox, wakeQueue, type Handlers } from './outbox';
 import { OSM_TILES, warmTiles, type BBox } from './tiles';
 import { fetchBasemaps, offlineTemplates } from '../map/basemaps';
+import { fetchPlaces } from '../field/observe';
 
 // Sync worker (FR-FLD-04, NFR-03): sends the outbox in order, each write keyed by its client UUID so
 // a replay after a lost answer changes nothing. Runs on start, when the phone comes back online,
@@ -63,7 +64,8 @@ export const handlers: Handlers = {
           bucket,
           path: p(it).path,
           kind: p(it).kind ?? 'photo',
-          work_order_id: it.woId,
+          work_order_id: p(it).observationId ? null : it.woId,
+          observation_id: p(it).observationId ?? null,
           taken_at: p(it).takenAt,
           caption: p(it).caption,
         },
@@ -93,6 +95,32 @@ export const handlers: Handlers = {
         p_lines: p(it).lines,
         p_submit: true,
       }),
+    );
+  },
+  async observation(it) {
+    // The observation's id is made on the phone and client_uuid is the outbox id: a replay adds nothing.
+    const v = p(it);
+    check(
+      await supabase.from('observation').upsert(
+        {
+          id: v.id,
+          organisation_id: v.orgId,
+          site_id: v.siteId,
+          obs_type: v.obsType,
+          observed_at: v.observedAt,
+          geom: v.geom,
+          gps_accuracy_m: v.accuracy ?? null,
+          count: v.count ?? null,
+          life_stage: v.lifeStage ?? null,
+          phenophase: v.phenophase ?? null,
+          severity: v.severity ?? null,
+          notes: v.notes ?? null,
+          asset_id: v.assetId ?? null,
+          location_id: v.locationId ?? null,
+          client_uuid: it.id,
+        },
+        { onConflict: 'client_uuid', ignoreDuplicates: true },
+      ),
     );
   },
   async request(it) {
@@ -169,6 +197,8 @@ export async function refreshPack(siteId: string, orgId?: string) {
       savedAt,
     });
   });
+  // Beds and zones, for observations without GPS (task 3.2).
+  await fetchPlaces(siteId).catch(() => null);
   // Base maps of the site, kept for the field map; tiles only of layers that may be stored offline.
   const basemaps = await fetchBasemaps(siteId).catch(() => null);
   if (basemaps) await db.kv.put({ key: `basemaps:${siteId}`, value: basemaps, savedAt });

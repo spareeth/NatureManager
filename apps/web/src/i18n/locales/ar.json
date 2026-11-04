@@ -922,7 +922,8 @@
       "photo": "صورة",
       "record": "سجل العمل",
       "request": "طلب",
-      "items": "مواد"
+      "items": "مواد",
+      "observation": "رصد"
     },
     "queuedMove": "نقلت إلى {{status}}.",
     "requestQueued": "تم حفظ الطلب. يرسل عند توفر الشبكة.",
@@ -1197,5 +1198,72 @@
   "site": {
     "project": "المشروع",
     "comingSoon": "{{name}} (قريبا)"
+  },
+  "obs": {
+    "button": "رصد",
+    "heading": "رصد جديد",
+    "type": "نوع الرصد",
+    "forAsset": "تسجيل رصد",
+    "types": {
+      "flora": "نبات",
+      "fauna": "حيوان",
+      "phenology": "الأطوار الموسمية",
+      "pest_disease": "آفة أو مرض",
+      "plant_health": "صحة النبات",
+      "water_quality": "جودة المياه",
+      "note": "ملاحظة"
+    },
+    "typeHelp": {
+      "flora": "نبات شوهد",
+      "fauna": "طائر، حشرة، زاحف...",
+      "phenology": "تورق، إزهار، إثمار",
+      "pest_disease": "آفات، علامات مرض",
+      "plant_health": "إجهاد، ضرر، تراجع",
+      "water_quality": "بركة، قناة، مياه",
+      "note": "أي شيء آخر"
+    },
+    "phenophase": "الطور",
+    "phenophases": {
+      "leafing": "تورق",
+      "flowering": "إزهار",
+      "fruiting": "إثمار",
+      "senescence": "شيخوخة"
+    },
+    "severity": "الشدة",
+    "severityN": "الشدة {{n}}",
+    "severityHelp": "1 خفيفة إلى 5 شديدة",
+    "count": "العدد",
+    "less": "أقل",
+    "more": "أكثر",
+    "lifeStage": "مرحلة الحياة",
+    "lifeStages": {
+      "adult": "بالغ",
+      "juvenile": "صغير",
+      "egg_or_larva": "بيضة أو يرقة",
+      "unknown": "غير معروف"
+    },
+    "photoN": "صورة {{n}}",
+    "takePhoto": "التقاط صورة",
+    "notes": "ملاحظات",
+    "save": "حفظ الرصد",
+    "changeType": "تغيير النوع",
+    "saved": "تم حفظ الرصد. يرسل عند توفر الشبكة.",
+    "mine": "أرصادي الأخيرة",
+    "gpsFinding": "جار تحديد موقعك...",
+    "gpsOk": "تم تحديد الموقع (بدقة {{m}} م).",
+    "gpsFailed": "لا يوجد GPS. اختر الحوض أو المنطقة أدناه.",
+    "atAsset": "عند الأصل {{tag}}.",
+    "atBed": "في {{code}}.",
+    "choosePlace": "الحوض أو المنطقة",
+    "problem": {
+      "place": "اختر مكان الرصد.",
+      "phenophase": "اختر الطور."
+    },
+    "verification": {
+      "ai_suggested": "لم يؤكد بعد",
+      "observer_confirmed": "أكدته",
+      "curator_verified": "تحقق منه أمين المجموعة",
+      "rejected": "مرفوض"
+    }
   }
 }

@@ -70,12 +70,21 @@ export function MyDay() {
           ›
         </button>
       </div>
-      <Link
-        to="/field/scan"
-        className="mt-2 inline-flex min-h-14 w-full items-center justify-center rounded-lg bg-green-800 text-lg font-semibold text-white"
-      >
-        {t('fieldApp.scan')}
-      </Link>
+      {/* Scan and Observe: the two one-tap starts from My day (FR-FLD-05). */}
+      <div className="mt-2 flex gap-2">
+        <Link
+          to="/field/scan"
+          className="inline-flex min-h-14 flex-1 items-center justify-center rounded-lg bg-green-800 text-lg font-semibold text-white"
+        >
+          {t('fieldApp.scan')}
+        </Link>
+        <Link
+          to="/field/observe"
+          className="inline-flex min-h-14 flex-1 items-center justify-center rounded-lg bg-green-800 text-lg font-semibold text-white"
+        >
+          {t('obs.button')}
+        </Link>
+      </div>
       {planner && (
         <Link
           to="/field/verify"

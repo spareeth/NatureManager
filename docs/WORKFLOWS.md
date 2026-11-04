@@ -131,6 +131,13 @@ including the reason if it is cancelled.
 **Scan**: the Scan button reads a QR label or barcode (or a typed tag). It opens the asset with its open
 jobs, starts a scheduled job of the user directly, or raises a request for that asset.
 
+**Observe** (next to Scan on My day) records a sighting in three taps: Observe, a type (plant, animal,
+phenology, pest or disease, plant health, water quality, note), Save. The GPS point and its accuracy are
+taken as the screen opens; without GPS the bed or zone is chosen from a list. Optional: up to 3 photos, a
+sound recording (animals, notes), count, life stage, the phenology stage (required for phenology) and a
+severity from 1 to 5 (pests, plant health). From a scanned asset, Record an observation links it to that
+tree. The observer's recent observations are listed with their verification status.
+
 ## 7. Offline (flight mode)
 
 The field app keeps the day's work on the phone: today's and tomorrow's jobs with their SOPs, the assets of

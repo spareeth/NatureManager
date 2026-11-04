@@ -648,6 +648,11 @@ As built (migration `20261104000400_observations.sql`, task 3.1):
   observation's observer or a curator or manager and never edited. `media.observation_id` now references
   `observation` (on delete cascade). Audit trigger on `observation`.
 
+Field observations (task 3.2): recorded on the phone through the offline outbox with a phone-made `id` and
+`client_uuid` (replays add nothing); photos and audio are `media` rows with `observation_id`, stored under
+`<organisation_id>/obs/<observation_id>/`. `field_places(p_site)` gives each bed and zone with a point inside it,
+for choosing a place when there is no GPS (`location_id` is then the chosen place).
+
 ## 7. Sensors and alerts
 
 ```sql

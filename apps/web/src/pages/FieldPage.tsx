@@ -3,6 +3,7 @@ import { JobScreen } from '../field/JobScreen';
 import { MyDay } from '../field/MyDay';
 import { ScanScreen } from '../field/ScanScreen';
 import { RequestsScreen } from '../field/Requests';
+import { ObserveScreen } from '../field/ObserveScreen';
 import { SyncBar } from '../field/SyncBar';
 import { VerifyQueue, VerifyScreen } from '../field/Verify';
 import { useCurrentSite } from '../org/useSite';
@@ -18,6 +19,7 @@ export function FieldPage() {
         <Route path="jobs/:id" element={<JobScreen />} />
         <Route path="scan" element={<ScanScreen />} />
         <Route path="requests" element={<RequestsScreen />} />
+        <Route path="observe" element={<ObserveScreen />} />
         <Route path="verify" element={<VerifyQueue />} />
         <Route path="verify/:id" element={<VerifyScreen />} />
       </Routes>

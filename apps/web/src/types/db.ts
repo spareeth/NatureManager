@@ -2613,6 +2613,16 @@ export type Database = {
       field_job: { Args: { p_wo: string }; Returns: Json };
       field_my_day: { Args: { p_day: string; p_site: string }; Returns: Json };
       field_offline_pack: { Args: { p_from: string; p_site: string; p_to: string }; Returns: Json };
+      field_places: {
+        Args: { p_site: string };
+        Returns: {
+          code: string;
+          id: string;
+          kind: Database['public']['Enums']['location_kind'];
+          lat: number;
+          lon: number;
+        }[];
+      };
       field_requests: { Args: { p_site: string }; Returns: Json };
       field_scan: { Args: { p_asset: string }; Returns: Json };
       has_any_role: { Args: { org: string; rs: string[] }; Returns: boolean };

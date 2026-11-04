@@ -870,7 +870,8 @@
       "photo": "Photo",
       "record": "Work record",
       "request": "Request",
-      "items": "Items"
+      "items": "Items",
+      "observation": "Observation"
     },
     "queuedMove": "Moved to {{status}}.",
     "requestQueued": "Request saved. It is sent as soon as there is network.",
@@ -1121,5 +1122,72 @@
   "site": {
     "project": "Project",
     "comingSoon": "{{name}} (coming soon)"
+  },
+  "obs": {
+    "button": "Observe",
+    "heading": "New observation",
+    "type": "Type of observation",
+    "forAsset": "Record an observation",
+    "types": {
+      "flora": "Plant",
+      "fauna": "Animal",
+      "phenology": "Phenology",
+      "pest_disease": "Pest or disease",
+      "plant_health": "Plant health",
+      "water_quality": "Water quality",
+      "note": "Note"
+    },
+    "typeHelp": {
+      "flora": "A plant seen",
+      "fauna": "A bird, insect, reptile...",
+      "phenology": "Leafing, flowering, fruiting",
+      "pest_disease": "Pests, disease signs",
+      "plant_health": "Stress, damage, decline",
+      "water_quality": "Pond, channel, water",
+      "note": "Anything else"
+    },
+    "phenophase": "Stage",
+    "phenophases": {
+      "leafing": "Leafing",
+      "flowering": "Flowering",
+      "fruiting": "Fruiting",
+      "senescence": "Senescence"
+    },
+    "severity": "Severity",
+    "severityN": "Severity {{n}}",
+    "severityHelp": "1 slight to 5 severe",
+    "count": "How many",
+    "less": "Fewer",
+    "more": "More",
+    "lifeStage": "Life stage",
+    "lifeStages": {
+      "adult": "Adult",
+      "juvenile": "Juvenile",
+      "egg_or_larva": "Egg or larva",
+      "unknown": "Unknown"
+    },
+    "photoN": "Photo {{n}}",
+    "takePhoto": "Take photo",
+    "notes": "Notes",
+    "save": "Save observation",
+    "changeType": "Change type",
+    "saved": "Observation saved. It is sent as soon as there is network.",
+    "mine": "My recent observations",
+    "gpsFinding": "Finding your location...",
+    "gpsOk": "Location found (within {{m}} m).",
+    "gpsFailed": "No GPS. Choose the bed or zone below.",
+    "atAsset": "At asset {{tag}}.",
+    "atBed": "In {{code}}.",
+    "choosePlace": "Bed or zone",
+    "problem": {
+      "place": "Choose where it was seen.",
+      "phenophase": "Choose the stage."
+    },
+    "verification": {
+      "ai_suggested": "Not yet confirmed",
+      "observer_confirmed": "Confirmed by me",
+      "curator_verified": "Verified by curator",
+      "rejected": "Rejected"
+    }
   }
 }
