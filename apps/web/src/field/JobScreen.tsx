@@ -291,12 +291,12 @@ function StepRow({
           </label>
         )}
         {(step.input_type === 'number' || step.input_type === 'text') && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <input
               aria-label={label}
               type={step.input_type === 'number' ? 'number' : 'text'}
               inputMode={step.input_type === 'number' ? 'decimal' : undefined}
-              className="min-h-12 flex-1 rounded border-2 px-2 text-lg"
+              className="min-h-12 w-32 min-w-0 flex-1 rounded border-2 px-2 text-lg"
               value={draft}
               disabled={disabled}
               onChange={(e) => setDraft(e.target.value)}
