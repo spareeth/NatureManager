@@ -146,6 +146,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<MapPage />} />
           <Route path="/a/:code" element={<ScanPage />} />
+          <Route path="/q/:code" element={<ScanPage />} />
           <Route path="/assets" element={<AssetListPage />} />
           <Route path="/taxa" element={<TaxonListPage />} />
           <Route path="/work" element={<WorkPage />} />

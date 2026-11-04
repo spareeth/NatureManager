@@ -350,6 +350,12 @@ tags get `<ZONE><BED>-G<NN>_<SPECIES>`; built assets `<ZONE><BED>-<TYPE><NN>`, e
 Uniqueness is enforced; the 2 duplicate tags in the Hortis export must be resolved at migration.
 QR payload: `https://<host>/a/<tag_code>` so a phone camera opens the record.
 
+Permanent QR codes (migration `20261104000300_asset_qr_code.sql`, decision 4 Nov 2026): `asset.qr_code text
+not null unique`, generated on insert as `<site code>-<6 characters>` (no look-alike characters, e.g.
+`TG-7K3QF9`) and never changed, even when the tag code is corrected. New labels encode
+`https://<host>/q/<qr_code>` and print the code; `/a/<tag_code>` labels keep working. `asset_by_code`
+matches the QR code first, then the tag code, then the barcode. Managers see the QR image on the asset page.
+
 ## 5. SOPs, PM and work orders
 
 ```sql

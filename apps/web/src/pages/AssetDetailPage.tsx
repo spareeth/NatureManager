@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { AssetQr } from '../assets/AssetQr';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +13,6 @@ import { useOrg } from '../org/context';
 import { canEditAssets } from '../auth/canEdit';
 import { useTypeName } from '../assets/useTypeNames';
 import { LabelDialog } from '../labels/LabelDialog';
-import { assetUrl } from '../labels/qrPayload';
 import { RequestForm } from '../work/RequestForm';
 import { useNavigate } from 'react-router-dom';
 
@@ -269,11 +269,6 @@ export function AssetDetailPage() {
                 </span>
               )}
             </Row>
-            <Row label={t('assets.f.qr')}>
-              <a href={assetUrl(a.tag_code)} className="font-mono text-xs underline" dir="ltr">
-                {assetUrl(a.tag_code)}
-              </a>
-            </Row>
             <Row label={t('assets.f.source')}>
               {a.position_source &&
                 `${t(`position.${a.position_source}`)}${a.position_accuracy_m != null ? ` · ±${a.position_accuracy_m} m` : ''}`}
@@ -284,6 +279,13 @@ export function AssetDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* The permanent QR code, for managers (decision 4 Nov 2026). */}
+      {current?.roles.includes('manager') && (
+        <div className="mt-6">
+          <AssetQr assetId={a.id} tagCode={a.tag_code} />
+        </div>
+      )}
 
       {photos.length > 0 && (
         <section className="mt-6">

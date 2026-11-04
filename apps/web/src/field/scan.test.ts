@@ -11,3 +11,9 @@ describe('parseScan', () => {
     expect(parseScan('WG07-T04_PRO')).toBe('WG07-T04_PRO');
   });
 });
+
+describe('parseScan, permanent QR codes', () => {
+  it('takes the code from a /q/ label URL', () => {
+    expect(parseScan('https://garden.example.org/q/TG-7K3QF9')).toBe('TG-7K3QF9');
+  });
+});

@@ -176,6 +176,12 @@
       "grid": "Site grid",
       "source": "Position source",
       "qr": "QR link"
+    },
+    "qr": {
+      "heading": "QR code",
+      "alt": "QR code {{code}}",
+      "help": "Permanent code printed on the tree's label; it never changes, even if the tag code is corrected.",
+      "download": "Download PNG"
     }
   },
   "timeline": {

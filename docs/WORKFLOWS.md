@@ -192,6 +192,9 @@ in the same step, so nothing is lost or sent twice.
 - **Map**: beds and zones, the assets coloured by status, control points and the Open work layer. Managers
   and curators add assets by tapping, drawing a planting group or by offset from a control point.
 - **Assets**: the register with tags and QR labels; each asset page shows its history and open work.
+  Every asset has a permanent QR code (for example `TG-7K3QF9`), created with the asset and never changed.
+  Managers see it on the asset page with a PNG download; Print label puts it on the label fixed to the
+  tree. Scanning it, or typing the code into Scan, opens the asset even if its tag code was corrected.
 - **Base maps** (managers): the list of base layers for the site, its default, and which may be stored on
   phones. Google satellite needs its key and is online only; Esri World Imagery needs an ArcGIS key; our own
   orthophoto can be added as a tile layer and stored offline.

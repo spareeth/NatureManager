@@ -121,6 +121,7 @@ export type Database = {
           plant_count: number | null;
           position_accuracy_m: number | null;
           position_source: string | null;
+          qr_code: string;
           site_id: string;
           status: Database['public']['Enums']['asset_status'];
           tag_code: string;
@@ -149,6 +150,7 @@ export type Database = {
           plant_count?: number | null;
           position_accuracy_m?: number | null;
           position_source?: string | null;
+          qr_code?: string;
           site_id: string;
           status?: Database['public']['Enums']['asset_status'];
           tag_code: string;
@@ -177,6 +179,7 @@ export type Database = {
           plant_count?: number | null;
           position_accuracy_m?: number | null;
           position_source?: string | null;
+          qr_code?: string;
           site_id?: string;
           status?: Database['public']['Enums']['asset_status'];
           tag_code?: string;
@@ -2473,6 +2476,7 @@ export type Database = {
         Args: { p_lat: number; p_lon: number; p_max_m?: number; p_site: string };
         Returns: Json;
       };
+      new_qr_code: { Args: { p_site: string }; Returns: string };
       next_ir_number: { Args: { p_org: string }; Returns: string };
       next_wo_number: { Args: { p_org: string }; Returns: string };
       org_sla_hours: { Args: { p_org: string; p_priority: string }; Returns: number };

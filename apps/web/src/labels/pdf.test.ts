@@ -37,6 +37,18 @@ describe('buildLabelPdf', () => {
     expect(text).toContain('Ghaf');
   });
 
+  it('a label with a permanent QR code encodes /q/<code> and prints the code', async () => {
+    const doc = await buildLabelPdf([{ ...label(1), qr_code: 'TG-7K3QF9' }], {
+      baseUrl: 'https://garden.example.org',
+      compress: false,
+    });
+    expect(QRCode.toDataURL).toHaveBeenCalledWith(
+      'https://garden.example.org/q/TG-7K3QF9',
+      expect.objectContaining({ errorCorrectionLevel: 'M' }),
+    );
+    expect(doc.output()).toContain('TG-7K3QF9');
+  });
+
   it('honours the start position', async () => {
     const doc = await buildLabelPdf([label(1), label(2)], { startAt: 24 });
     expect(doc.getNumberOfPages()).toBe(2);
