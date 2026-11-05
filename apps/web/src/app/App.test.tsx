@@ -12,10 +12,20 @@ vi.mock('../lib/supabase', () => ({
   },
 }));
 
-const navLinks = () =>
+const tabLinks = () =>
   within(screen.getByRole('navigation', { name: 'Main' }))
     .getAllByRole('link')
     .map((a) => a.textContent);
+const openMore = () => fireEvent.click(screen.getByRole('button', { name: /More/ }));
+// The tabs, then the pages under More.
+const navLinks = () => {
+  const tabs = tabLinks();
+  openMore();
+  const more = within(screen.getByRole('menu'))
+    .getAllByRole('menuitem')
+    .map((a) => a.textContent);
+  return [...tabs, ...more];
+};
 
 describe('login', () => {
   it('shows the magic link form when signed out', () => {
@@ -58,9 +68,16 @@ describe('shell', () => {
     expect(screen.getByText(/not a member of any organisation/)).toBeInTheDocument();
   });
 
+  it('one header line: the title, Map, Field app, Work orders and More', () => {
+    renderApp({ memberships: [membership(['green_team'])] });
+    expect(screen.getByText('Nature OS')).toBeInTheDocument();
+    expect(tabLinks()).toEqual(['Map', 'Field app', 'Work orders']);
+    expect(screen.getByRole('contentinfo')).toContainElement(screen.getByTestId('brand-lockup'));
+  });
+
   it('green team sees map and field app, not members', () => {
     renderApp({ memberships: [membership(['green_team'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work', 'Field app', 'Requests']);
+    expect(navLinks()).toEqual(['Map', 'Field app', 'Work orders', 'Assets', 'Taxa', 'Item requests']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
@@ -68,11 +85,11 @@ describe('shell', () => {
     renderApp({ path: '/members', memberships: [membership(['manager'])] });
     expect(navLinks()).toEqual([
       'Map',
+      'Field app',
+      'Work orders',
       'Assets',
       'Taxa',
-      'Work',
-      'Field app',
-      'Requests',
+      'Item requests',
       'Planning',
       'Control points',
       'Base maps',
@@ -89,7 +106,7 @@ describe('shell', () => {
 
   it('owner cannot open the field app', () => {
     renderApp({ path: '/field', memberships: [membership(['owner'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work', 'Requests']);
+    expect(navLinks()).toEqual(['Map', 'Work orders', 'Assets', 'Taxa', 'Item requests']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
@@ -97,6 +114,7 @@ describe('shell', () => {
     const terra = membership(['manager'], 'org-t', 'Terra');
     const demo = membership(['owner'], 'org-d', 'Demo Org');
     const { org } = renderApp({ memberships: [terra, demo] });
+    openMore();
     const select = screen.getByRole('combobox', { name: 'Organisation' });
     fireEvent.change(select, { target: { value: 'org-d' } });
     expect(org.switchOrg).toHaveBeenCalledWith('org-d');
@@ -104,12 +122,14 @@ describe('shell', () => {
 
   it('single organisation shows its name, no switcher', () => {
     renderApp({ memberships: [membership(['manager'])] });
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    openMore();
+    expect(screen.queryByRole('combobox', { name: 'Organisation' })).not.toBeInTheDocument();
     expect(screen.getByText('Terra')).toBeInTheDocument();
   });
 
   it('sign out calls auth', async () => {
     const { auth } = renderApp({ memberships: [membership(['curator'])] });
+    openMore();
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
     await waitFor(() => expect(auth.signOut).toHaveBeenCalled());
   });

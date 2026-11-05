@@ -70,13 +70,13 @@ describe('phone tabs', () => {
     const { tabs, more } = phoneTabs(visibleNav(roles));
     return [tabs.map((i) => i.path), more.map((i) => i.path)];
   };
-  it('field roles: Field app, Map, Work; the rest under More', () => {
+  it('field roles: Map, Field app, Work orders; the rest under More', () => {
     expect(paths(['green_team'])).toEqual([
-      ['/field', '/', '/work'],
+      ['/', '/field', '/work'],
       ['/assets', '/taxa', '/requests'],
     ]);
   });
-  it('owner (no field app): Map, Work, Requests', () => {
-    expect(paths(['owner'])[0]).toEqual(['/', '/work', '/requests']);
+  it('owner (no field app): Map, Work orders', () => {
+    expect(paths(['owner'])[0]).toEqual(['/', '/work']);
   });
 });

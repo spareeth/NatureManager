@@ -653,6 +653,10 @@ Field observations (task 3.2): recorded on the phone through the offline outbox 
 `<organisation_id>/obs/<observation_id>/`. `field_places(p_site)` gives each bed and zone with a point inside it,
 for choosing a place when there is no GPS (`location_id` is then the chosen place).
 
+`ai_collection_check(p_org, p_taxa, p_location, p_lon, p_lat, p_radius_m)` (task 3.3, security invoker):
+per taxon, whether a living asset of it is in the location or within the radius (EPSG:3997 metres); used by
+the identify service for `in_collection`.
+
 ## 7. Sensors and alerts
 
 ```sql

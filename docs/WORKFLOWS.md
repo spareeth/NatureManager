@@ -11,7 +11,7 @@ appears in the project picker as "coming soon" and is not set up yet.
 
 | Role | Main screens | Typical device |
 | --- | --- | --- |
-| Manager | Work, Planning, Requests (with Hand-off), Base maps, Members | Desktop |
+| Manager | Work orders, Planning, Item requests (with Hand-off), Base maps, Members | Desktop |
 | Field manager | Work, Planning (read and generate), Field app (Verify work) | Phone and desktop |
 | Green team, field engineer | Field app (My day, Scan, Requests), Map | Phone |
 | Curator | Assets, Taxa, Map | Desktop |
@@ -22,8 +22,9 @@ member can report a problem and raise an item request. Data from another organis
 
 **Signing in.** Enter your work email on the sign-in page and open the link that arrives by email. Each
 link works once, and only the newest link is valid; an old or used link shows a message asking for a new
-one. On a phone the header shows three tabs (Field app, Map, Work for field roles) and a More menu with the
-other pages, the project picker, language (English or Arabic) and sign out.
+one. The header is one line on every screen: the title Nature OS, the tabs Map, Field app and Work orders,
+and a More menu with the other pages, the project picker, the organisation, language (English or Arabic)
+and sign out. The Terra and Expo City Dubai logos sit at the bottom right.
 
 ## 2. Work order lifecycle
 
@@ -170,7 +171,7 @@ receiving system. Numbers look like `IR-2026-000042`.
 **Sources**
 
 - a job on the phone (Items needed);
-- a person on the Requests page (New request);
+- a person on the Item requests page (New request);
 - automatic drafts: a plant recorded dead or removed, an asset whose condition drops to 1 or 2, or a built
   asset out of service gets a replacement draft for the same species and bed (one open draft per asset).
 
@@ -186,10 +187,10 @@ receiving system. Numbers look like `IR-2026-000042`.
 | Acknowledged | Fulfilled | Receiving system, manager, field manager |
 
 Lines (item or free text, reason maintain, replace or procure new, quantity, unit, optional cost, linked
-asset) can change only while the request is a draft. The **catalogue** (Requests, Item catalogue) holds the
+asset) can change only while the request is a draft. The **catalogue** (Item requests, Item catalogue) holds the
 items with their receiving-system codes; plant items are generated from the taxa.
 
-**Hand-off** (Requests, Hand-off, managers): approved, unsent lines are exported as one batch in CSV or
+**Hand-off** (Item requests, Hand-off, managers): approved, unsent lines are exported as one batch in CSV or
 XLSX and marked Sent. Earlier batches can be downloaded again. A receiving system can instead pull approved
 requests with its own API key and acknowledge them with its reference. Approval writes the hand-off record
 in the same step, so nothing is lost or sent twice.

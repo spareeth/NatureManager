@@ -2521,6 +2521,20 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      ai_collection_check: {
+        Args: {
+          p_lat?: number;
+          p_location?: string;
+          p_lon?: number;
+          p_org: string;
+          p_radius_m?: number;
+          p_taxa: string[];
+        };
+        Returns: {
+          in_collection: boolean;
+          taxon_id: string;
+        }[];
+      };
       api_ack: {
         Args: {
           p_external_ref: string;

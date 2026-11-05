@@ -62,6 +62,30 @@ For plant suggestions, look up `asset` rows with that taxon inside `location_id`
 of the point). `in_collection = true/false`. A confident suggestion that is not in the collection
 is a useful flag for the curator: either a misidentification or an unrecorded plant.
 
+## As built (task 3.3)
+
+- `POST /identify` needs the caller's Supabase token (`Authorization: Bearer ...`). The service reads the
+  organisation's taxa (`org_taxon` with `taxon`) and runs the collection check with that token, so row
+  level security applies; a caller outside `organisation_id` gets 403, no token 401. It never writes.
+- Form fields as above; `organs` is repeated once per image. `kind` plant and animal work now
+  (animal uses BioCLIP 2 over the organisation's Animalia taxa until the UAE fauna checklist exists);
+  `camera_trap` and `audio` answer 501 until tasks 3.8 and later.
+- Plant chain: Pl@ntNet (only when `PLANTNET_API_KEY` is set, cached by image hash), then BioCLIP 2
+  over the organisation's Plantae list. Names are matched on genus and epithet (plus the infraspecific
+  name after a rank marker); best score per taxon; scores below 0.01 dropped; +0.1 (`AI_LOCATION_BOOST`)
+  for taxa in the collection; top 5 (`AI_TOP_N`). Suggestions carry `taxon_id`, `inhouse_code`,
+  `iucn_category`, `sensitive` and `common_name`; a name outside our taxa has `taxon_id` null.
+- Collection check: SQL function `ai_collection_check(org, taxa[], location, lon, lat, radius_m)`,
+  security invoker; a living asset (not planned, dead, removed or disposed) of the taxon in the location
+  or within 25 m (`AI_COLLECTION_RADIUS_M`, distance in EPSG:3997). `in_collection` is null when no
+  place was given.
+- Warnings: `low_confidence` (top score below 0.35), `no_result`, `plantnet_not_configured`,
+  `plantnet_unavailable`, `bioclip2_not_configured`, `bioclip2_unavailable`, `species_list_empty`.
+  A failing engine never fails the request.
+- BioCLIP 2 loads in the background at start-up (about 30 s on CPU); text embeddings are cached per
+  species list. After that a photo takes under a second on a laptop CPU.
+- Docker image: torch from the CPU index, weights downloaded at build time.
+
 ## Evaluation (pilot)
 
 Build a test set of 200 curator-verified Terra photos (`data/eval/`). Report top-1 and top-5

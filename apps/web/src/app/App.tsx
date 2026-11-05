@@ -1,4 +1,4 @@
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { db } from '../offline/db';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/context';
@@ -59,13 +59,6 @@ export function App() {
   }
 
   const toggleLanguage = () => void i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
-  const linkClass = ({ isActive }: { isActive: boolean }) =>
-    // 48 px touch targets on phone widths (FR-FLD-06).
-    // A line between menu items, and the current one highlighted.
-    `inline-flex min-h-12 items-center border-e border-white/40 px-3 last:border-e-0 sm:min-h-0 ${
-      isActive ? 'rounded-sm bg-white/15 font-semibold underline' : 'hover:underline'
-    }`;
-
   const signOutNow = () =>
     void (async () => {
       // Unsent field changes are lost on sign-out (the offline store is cleared).
@@ -77,7 +70,7 @@ export function App() {
     <>
       <SitePicker large />
       <OrgSwitcher />
-      <span className="w-full text-sm opacity-90">
+      <span className="w-full text-sm opacity-90" title={session.user.email}>
         {current.displayName} ({current.roles.map((r) => t(`roles.${r}`)).join(', ')})
       </span>
       <button
@@ -95,51 +88,10 @@ export function App() {
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="bg-green-800 text-white">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2">
-          <span className="flex items-center gap-4">
-            <BrandLockup />
-            <span className="hidden border-s border-white/30 ps-4 sm:inline">
-              <SitePicker />
-            </span>
-          </span>
-          {/* Desktop: the full menu and the user controls. Phone: PhoneMenu below. */}
-          <nav aria-label={t('nav.label')} className="-mx-3 hidden flex-wrap gap-y-1 sm:flex">
-            {visibleNav(current.roles).map((item) => (
-              <NavLink key={item.path} to={item.path} end={item.path === '/'} className={linkClass}>
-                {t(item.labelKey)}
-              </NavLink>
-            ))}
-          </nav>
-          <div className="ms-auto hidden items-center gap-4 sm:flex">
-            <OrgSwitcher />
-            <span className="text-sm opacity-90" title={session.user.email}>
-              {current.displayName} ({current.roles.map((r) => t(`roles.${r}`)).join(', ')})
-            </span>
-            <button
-              type="button"
-              onClick={toggleLanguage}
-              className="min-h-12 rounded border px-2 py-1 text-sm sm:min-h-0"
-            >
-              {t('language.switch')}
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                void (async () => {
-                  // Unsent field changes are lost on sign-out (the offline store is cleared).
-                  const waiting = await db.outbox.count().catch(() => 0);
-                  if (waiting && !window.confirm(t('fieldApp.signOutPending', { count: waiting })))
-                    return;
-                  await signOut();
-                })()
-              }
-              className="min-h-12 text-sm underline sm:min-h-0"
-            >
-              {t('auth.signOut')}
-            </button>
-          </div>
-        </div>
+      <header className="flex items-stretch bg-green-800 text-white">
+        <span className="flex items-center ps-3 pe-2 text-base font-bold whitespace-nowrap sm:px-4 sm:text-xl">
+          {t('app.title')}
+        </span>
         <PhoneMenu items={visibleNav(current.roles)} extra={userControls} />
       </header>
       <main className="min-h-0 flex-1">
@@ -212,6 +164,9 @@ export function App() {
           <Route path="*" element={<MapPage />} />
         </Routes>
       </main>
+      <footer className="flex justify-end bg-green-800 px-3 py-1">
+        <BrandLockup height={18} />
+      </footer>
     </div>
   );
 }

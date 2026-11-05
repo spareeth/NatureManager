@@ -1,6 +1,6 @@
 {
   "app": {
-    "title": "Terra Garden"
+    "title": "Nature OS"
   },
   "nav": {
     "map": "Map",
@@ -10,9 +10,9 @@
     "assets": "Assets",
     "taxa": "Taxa",
     "controlPoints": "Control points",
-    "work": "Work",
+    "work": "Work orders",
     "plan": "Planning",
-    "requests": "Requests",
+    "requests": "Item requests",
     "basemaps": "Base maps",
     "phone": "Quick menu",
     "more": "More"

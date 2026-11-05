@@ -17,6 +17,11 @@ Anything else is flagged here before use. Update this file when adding a depende
 | @zxing/library 0.23.0 | Decoder used by @zxing/browser | Apache-2.0 | OK |
 | FastAPI | AI service | MIT | OK |
 | open_clip + BioCLIP 2 weights | Species ID | MIT | OK |
+| PyTorch (CPU) | BioCLIP 2 runtime (task 3.3) | BSD-3-Clause | OK |
+| httpx | AI service HTTP client | BSD-3-Clause | OK |
+| python-multipart | AI service uploads | Apache-2.0 | OK |
+| Pillow | AI service image decoding | MIT-CMU (HPND) | OK |
+| Pl@ntNet identify API | Plant ID (task 3.3), remote service | Terms of service, free plan 500/day | OK for pilot; Pro plan above 200k a year |
 | SpeciesNet | Camera traps | Apache-2.0 | OK |
 | MegaDetector | Camera traps | MIT / Apache-2.0 / AGPL-3.0 by variant | Use MIT or Apache variant only |
 | BirdNET models | Bird audio | CC BY-NC-SA 4.0 | Pilot only; licence before paid use |
