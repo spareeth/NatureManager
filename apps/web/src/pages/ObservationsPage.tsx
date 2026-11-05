@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { createWorkOrderFromObservation } from '../field/observe';
 import { useOrg } from '../org/context';
 import { useCurrentSite } from '../org/useSite';
 import { fetchPeople } from '../work/api';
@@ -82,7 +84,12 @@ function ReviewCard({ o, observerName }: { o: ReviewObservation; observerName: s
     onSuccess: done,
   });
   const reject = useMutation({ mutationFn: () => rejectObservation(o.id), onSuccess: done });
-  const err = (verify.error ?? reject.error) as Error | null;
+  const navigate = useNavigate();
+  const makeWo = useMutation({
+    mutationFn: () => createWorkOrderFromObservation(o.id),
+    onSuccess: (id) => navigate(`/work/${id}`),
+  });
+  const err = (verify.error ?? reject.error ?? makeWo.error) as Error | null;
   const open = o.verification === 'ai_suggested' || o.verification === 'observer_confirmed';
   const speciesMissing = needsSpecies(o.obs_type) && !o.taxon_id;
 
@@ -201,6 +208,14 @@ function ReviewCard({ o, observerName }: { o: ReviewObservation; observerName: s
             className="min-h-10 rounded border border-red-700 px-4 text-red-800"
           >
             {t('obsReview.reject')}
+          </button>
+          <button
+            type="button"
+            disabled={makeWo.isPending}
+            onClick={() => makeWo.mutate()}
+            className="min-h-10 rounded border px-4"
+          >
+            {t('obs.wo.create')}
           </button>
           {speciesMissing && (
             <span className="text-sm text-amber-900">{t('obsReview.needsSpecies')}</span>

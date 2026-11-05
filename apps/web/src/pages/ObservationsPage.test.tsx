@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import '../i18n';
 import { OrgContext, type OrgState } from '../org/context';
 import { ObservationsPage } from './ObservationsPage';
@@ -32,6 +33,8 @@ vi.mock('../assets/editApi', () => ({
     },
   ],
 }));
+const wo = vi.hoisted(() => ({ createWorkOrderFromObservation: vi.fn() }));
+vi.mock('../field/observe', () => wo);
 vi.mock('../org/useSite', () => ({ useCurrentSite: () => ({ site: { id: 's1' } }) }));
 
 const row = (over = {}) => ({
@@ -92,7 +95,12 @@ function renderIt() {
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
     >
       <OrgContext.Provider value={org}>
-        <ObservationsPage />
+        <MemoryRouter initialEntries={['/observations']}>
+          <Routes>
+            <Route path="/observations" element={<ObservationsPage />} />
+            <Route path="/work/:id" element={<p>work order page</p>} />
+          </Routes>
+        </MemoryRouter>
       </OrgContext.Provider>
     </QueryClientProvider>,
   );
@@ -144,5 +152,15 @@ describe('curator review queue', () => {
     renderIt();
     const card = await screen.findByTestId('obs-card');
     expect(within(card).getByRole('button', { name: 'Verify' })).toBeDisabled();
+  });
+
+  it('Create work order opens the new work order', async () => {
+    api.fetchReview.mockResolvedValue([row()]);
+    wo.createWorkOrderFromObservation.mockResolvedValue('w1');
+    renderIt();
+    const card = await screen.findByTestId('obs-card');
+    fireEvent.click(within(card).getByRole('button', { name: 'Create work order' }));
+    expect(await screen.findByText('work order page')).toBeInTheDocument();
+    expect(wo.createWorkOrderFromObservation).toHaveBeenCalledWith('ob1');
   });
 });

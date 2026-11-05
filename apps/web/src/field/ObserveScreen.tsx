@@ -17,7 +17,9 @@ import {
   observationProblems,
   OBS_TYPES,
   PHENOPHASES,
+  createWorkOrderFromObservation,
   identifyKind,
+  offersWorkOrder,
   identifySpecies,
   queueObservation,
   type IdentifyResult,
@@ -66,6 +68,8 @@ export function ObserveScreen() {
   const [ident, setIdent] = useState<IdentifyResult | null>(null);
   const [identState, setIdentState] = useState<'idle' | 'busy' | 'error'>('idle');
   const [chosen, setChosen] = useState<string>('');
+  const [withWo, setWithWo] = useState(false);
+  const [woMade, setWoMade] = useState<Record<string, string>>({});
   const online = useOnline();
 
   const places = useQuery({
@@ -150,6 +154,7 @@ export function ObserveScreen() {
     setIdent(null);
     setChosen('');
     setIdentState('idle');
+    setWithWo(false);
   };
   const clearIdent = () => {
     setIdent(null);
@@ -197,6 +202,7 @@ export function ObserveScreen() {
           notes: notes.trim() || null,
           taxonId: chosen && chosen !== 'unknown' ? chosen : null,
           suggestions: ident?.suggestions ?? [],
+          createWorkOrder: withWo && offersWorkOrder(type),
         },
         photos,
         audio,
@@ -490,6 +496,21 @@ export function ObserveScreen() {
             />
           </label>
 
+          {offersWorkOrder(type) && (
+            <label className="flex min-h-12 items-center gap-3 rounded border-2 p-2">
+              <input
+                type="checkbox"
+                className="h-6 w-6"
+                checked={withWo}
+                onChange={(e) => setWithWo(e.target.checked)}
+              />
+              <span>
+                {t('obs.wo.also')}
+                <span className="block text-sm text-gray-600">{t('obs.wo.alsoHelp')}</span>
+              </span>
+            </label>
+          )}
+
           {problems.length > 0 && (
             <p role="note" className="text-amber-900">
               {problems.map((p) => t(`obs.problem.${p}`)).join(' ')}
@@ -531,6 +552,28 @@ export function ObserveScreen() {
                   })}{' '}
                   · {t(`obs.verification.${o.verification}`)}
                 </span>
+                {o.verification !== 'rejected' &&
+                  (woMade[o.id] ? (
+                    <Link
+                      to={`/work/${woMade[o.id]}`}
+                      className="mt-1 inline-flex min-h-12 items-center underline"
+                    >
+                      {t('obs.wo.open')}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={!online}
+                      onClick={() =>
+                        void createWorkOrderFromObservation(o.id).then((id) =>
+                          setWoMade((m) => ({ ...m, [o.id]: id })),
+                        )
+                      }
+                      className="mt-1 min-h-12 rounded border px-3 disabled:opacity-50"
+                    >
+                      {t('obs.wo.create')}
+                    </button>
+                  ))}
               </li>
             ))}
           </ul>

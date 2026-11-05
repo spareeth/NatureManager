@@ -39,7 +39,23 @@ export type ObservationInput = {
   /** The taxon the observer chose from the AI suggestions (observer_confirmed), or none. */
   taxonId?: string | null;
   suggestions?: Suggestion[];
+  /** Also raise a work order from it (FR-OBS-05). */
+  createWorkOrder?: boolean;
 };
+
+/** Types that offer "Also create a work order" (pests, damage, dead plants, water problems). */
+export const offersWorkOrder = (t: ObsType) =>
+  t === 'pest_disease' ||
+  t === 'plant_health' ||
+  t === 'flora' ||
+  t === 'water_quality' ||
+  t === 'note';
+
+/** Work order from a saved observation, now (online). Returns the work order id; a second call returns
+ *  the same open work order. */
+export async function createWorkOrderFromObservation(observationId: string) {
+  return check<string>(await supabase.rpc('wo_from_observation', { p_obs: observationId }));
+}
 
 // -- AI suggestions (FR-OBS-03; docs/AI_INTEGRATION.md) -------------------------------------------
 
@@ -194,6 +210,11 @@ export async function queueObservation(v: ObservationInput, photos: Blob[], audi
         raw: s,
       })),
     });
+  }
+  if (v.createWorkOrder) {
+    // After the observation and its photos, so the work order lists them; the outbox id makes a replay
+    // return the same work order.
+    await enqueue('wo_from_obs', null, { observationId: id });
   }
   kickSync();
   return id;

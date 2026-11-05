@@ -873,7 +873,8 @@
       "request": "Request",
       "items": "Items",
       "observation": "Observation",
-      "ai_suggestions": "Species suggestions"
+      "ai_suggestions": "Species suggestions",
+      "wo_from_obs": "Work order from observation"
     },
     "queuedMove": "Moved to {{status}}.",
     "requestQueued": "Request saved. It is sent as soon as there is network.",
@@ -1203,6 +1204,12 @@
       "notInList": "Not in our species list",
       "unknown": "Unknown, not sure",
       "help": "Your choice is saved as confirmed by you; a curator verifies it."
+    },
+    "wo": {
+      "also": "Also create a work order",
+      "alsoHelp": "Sent to the Work orders inbox as a request, with the photos and the place.",
+      "create": "Create work order",
+      "open": "Open the work order"
     }
   },
   "obsReview": {

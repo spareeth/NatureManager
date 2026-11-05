@@ -146,6 +146,13 @@ Terra's own list, with the in-house code, the score and "In this bed" when that 
 The observer picks one (saved as confirmed by the observer) or Unknown. Without network the observation
 is saved without suggestions and a curator identifies it.
 
+**Work order from an observation.** For pests, plant health, plants, water and notes the form offers
+Also create a work order; it works offline and is sent after the observation. A saved observation can
+raise one later with Create work order (in My recent observations, and on the Observations page). The
+work order is a reactive request in the Work orders inbox with the observation's place, point, tree,
+photos and notes; its priority follows the severity (5 is P1, 4 is P2, 3 is P3, 1 or 2 is P4, none is
+P3). Pressing it again opens the same work order while it is open; a rejected observation raises none.
+
 **Curator review** (More, Observations; curators and managers): observations to review, newest first,
 with photos, sound, notes and the AI suggestions. Verify keeps the species (or takes a suggestion with
 Verify as), Change species searches the taxa, Reject removes it from the records. Plants and animals

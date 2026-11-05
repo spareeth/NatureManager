@@ -199,4 +199,31 @@ describe('new observation', () => {
     expect(screen.getByText(/Identify needs network/)).toBeInTheDocument();
     Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
   });
+
+  it('Also create a work order: queued with the observation', async () => {
+    setGps(true);
+    renderIt();
+    await screen.findByText('Location found (within 4 m).');
+    fireEvent.click(screen.getByRole('button', { name: /^Pest or disease/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Severity 4' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Also create a work order/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save observation' }));
+    await waitFor(() =>
+      expect(obs.queueObservation).toHaveBeenCalledWith(
+        expect.objectContaining({ obsType: 'pest_disease', severity: 4, createWorkOrder: true }),
+        [],
+        null,
+      ),
+    );
+  });
+
+  it('phenology does not offer a work order', async () => {
+    setGps(true);
+    renderIt();
+    await screen.findByText('Location found (within 4 m).');
+    fireEvent.click(screen.getByRole('button', { name: /^Phenology/ }));
+    expect(
+      screen.queryByRole('checkbox', { name: /Also create a work order/ }),
+    ).not.toBeInTheDocument();
+  });
 });

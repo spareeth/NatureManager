@@ -663,6 +663,12 @@ returned suggestions are queued after the observation as `ai_suggestion` rows (`
 suggestion covers all the photos; `raw` holds the service's suggestion). Curators verify or reject by
 updating `observation.verification` (and `taxon_id`); the trigger records `verified_by` and `verified_at`.
 
+`wo_from_observation(p_obs, p_title, p_priority, p_client_uuid)` (task 3.5, security invoker): a
+`work_order` with `source = 'observation'`, `source_ref` the observation, `wo_type = 'reactive'`, status
+requested, the observation's location, point and asset, and its `media` rows linked through
+`work_order_id` (a file has one media row). One open work order per observation; the client uuid makes
+an offline replay return the same one. `field_requests` Mine includes work raised from observations.
+
 ## 7. Sensors and alerts
 
 ```sql

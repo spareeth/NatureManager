@@ -138,6 +138,14 @@ export const handlers: Handlers = {
         .upsert(rows as never, { onConflict: 'id', ignoreDuplicates: true }),
     );
   },
+  async wo_from_obs(it) {
+    check(
+      await supabase.rpc('wo_from_observation', {
+        p_obs: p(it).observationId,
+        p_client_uuid: it.id,
+      }),
+    );
+  },
   async request(it) {
     const v = p(it);
     check(

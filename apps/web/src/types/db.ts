@@ -2809,6 +2809,10 @@ export type Database = {
       };
       wo_bulk_move: { Args: { p_from: string; p_site: string; p_to: string }; Returns: number };
       wo_detail: { Args: { p_wo: string }; Returns: Json };
+      wo_from_observation: {
+        Args: { p_client_uuid?: string; p_obs: string; p_priority?: string; p_title?: string };
+        Returns: string;
+      };
       wo_is_mine: { Args: { p_assignee: string; p_org: string; p_team: string }; Returns: boolean };
       wo_missing_steps: {
         Args: { p_wo: string };

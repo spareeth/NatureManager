@@ -12,7 +12,8 @@ export type OutboxKind =
   | 'request'
   | 'items'
   | 'observation'
-  | 'ai_suggestions';
+  | 'ai_suggestions'
+  | 'wo_from_obs';
 export type OutboxItem = {
   seq?: number;
   /** Client-generated UUID: the idempotency key sent with the write. */
