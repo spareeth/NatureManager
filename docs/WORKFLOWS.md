@@ -222,6 +222,11 @@ in the same step, so nothing is lost or sent twice.
   Every asset has a permanent QR code (for example `TG-7K3QF9`), created with the asset and never changed.
   Managers see it on the asset page with a PNG download; Print label puts it on the label fixed to the
   tree. Scanning it, or typing the code into Scan, opens the asset even if its tag code was corrected.
+- **Sensitive species**: for a species marked sensitive, protected or IUCN critically endangered,
+  endangered or vulnerable, only curators and managers see where its plants and sightings are exactly.
+  Everyone else sees them at their bed (on the map, the asset page, scans, the phone's offline data and
+  exports), with "Hidden: a sensitive species" in place of the coordinates. Today this applies to
+  Tecomella undulata (EN). Curators set the flag on the taxon page.
 - **Base maps** (managers): the list of base layers for the site, its default, and which may be stored on
   phones. Google satellite needs its key and is online only; Esri World Imagery needs an ArcGIS key; our own
   orthophoto can be added as a tile layer and stored offline.

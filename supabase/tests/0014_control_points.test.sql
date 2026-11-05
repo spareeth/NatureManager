@@ -60,10 +60,10 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-0000-0000-000000000005","role":"authenticated"}', true);
 select is((select asset_move_offset('c0000000-0000-0000-0000-0000000000a1', 1.5, -2, 0.05) ->> 'local_x'), '121.50',
   'green team moves a tree by offset; grid x updated');
-select results_eq($$select position_source, position_accuracy_m, local_y from asset where id = 'c0000000-0000-0000-0000-0000000000a1'$$,
+select results_eq($$select position_source, position_accuracy_m, (asset_local_xy(id)).y from asset where id = 'c0000000-0000-0000-0000-0000000000a1'$$,
   $$values ('offset'::text, 0.05::numeric, 198.00::numeric(10,2))$$, 'position source offset and accuracy recorded');
 select lives_ok($$select asset_move_offset('c0000000-0000-0000-0000-0000000000a2', 3, 0)$$, 'a planting group polygon moves too');
-select ok((select st_npoints(geom) = 5 and abs(st_area(st_transform(geom, 3997)) - 16) < 0.01 and local_x = 123.00
+select ok((select st_npoints(asset_geom(id)) = 5 and abs(st_area(st_transform(asset_geom(id), 3997)) - 16) < 0.01 and (asset_local_xy(id)).x = 123.00
            from asset where id = 'c0000000-0000-0000-0000-0000000000a2'), 'the polygon keeps its shape and size');
 
 select set_config('request.jwt.claims', '{"sub":"10000000-0000-0000-0000-000000000001","role":"authenticated"}', true);

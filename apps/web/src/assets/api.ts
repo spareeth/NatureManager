@@ -45,6 +45,9 @@ export type AssetDetail = {
   local_y: number | null;
   position_source: string | null;
   position_accuracy_m: number | null;
+  /** Sensitive species and the user is not a curator or manager: lon, lat and geometry are a point
+   *  inside the bed, and there are no grid coordinates (FR-OBS-06). */
+  position_hidden?: boolean;
   created_at: string;
   updated_at: string;
   type: {

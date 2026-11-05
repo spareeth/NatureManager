@@ -669,6 +669,19 @@ requested, the observation's location, point and asset, and its `media` rows lin
 `work_order_id` (a file has one media row). One open work order per observation; the client uuid makes
 an offline replay return the same one. `field_requests` Mine includes work raised from observations.
 
+Sensitive species (task 3.6, FR-OBS-06, decision 5 Nov 2026): a taxon is sensitive when `org_taxon.sensitive`,
+`protection_level` is set or `iucn_category` is CR, EN or VU (`taxon_is_sensitive`). Only curators and managers
+(`sees_exact_location`) see exact positions of its plants and sightings; everyone else gets a point inside the
+bed or zone (`obscured_point`; with no place, the point snapped to a 100 m grid in EPSG:3997) and no
+`local_x`/`local_y`. Enforced in the database: `authenticated` and `anon` have no SELECT on `asset.geom`,
+`asset.local_x`, `asset.local_y` and `observation.geom` (column grants; writes unchanged). Positions are read
+through `asset_geom(id)`, `asset_local_xy(id)` and `observation_geom(id)` (security definer, caller's
+organisations only), used by `map_assets`, `map_asset_detail`, `asset_detail` (adds `position_hidden`),
+`asset_search`, `field_scan`, `field_offline_pack`, `ai_collection_check` and `asset_move_offset` (which
+refuses a hidden asset). `wo_from_observation` is now security definer with its own membership check and
+places the work order at the visible point. Open: `audit_log` rows keep exact positions and are readable by
+owners.
+
 ## 7. Sensors and alerts
 
 ```sql

@@ -34,7 +34,12 @@ insert into definer_allowlist values
   -- export (checks the role itself), and the pull API (checks the receiver's API key itself).
   ('ir_system_transition'), ('ir_send_batch'), ('ir_export'), ('api_receiver'), ('api_item_requests'), ('api_ack'),
   -- 4 Nov 2026: planners change priority; checks the role itself and writes the history event.
-  ('wo_set_priority');
+  ('wo_set_priority'),
+  -- task 3.6: positions of sensitive species. These read the position columns (closed to clients) and
+  -- return them only within the caller's organisations, obscured unless the caller is a curator or
+  -- manager. wo_from_observation checks membership itself and places the work order at that point.
+  ('taxon_is_sensitive'), ('sees_exact_location'), ('obscured_point'), ('asset_hidden'), ('asset_geom'),
+  ('asset_local_xy'), ('observation_hidden'), ('observation_geom'), ('wo_from_observation');
 
 create temp view public_tables as
   select c.relname::text as tbl,

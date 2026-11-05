@@ -14,3 +14,6 @@ supabase/.branches
 supabase/.temp
 *.egg-info/
 data/hortis/out/
+
+# R baseline kit (internal collection data, local only)
+data/baseline-kit/

@@ -258,9 +258,13 @@ export function AssetDetailPage() {
               )}
             </Row>
             <Row label={t('assets.f.latlon')}>
-              <span className="font-mono text-xs" dir="ltr">
-                {formatLatLon(a.lat, a.lon)}
-              </span>
+              {a.position_hidden ? (
+                <span data-testid="position-hidden">{t('assets.positionHidden')}</span>
+              ) : (
+                <span className="font-mono text-xs" dir="ltr">
+                  {formatLatLon(a.lat, a.lon)}
+                </span>
+              )}
             </Row>
             <Row label={t('assets.f.grid')}>
               {a.local_x != null && a.local_y != null && (

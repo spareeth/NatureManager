@@ -19,9 +19,10 @@ vi.mock('../assets/api', () => ({
     { code: 'WG-07', kind: 'bed' },
   ],
   fetchAssetDetail: async (id: string) =>
-    id === 'a1'
+    id === 'a1' || id === 'a2'
       ? {
-          id: 'a1',
+          id,
+          position_hidden: id === 'a2',
           site_id: 's1',
           tag_code: 'WG07-T04_PRO',
           barcode: null,
@@ -36,8 +37,8 @@ vi.mock('../assets/api', () => ({
           geometry: { type: 'Point', coordinates: [55.154, 24.958] },
           lon: 55.154,
           lat: 24.958,
-          local_x: 50,
-          local_y: 50.5,
+          local_x: id === 'a2' ? null : 50,
+          local_y: id === 'a2' ? null : 50.5,
           position_source: 'hortis',
           position_accuracy_m: 0.7,
           created_at: '2026-10-01T04:00:00Z',
@@ -240,6 +241,12 @@ describe('asset detail page', () => {
       ).toBeInTheDocument(),
     );
     expect(within(tl).getByText(/Green One/)).toBeInTheDocument();
+  });
+
+  it('a sensitive species: the position is marked hidden, no coordinates', async () => {
+    renderAt('/assets/a2');
+    expect(await screen.findByTestId('position-hidden')).toHaveTextContent(/sensitive species/);
+    expect(screen.queryByText('x 50.00 m, y 50.50 m')).not.toBeInTheDocument();
   });
 
   it('says when an asset is missing or not visible', async () => {

@@ -28,7 +28,7 @@ select results_eq($$select source, source_ref, wo_type, status::text, priority, 
             'Pest or disease in NG-02'::text, 'Aphids on new shoots'::text)$$,
   'a requested reactive work order, priority from severity 4, title from the type and bed, notes as description');
 select is((select location_id from work_order where id = (select id from w1)), (select bed from tg), 'at the observation''s bed');
-select ok((select st_equals(w.geom, o.geom) from work_order w, observation o where w.id = (select id from w1)
+select ok((select st_equals(w.geom, observation_geom(o.id)) from work_order w, observation o where w.id = (select id from w1)
            and o.id = '9c000000-0000-0000-0000-0000000000a1'), 'at the observation''s point');
 select is((select asset_id from work_order_asset where work_order_id = (select id from w1)), (select asset from tg), 'linked to the asset');
 select is((select path from media where work_order_id = (select id from w1)),
