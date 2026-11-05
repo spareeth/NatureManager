@@ -33,6 +33,7 @@ describe('role-aware nav', () => {
       '/work',
       '/field',
       '/requests',
+      '/observations',
       '/plan',
       '/control-points',
       '/basemaps',
@@ -58,6 +59,7 @@ describe('role-aware nav', () => {
       '/work',
       '/field',
       '/requests',
+      '/observations',
     ]);
   });
   it('no roles still sees items open to every member', () => {

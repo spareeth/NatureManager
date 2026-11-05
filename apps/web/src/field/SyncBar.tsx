@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { db } from '../offline/db';
@@ -6,21 +6,7 @@ import { useOrg } from '../org/context';
 import { discardItem, retryItem, useOutbox, wakeQueue } from '../offline/outbox';
 import { refreshPack, startSync } from '../offline/sync';
 import { kickSync } from '../offline/kick';
-
-function useOnline() {
-  const [online, setOnline] = useState(() => navigator.onLine);
-  useEffect(() => {
-    const on = () => setOnline(true);
-    const off = () => setOnline(false);
-    window.addEventListener('online', on);
-    window.addEventListener('offline', off);
-    return () => {
-      window.removeEventListener('online', on);
-      window.removeEventListener('offline', off);
-    };
-  }, []);
-  return online;
-}
+import { useOnline } from '../offline/useOnline';
 
 /** Connection, queued changes and offline data for the shift (FR-FLD-04). Starts the sync worker. */
 export function SyncBar({ siteId }: { siteId?: string }) {

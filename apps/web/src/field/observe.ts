@@ -36,7 +36,74 @@ export type ObservationInput = {
   phenophase: string | null;
   severity: number | null;
   notes: string | null;
+  /** The taxon the observer chose from the AI suggestions (observer_confirmed), or none. */
+  taxonId?: string | null;
+  suggestions?: Suggestion[];
 };
+
+// -- AI suggestions (FR-OBS-03; docs/AI_INTEGRATION.md) -------------------------------------------
+
+export type Suggestion = {
+  rank: number;
+  scientific_name: string;
+  score: number;
+  engine: string;
+  taxon_id: string | null;
+  inhouse_code: string | null;
+  in_collection: boolean | null;
+  iucn_category: string | null;
+  sensitive: boolean;
+  common_name: string | null;
+};
+export type IdentifyResult = {
+  engine_chain: string[];
+  suggestions: Suggestion[];
+  warnings: string[];
+};
+
+/** Which identify chain an observation type uses; null when it has none. */
+export function identifyKind(t: ObsType): 'plant' | 'animal' | null {
+  if (t === 'fauna') return 'animal';
+  if (t === 'flora' || t === 'phenology' || t === 'pest_disease' || t === 'plant_health')
+    return 'plant';
+  return null;
+}
+
+/** Ask the identify service (online only). The photos are compressed first; the user's token is sent,
+ *  so the service reads only this organisation's species and assets. */
+export async function identifySpecies(args: {
+  orgId: string;
+  kind: 'plant' | 'animal';
+  photos: Blob[];
+  lat: number | null;
+  lon: number | null;
+  locationId: string | null;
+}): Promise<IdentifyResult> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error('not signed in');
+  const form = new FormData();
+  form.append('organisation_id', args.orgId);
+  form.append('kind', args.kind);
+  for (const [i, f] of args.photos.entries()) {
+    form.append('files', await compressImage(f), `photo${i + 1}.jpg`);
+    form.append('organs', 'auto');
+  }
+  if (args.lat != null && args.lon != null) {
+    form.append('lat', String(args.lat));
+    form.append('lon', String(args.lon));
+  }
+  if (args.locationId) form.append('location_id', args.locationId);
+  form.append('observed_at', new Date().toISOString());
+  const base = (import.meta.env.VITE_AI_SERVICE_URL || 'http://localhost:8088').replace(/\/$/, '');
+  const res = await fetch(`${base}/identify`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+  if (!res.ok) throw new Error(`identify ${res.status}`);
+  return (await res.json()) as IdentifyResult;
+}
 
 /** Fields an observation of this type asks for. */
 export function fieldsFor(t: ObsType) {
@@ -78,6 +145,9 @@ export async function queueObservation(v: ObservationInput, photos: Blob[], audi
     notes: v.notes,
     assetId: v.assetId,
     locationId: v.locationId,
+    taxonId: v.taxonId ?? null,
+    // A species chosen from the suggestions is the observer's confirmation (FR-OBS-04).
+    verification: v.taxonId ? 'observer_confirmed' : 'ai_suggested',
   });
   for (const f of photos) {
     const blob = await compressImage(f);
@@ -106,6 +176,23 @@ export async function queueObservation(v: ObservationInput, photos: Blob[], audi
       bucket: 'audio',
       kind: 'audio',
       contentType: type,
+    });
+  }
+  if (v.suggestions?.length) {
+    // Stored after the observation; each row has an id made here, so a replay adds nothing.
+    await enqueue('ai_suggestions', null, {
+      observationId: id,
+      orgId: v.orgId,
+      rows: v.suggestions.map((s) => ({
+        id: crypto.randomUUID(),
+        engine: s.engine,
+        rank: s.rank,
+        taxon_name: s.scientific_name,
+        taxon_id: s.taxon_id,
+        score: s.score,
+        in_collection: s.in_collection,
+        raw: s,
+      })),
     });
   }
   kickSync();

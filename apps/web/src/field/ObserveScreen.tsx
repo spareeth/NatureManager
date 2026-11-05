@@ -7,6 +7,7 @@ import { useOrg } from '../org/context';
 import { useCurrentSite } from '../org/useSite';
 import { db } from '../offline/db';
 import { useOutbox } from '../offline/outbox';
+import { useOnline } from '../offline/useOnline';
 import { VoiceNote } from '../components/VoiceNote';
 import { supabase } from '../lib/supabase';
 import {
@@ -16,7 +17,10 @@ import {
   observationProblems,
   OBS_TYPES,
   PHENOPHASES,
+  identifyKind,
+  identifySpecies,
   queueObservation,
+  type IdentifyResult,
   type ObsType,
 } from './observe';
 
@@ -58,6 +62,11 @@ export function ObserveScreen() {
   const [audio, setAudio] = useState<Blob | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
+  // AI suggestions for the photos (FR-OBS-03): the observer picks one or "unknown".
+  const [ident, setIdent] = useState<IdentifyResult | null>(null);
+  const [identState, setIdentState] = useState<'idle' | 'busy' | 'error'>('idle');
+  const [chosen, setChosen] = useState<string>('');
+  const online = useOnline();
 
   const places = useQuery({
     queryKey: ['field-places', site?.id],
@@ -138,6 +147,34 @@ export function ObserveScreen() {
     setNotes('');
     setPhotos([]);
     setAudio(null);
+    setIdent(null);
+    setChosen('');
+    setIdentState('idle');
+  };
+  const clearIdent = () => {
+    setIdent(null);
+    setChosen('');
+    setIdentState('idle');
+  };
+  const kind = type ? identifyKind(type) : null;
+  const runIdentify = async () => {
+    if (!kind || !current || !photos.length) return;
+    setIdentState('busy');
+    try {
+      const r = await identifySpecies({
+        orgId: current.organisationId,
+        kind,
+        photos,
+        lat: where && where.source !== 'bed' ? where.lat : null,
+        lon: where && where.source !== 'bed' ? where.lon : null,
+        locationId: where?.source === 'bed' ? placeId : null,
+      });
+      setIdent(r);
+      setChosen('');
+      setIdentState('idle');
+    } catch {
+      setIdentState('error');
+    }
   };
   const save = async () => {
     if (!type || !where || !current || !site || problems.length) return;
@@ -158,6 +195,8 @@ export function ObserveScreen() {
           phenophase: phenophase || null,
           severity,
           notes: notes.trim() || null,
+          taxonId: chosen && chosen !== 'unknown' ? chosen : null,
+          suggestions: ident?.suggestions ?? [],
         },
         photos,
         audio,
@@ -334,7 +373,10 @@ export function ObserveScreen() {
                 <button
                   type="button"
                   aria-label={t('wo.removePhoto')}
-                  onClick={() => setPhotos((ps) => ps.filter((_, k) => k !== i))}
+                  onClick={() => {
+                    setPhotos((ps) => ps.filter((_, k) => k !== i));
+                    clearIdent();
+                  }}
                   className="min-h-12 min-w-8"
                 >
                   ×
@@ -352,12 +394,91 @@ export function ObserveScreen() {
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     e.target.value = '';
-                    if (file) setPhotos((ps) => [...ps, file].slice(0, 3));
+                    if (file) {
+                      setPhotos((ps) => [...ps, file].slice(0, 3));
+                      clearIdent();
+                    }
                   }}
                 />
               </label>
             )}
           </div>
+          {kind && photos.length > 0 && (
+            <fieldset className="space-y-2 rounded border-2 p-3" data-testid="ai-suggestions">
+              <legend className="px-1 font-semibold">{t('obs.ai.title')}</legend>
+              {!ident && (
+                <>
+                  <button
+                    type="button"
+                    disabled={!online || identState === 'busy'}
+                    onClick={() => void runIdentify()}
+                    className={`${BTN} w-full border-2 border-green-800 text-green-900 disabled:opacity-50`}
+                  >
+                    {identState === 'busy' ? t('obs.ai.busy') : t('obs.ai.identify')}
+                  </button>
+                  {!online && <p className="text-sm text-gray-700">{t('obs.ai.offline')}</p>}
+                  {identState === 'error' && (
+                    <p role="alert" className="text-sm text-red-800">
+                      {t('obs.ai.error')}
+                    </p>
+                  )}
+                </>
+              )}
+              {ident && (
+                <>
+                  {ident.warnings.includes('low_confidence') && (
+                    <p role="note" className="text-sm text-amber-900">
+                      {t('obs.ai.lowConfidence')}
+                    </p>
+                  )}
+                  {ident.suggestions.length === 0 && <p className="text-sm">{t('obs.ai.none')}</p>}
+                  {ident.suggestions.map((sg) => (
+                    <label
+                      key={sg.rank}
+                      className={`flex min-h-12 items-center gap-3 rounded border p-2 ${
+                        sg.taxon_id ? '' : 'opacity-60'
+                      } ${chosen && chosen === sg.taxon_id ? 'border-green-800 bg-green-50' : ''}`}
+                    >
+                      <input
+                        type="radio"
+                        name="ai-pick"
+                        className="h-6 w-6"
+                        disabled={!sg.taxon_id}
+                        checked={!!sg.taxon_id && chosen === sg.taxon_id}
+                        onChange={() => setChosen(sg.taxon_id ?? '')}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block italic">{sg.scientific_name}</span>
+                        <span className="block text-sm text-gray-700">
+                          {[sg.common_name, sg.inhouse_code].filter(Boolean).join(' · ')}
+                          {sg.in_collection && (
+                            <span className="ms-1 rounded bg-green-100 px-1 text-green-900">
+                              {t('obs.ai.inCollection')}
+                            </span>
+                          )}
+                          {!sg.taxon_id && <span className="ms-1">{t('obs.ai.notInList')}</span>}
+                        </span>
+                      </span>
+                      <span className="text-sm font-semibold tabular-nums">
+                        {Math.round(sg.score * 100)}%
+                      </span>
+                    </label>
+                  ))}
+                  <label className="flex min-h-12 items-center gap-3 rounded border p-2">
+                    <input
+                      type="radio"
+                      name="ai-pick"
+                      className="h-6 w-6"
+                      checked={chosen === 'unknown'}
+                      onChange={() => setChosen('unknown')}
+                    />
+                    {t('obs.ai.unknown')}
+                  </label>
+                  <p className="text-sm text-gray-600">{t('obs.ai.help')}</p>
+                </>
+              )}
+            </fieldset>
+          )}
           {f?.audio && <VoiceNote value={audio} onChange={setAudio} />}
 
           <label className="block">

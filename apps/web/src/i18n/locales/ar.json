@@ -15,7 +15,8 @@
     "requests": "طلبات المواد",
     "basemaps": "الخرائط الأساسية",
     "phone": "القائمة السريعة",
-    "more": "المزيد"
+    "more": "المزيد",
+    "observations": "الملاحظات"
   },
   "map": {
     "heading": "خريطة الموقع",
@@ -923,7 +924,8 @@
       "record": "سجل العمل",
       "request": "طلب",
       "items": "مواد",
-      "observation": "رصد"
+      "observation": "رصد",
+      "ai_suggestions": "اقتراحات الأنواع"
     },
     "queuedMove": "نقلت إلى {{status}}.",
     "requestQueued": "تم حفظ الطلب. يرسل عند توفر الشبكة.",
@@ -1263,6 +1265,51 @@
       "ai_suggested": "لم يؤكد بعد",
       "observer_confirmed": "أكدته",
       "curator_verified": "تحقق منه أمين المجموعة",
+      "rejected": "مرفوض"
+    },
+    "ai": {
+      "title": "اقتراحات الأنواع",
+      "identify": "تعرف على النوع",
+      "busy": "جار التعرف...",
+      "offline": "التعرف يحتاج إلى شبكة. احفظ الآن وسيتعرف عليه أمين المجموعة.",
+      "error": "لم تتم الإجابة. حاول مرة أخرى أو احفظ بدونه.",
+      "lowConfidence": "ثقة منخفضة: تحقق بعناية أو اختر غير معروف.",
+      "none": "لا يوجد اقتراح. اختر غير معروف.",
+      "inCollection": "في هذا الحوض",
+      "notInList": "ليس في قائمة أنواعنا",
+      "unknown": "غير معروف، لست متأكدا",
+      "help": "يحفظ اختيارك كمؤكد منك، ويتحقق منه أمين المجموعة."
+    }
+  },
+  "obsReview": {
+    "heading": "الملاحظات",
+    "filter": "عرض",
+    "filters": {
+      "pending": "للمراجعة",
+      "curator_verified": "تم التحقق",
+      "rejected": "مرفوضة",
+      "all": "الكل"
+    },
+    "none": "لا شيء للمراجعة.",
+    "by": "بواسطة {{name}}",
+    "species": "النوع",
+    "noSpecies": "بدون نوع",
+    "suggestions": "اقتراحات الذكاء الاصطناعي",
+    "useThis": "استخدم هذا",
+    "accept": "تحقق",
+    "acceptAs": "تحقق كـ {{name}}",
+    "change": "تغيير النوع",
+    "search": "ابحث في الأصنوفات",
+    "reject": "رفض",
+    "rejectConfirm": "رفض هذه الملاحظة؟",
+    "saved": "تم الحفظ.",
+    "asset": "الأصل {{tag}}",
+    "noTaxon": "ليس في قائمة أنواعنا",
+    "needsSpecies": "اختر النوع أولا.",
+    "status": {
+      "ai_suggested": "لم يؤكد",
+      "observer_confirmed": "أكده المراقب",
+      "curator_verified": "تم التحقق",
       "rejected": "مرفوض"
     }
   }

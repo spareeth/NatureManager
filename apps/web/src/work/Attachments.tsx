@@ -26,14 +26,14 @@ export function WoAttachments({
       </h2>
       <div className="mt-2 flex flex-wrap items-center gap-3">
         {rows.map((m) => (
-          <Item key={m.id} m={m} />
+          <MediaItem key={m.id} m={m} />
         ))}
       </div>
     </section>
   );
 }
 
-function Item({ m }: { m: WoMedia }) {
+export function MediaItem({ m }: { m: Pick<WoMedia, 'bucket' | 'path' | 'kind' | 'caption'> }) {
   const { t } = useTranslation();
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {

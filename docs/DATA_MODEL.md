@@ -657,6 +657,12 @@ for choosing a place when there is no GPS (`location_id` is then the chosen plac
 per taxon, whether a living asset of it is in the location or within the radius (EPSG:3997 metres); used by
 the identify service for `in_collection`.
 
+Suggestions (task 3.4): the phone sends the photos to `/identify` before saving; the chosen species is
+`observation.taxon_id` with `verification = 'observer_confirmed'` (Unknown leaves `ai_suggested`), and the
+returned suggestions are queued after the observation as `ai_suggestion` rows (`media_id` null, as one
+suggestion covers all the photos; `raw` holds the service's suggestion). Curators verify or reject by
+updating `observation.verification` (and `taxon_id`); the trigger records `verified_by` and `verified_at`.
+
 ## 7. Sensors and alerts
 
 ```sql

@@ -77,7 +77,14 @@ describe('shell', () => {
 
   it('green team sees map and field app, not members', () => {
     renderApp({ memberships: [membership(['green_team'])] });
-    expect(navLinks()).toEqual(['Map', 'Field app', 'Work orders', 'Assets', 'Taxa', 'Item requests']);
+    expect(navLinks()).toEqual([
+      'Map',
+      'Field app',
+      'Work orders',
+      'Assets',
+      'Taxa',
+      'Item requests',
+    ]);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
@@ -90,6 +97,7 @@ describe('shell', () => {
       'Assets',
       'Taxa',
       'Item requests',
+      'Observations',
       'Planning',
       'Control points',
       'Base maps',
@@ -114,23 +122,25 @@ describe('shell', () => {
     const terra = membership(['manager'], 'org-t', 'Terra');
     const demo = membership(['owner'], 'org-d', 'Demo Org');
     const { org } = renderApp({ memberships: [terra, demo] });
-    openMore();
-    const select = screen.getByRole('combobox', { name: 'Organisation' });
+    const select = within(screen.getByTestId('user-controls')).getByRole('combobox', {
+      name: 'Organisation',
+    });
     fireEvent.change(select, { target: { value: 'org-d' } });
     expect(org.switchOrg).toHaveBeenCalledWith('org-d');
   });
 
-  it('single organisation shows its name, no switcher', () => {
+  it('single organisation: no switcher and no organisation name', () => {
     renderApp({ memberships: [membership(['manager'])] });
     openMore();
     expect(screen.queryByRole('combobox', { name: 'Organisation' })).not.toBeInTheDocument();
-    expect(screen.getByText('Terra')).toBeInTheDocument();
+    expect(screen.queryByText('Terra')).not.toBeInTheDocument();
   });
 
   it('sign out calls auth', async () => {
     const { auth } = renderApp({ memberships: [membership(['curator'])] });
-    openMore();
-    fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
+    fireEvent.click(
+      within(screen.getByTestId('user-controls')).getByRole('button', { name: 'Sign out' }),
+    );
     await waitFor(() => expect(auth.signOut).toHaveBeenCalled());
   });
 });

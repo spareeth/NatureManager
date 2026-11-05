@@ -5,7 +5,14 @@ import type { DayJob, FieldJob, ScannedAsset } from '../field/api';
 // goes to the outbox first and is sent by the sync worker, each item with a client UUID.
 
 export type OutboxKind =
-  'transition' | 'answer' | 'photo' | 'record' | 'request' | 'items' | 'observation';
+  | 'transition'
+  | 'answer'
+  | 'photo'
+  | 'record'
+  | 'request'
+  | 'items'
+  | 'observation'
+  | 'ai_suggestions';
 export type OutboxItem = {
   seq?: number;
   /** Client-generated UUID: the idempotency key sent with the write. */

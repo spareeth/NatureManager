@@ -22,9 +22,10 @@ member can report a problem and raise an item request. Data from another organis
 
 **Signing in.** Enter your work email on the sign-in page and open the link that arrives by email. Each
 link works once, and only the newest link is valid; an old or used link shows a message asking for a new
-one. The header is one line on every screen: the title Nature OS, the tabs Map, Field app and Work orders,
-and a More menu with the other pages, the project picker, the organisation, language (English or Arabic)
-and sign out. The Terra and Expo City Dubai logos sit at the bottom right.
+one. The header is one line: the title Nature OS, the tabs Map, Field app and Work orders, and a More menu
+with the other pages. On a computer the project picker, the user and role, language (English or Arabic)
+and sign out sit at the end of the line; on a phone they are under More. The Terra and Expo City Dubai
+logos sit at the bottom right.
 
 ## 2. Work order lifecycle
 
@@ -138,6 +139,17 @@ taken as the screen opens; without GPS the bed or zone is chosen from a list. Op
 sound recording (animals, notes), count, life stage, the phenology stage (required for phenology) and a
 severity from 1 to 5 (pests, plant health). From a scanned asset, Record an observation links it to that
 tree. The observer's recent observations are listed with their verification status.
+
+**Species suggestions.** For plants, animals, phenology, pests and plant health, once a photo is taken
+the observer can press Identify species (needs network). The platform suggests up to 5 species from
+Terra's own list, with the in-house code, the score and "In this bed" when that species grows there.
+The observer picks one (saved as confirmed by the observer) or Unknown. Without network the observation
+is saved without suggestions and a curator identifies it.
+
+**Curator review** (More, Observations; curators and managers): observations to review, newest first,
+with photos, sound, notes and the AI suggestions. Verify keeps the species (or takes a suggestion with
+Verify as), Change species searches the taxa, Reject removes it from the records. Plants and animals
+need a species before they can be verified. Who verified and when is recorded.
 
 ## 7. Offline (flight mode)
 

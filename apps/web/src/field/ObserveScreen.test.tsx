@@ -11,6 +11,7 @@ const obs = vi.hoisted(() => ({
   queueObservation: vi.fn(),
   fetchMyObservations: vi.fn(),
   fetchPlaces: vi.fn(),
+  identifySpecies: vi.fn(),
 }));
 vi.mock('./observe', async (orig) => ({ ...(await orig<typeof import('./observe')>()), ...obs }));
 vi.mock('../org/useSite', () => ({
@@ -127,5 +128,75 @@ describe('new observation', () => {
         null,
       ),
     );
+  });
+
+  it('photo, Identify species, pick a suggestion: saved with the taxon and the suggestions', async () => {
+    setGps(true);
+    const suggestions = [
+      {
+        rank: 1,
+        scientific_name: 'Prosopis cineraria',
+        score: 0.97,
+        engine: 'bioclip2',
+        taxon_id: 't-ghaf',
+        inhouse_code: 'PRO',
+        in_collection: true,
+        iucn_category: 'LC',
+        sensitive: false,
+        common_name: 'Ghaf',
+      },
+      {
+        rank: 2,
+        scientific_name: 'Acacia tortilis',
+        score: 0.02,
+        engine: 'plantnet',
+        taxon_id: null,
+        inhouse_code: null,
+        in_collection: false,
+        iucn_category: null,
+        sensitive: false,
+        common_name: null,
+      },
+    ];
+    obs.identifySpecies.mockResolvedValue({
+      engine_chain: ['bioclip2'],
+      suggestions,
+      warnings: [],
+    });
+    renderIt();
+    await screen.findByText('Location found (within 4 m).');
+    fireEvent.click(screen.getByRole('button', { name: /^PlantA plant/ }));
+    const photo = new File(['x'], 'p.jpg', { type: 'image/jpeg' });
+    fireEvent.change(screen.getByLabelText('Take photo'), { target: { files: [photo] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Identify species' }));
+    const ghaf = await screen.findByRole('radio', { name: /Prosopis cineraria/ });
+    expect(screen.getByText('In this bed')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Acacia tortilis/ })).toBeDisabled();
+    expect(obs.identifySpecies).toHaveBeenCalledWith(
+      expect.objectContaining({ orgId: 'o1', kind: 'plant', lat: 24.9588, lon: 55.1545 }),
+    );
+    fireEvent.click(ghaf);
+    fireEvent.click(screen.getByRole('button', { name: 'Save observation' }));
+    await waitFor(() =>
+      expect(obs.queueObservation).toHaveBeenCalledWith(
+        expect.objectContaining({ obsType: 'flora', taxonId: 't-ghaf', suggestions }),
+        [photo],
+        null,
+      ),
+    );
+  });
+
+  it('offline: Identify is not offered, the observation still saves', async () => {
+    setGps(true);
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false });
+    renderIt();
+    await screen.findByText('Location found (within 4 m).');
+    fireEvent.click(screen.getByRole('button', { name: /^Plant health/ }));
+    fireEvent.change(screen.getByLabelText('Take photo'), {
+      target: { files: [new File(['x'], 'p.jpg', { type: 'image/jpeg' })] },
+    });
+    expect(screen.getByRole('button', { name: 'Identify species' })).toBeDisabled();
+    expect(screen.getByText(/Identify needs network/)).toBeInTheDocument();
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true });
   });
 });

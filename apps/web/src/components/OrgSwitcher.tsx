@@ -5,9 +5,8 @@ export function OrgSwitcher() {
   const { t } = useTranslation();
   const { memberships, current, switchOrg } = useOrg();
   if (!current) return null;
-  if (memberships.length < 2) {
-    return <span className="text-sm opacity-90">{current.organisationName}</span>;
-  }
+  // One organisation: nothing to choose, and its name is not repeated in the header.
+  if (memberships.length < 2) return null;
   return (
     <label className="flex items-center gap-2 text-sm">
       <span className="sr-only">{t('org.switch')}</span>

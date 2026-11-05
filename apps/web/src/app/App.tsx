@@ -21,6 +21,7 @@ import { RequestsPage } from '../pages/RequestsPage';
 import { RequestDetailPage } from '../pages/RequestDetailPage';
 import { PlanPage } from '../pages/PlanPage';
 import { SopEditorPage } from '../pages/SopEditorPage';
+import { ObservationsPage } from '../pages/ObservationsPage';
 import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
@@ -93,6 +94,25 @@ export function App() {
           {t('app.title')}
         </span>
         <PhoneMenu items={visibleNav(current.roles)} extra={userControls} />
+        {/* Desktop: project, organisation (when several), user and role, language and sign out at the
+            end of the line. On a phone they are under More. */}
+        <div className="ms-auto hidden items-center gap-4 px-4 sm:flex" data-testid="user-controls">
+          <SitePicker />
+          <OrgSwitcher />
+          <span className="text-sm opacity-90" title={session.user.email}>
+            {current.displayName} ({current.roles.map((r) => t(`roles.${r}`)).join(', ')})
+          </span>
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            className="rounded border px-2 py-1 text-sm"
+          >
+            {t('language.switch')}
+          </button>
+          <button type="button" onClick={signOutNow} className="text-sm underline">
+            {t('auth.signOut')}
+          </button>
+        </div>
       </header>
       <main className="min-h-0 flex-1">
         <Routes>
@@ -128,6 +148,14 @@ export function App() {
             }
           />
           <Route path="/requests" element={<RequestsPage />} />
+          <Route
+            path="/observations"
+            element={
+              <RequireRole roles={roleOf('/observations')}>
+                <ObservationsPage />
+              </RequireRole>
+            }
+          />
           <Route path="/requests/:id" element={<RequestDetailPage />} />
           <Route
             path="/plan"

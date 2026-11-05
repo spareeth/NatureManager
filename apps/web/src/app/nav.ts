@@ -19,6 +19,7 @@ export const NAV: NavItem[] = [
     roles: ['manager', 'field_manager', 'curator', 'green_team', 'field_engineer'],
   },
   { path: '/requests', labelKey: 'nav.requests' },
+  { path: '/observations', labelKey: 'nav.observations', roles: ['manager', 'curator'] },
   { path: '/plan', labelKey: 'nav.plan', roles: ['manager', 'field_manager'] },
   { path: '/control-points', labelKey: 'nav.controlPoints', roles: ['manager', 'field_manager'] },
   { path: '/basemaps', labelKey: 'nav.basemaps', roles: ['manager'] },

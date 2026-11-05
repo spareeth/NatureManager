@@ -65,7 +65,7 @@ export function PhoneMenu({ items, extra }: { items: NavItem[]; extra: ReactNode
               {t(i.labelKey)}
             </NavLink>
           ))}
-          <div className="flex flex-wrap items-center gap-3 px-4 pt-3">{extra}</div>
+          <div className="flex flex-wrap items-center gap-3 px-4 pt-3 sm:hidden">{extra}</div>
         </div>
       )}
     </div>

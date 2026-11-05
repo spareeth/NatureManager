@@ -117,10 +117,25 @@ export const handlers: Handlers = {
           notes: v.notes ?? null,
           asset_id: v.assetId ?? null,
           location_id: v.locationId ?? null,
+          taxon_id: v.taxonId ?? null,
+          verification: v.verification ?? 'ai_suggested',
           client_uuid: it.id,
         },
         { onConflict: 'client_uuid', ignoreDuplicates: true },
       ),
+    );
+  },
+  async ai_suggestions(it) {
+    const v = p(it);
+    const rows = (v.rows as Record<string, unknown>[]).map((r) => ({
+      ...r,
+      organisation_id: v.orgId,
+      observation_id: v.observationId,
+    }));
+    check(
+      await supabase
+        .from('ai_suggestion')
+        .upsert(rows as never, { onConflict: 'id', ignoreDuplicates: true }),
     );
   },
   async request(it) {

@@ -15,7 +15,8 @@
     "requests": "Item requests",
     "basemaps": "Base maps",
     "phone": "Quick menu",
-    "more": "More"
+    "more": "More",
+    "observations": "Observations"
   },
   "map": {
     "heading": "Site map",
@@ -871,7 +872,8 @@
       "record": "Work record",
       "request": "Request",
       "items": "Items",
-      "observation": "Observation"
+      "observation": "Observation",
+      "ai_suggestions": "Species suggestions"
     },
     "queuedMove": "Moved to {{status}}.",
     "requestQueued": "Request saved. It is sent as soon as there is network.",
@@ -1187,6 +1189,51 @@
       "ai_suggested": "Not yet confirmed",
       "observer_confirmed": "Confirmed by me",
       "curator_verified": "Verified by curator",
+      "rejected": "Rejected"
+    },
+    "ai": {
+      "title": "Species suggestions",
+      "identify": "Identify species",
+      "busy": "Identifying...",
+      "offline": "Identify needs network. Save now; a curator will identify it.",
+      "error": "Identify did not answer. Try again, or save without it.",
+      "lowConfidence": "Low confidence: check carefully, or choose Unknown.",
+      "none": "No suggestion. Choose Unknown.",
+      "inCollection": "In this bed",
+      "notInList": "Not in our species list",
+      "unknown": "Unknown, not sure",
+      "help": "Your choice is saved as confirmed by you; a curator verifies it."
+    }
+  },
+  "obsReview": {
+    "heading": "Observations",
+    "filter": "Show",
+    "filters": {
+      "pending": "To review",
+      "curator_verified": "Verified",
+      "rejected": "Rejected",
+      "all": "All"
+    },
+    "none": "Nothing to review.",
+    "by": "By {{name}}",
+    "species": "Species",
+    "noSpecies": "No species",
+    "suggestions": "AI suggestions",
+    "useThis": "Use this",
+    "accept": "Verify",
+    "acceptAs": "Verify as {{name}}",
+    "change": "Change species",
+    "search": "Search taxa",
+    "reject": "Reject",
+    "rejectConfirm": "Reject this observation?",
+    "saved": "Saved.",
+    "asset": "Asset {{tag}}",
+    "noTaxon": "Not in our species list",
+    "needsSpecies": "Choose the species first.",
+    "status": {
+      "ai_suggested": "Not confirmed",
+      "observer_confirmed": "Confirmed by observer",
+      "curator_verified": "Verified",
       "rejected": "Rejected"
     }
   }
