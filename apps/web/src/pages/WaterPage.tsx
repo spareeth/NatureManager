@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useCurrentSite } from '../org/useSite';
-import { BedMap, type BedValue } from '../kpi/BedMap';
+import { BedMap, type BedValue, type IndicatorLayer } from '../kpi/BedMap';
 import { MonthlyChart } from '../kpi/MonthlyChart';
 import { ParamsPanel } from '../kpi/ParamsPanel';
 import { KpiTile } from '../kpi/KpiTile';
@@ -15,7 +15,6 @@ const nf = (v: number, d = 0) => v.toLocaleString(undefined, { maximumFractionDi
 export function WaterPage() {
   const { t, i18n } = useTranslation();
   const { site } = useCurrentSite();
-  const [view, setView] = useState<string>('demand_month');
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const water = useQuery({
     queryKey: ['kpi', 'water', site?.id],
@@ -31,42 +30,73 @@ export function WaterPage() {
   const mname = (m: number) =>
     new Date(2026, m - 1, 1).toLocaleString(i18n.language, { month: 'long' });
 
-  const values = useMemo<Record<string, BedValue>>(() => {
-    const out: Record<string, BedValue> = {};
-    if (view.startsWith('stress:')) {
-      const o = sat.find((x) => x.code === view.split(':')[1]);
-      for (const [bed, v] of Object.entries(o?.beds ?? {}))
-        out[bed] = {
+  // Indicator layers: water demand per bed (FAO-56), saving, Kc, and the satellite stress classes.
+  const layers = useMemo<IndicatorLayer[]>(() => {
+    const beds = water.data?.beds ?? [];
+    const g1 = t('water.layers');
+    const make = (
+      key: string,
+      label: string,
+      help: string,
+      get: (b: (typeof beds)[number]) => number,
+      unit: string,
+    ) => {
+      const values: Record<string, BedValue> = {};
+      for (const b of beds) {
+        const v = get(b);
+        values[b.bed] = { value: v, label: `${label}: ${v.toFixed(2)} ${unit}` };
+      }
+      return { key, group: g1, label, help, values } as IndicatorLayer;
+    };
+    const out: IndicatorLayer[] = [
+      make(
+        'demand_month',
+        t('water.v.demandMonth', { month: mname(month) }),
+        t('water.help.demand_month'),
+        (b) => b.demand_l_day_by_month[month - 1]! / b.area_m2,
+        'L/m²/d',
+      ),
+      make(
+        'demand_year',
+        t('water.v.demandYear'),
+        t('water.help.demand_year'),
+        (b) => b.demand_m3_yr,
+        'm³',
+      ),
+      make('saving', t('water.v.saving'), t('water.help.saving'), (b) => b.saving_pct, '%'),
+      make('kc', 'Kc', t('water.help.kc'), (b) => b.kc, ''),
+      make(
+        'months_under',
+        t('water.col.under'),
+        t('water.help.months_under'),
+        (b) => b.months_under,
+        '',
+      ),
+    ];
+    const satG = t('kpi.satellite');
+    for (const o of sat) {
+      const stress: Record<string, BedValue> = {};
+      for (const [bed, v] of Object.entries(o.beds))
+        stress[bed] = {
           value: null,
           color: STRESS_COLOR[v.stress],
-          label: `${t(`kpi.stress.${v.stress}`)} (${v.mean.toFixed(3)})`,
+          label: `${t('kpi.stressOf', { name: o.name })}: ${t(`kpi.stress.${v.stress}`)}`,
         };
-      return out;
-    }
-    for (const b of water.data?.beds ?? []) {
-      const lm2 = b.demand_l_day_by_month[month - 1]! / b.area_m2;
-      const v =
-        view === 'demand_month'
-          ? lm2
-          : view === 'demand_year'
-            ? b.demand_m3_yr
-            : view === 'saving'
-              ? b.saving_pct
-              : b.kc;
-      out[b.bed] = {
-        value: v,
-        label: [
-          `${t('water.v.demandMonth', { month: mname(month) })}: ${lm2.toFixed(2)} L/m²/d`,
-          `${t('water.v.demandYear')}: ${nf(b.demand_m3_yr, 1)} m³`,
-          `${t('water.v.saving')}: ${b.saving_pct}%`,
-          `Kc ${b.kc} · ${b.dominant_life_form}`,
-          b.meters ? t('water.metered', { n: b.meters }) : t('water.notMetered'),
-        ].join('<br/>'),
-      };
+      out.push({
+        key: `stress:${o.code}`,
+        group: satG,
+        label: t('kpi.stressOf', { name: o.name }),
+        help: t('water.stressHelp'),
+        values: stress,
+        classes: (['none', 'moderate', 'high'] as const).map((k) => ({
+          color: STRESS_COLOR[k],
+          label: t(`kpi.stress.${k}`),
+        })),
+      });
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, month, water.data, sat, t, i18n.language]);
+  }, [month, water.data, sat, t, i18n.language]);
 
   const g = water.data?.garden;
   const flat = water.data?.parameters['water.flat_rate_l_m2_day']?.value as number | undefined;
@@ -115,27 +145,9 @@ export function WaterPage() {
               {t('water.mapTitle')}
             </h2>
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              <label className="flex items-center gap-2">
-                {t('kpi.colourBy')}
-                <select
-                  value={view}
-                  onChange={(e) => setView(e.target.value)}
-                  className="min-h-10 rounded border px-2"
-                >
-                  <option value="demand_month">{t('water.v.demandMonthPick')}</option>
-                  <option value="demand_year">{t('water.v.demandYear')}</option>
-                  <option value="saving">{t('water.v.saving')}</option>
-                  <option value="kc">Kc</option>
-                  {sat.map((o) => (
-                    <option key={o.code} value={`stress:${o.code}`}>
-                      {t('kpi.stressOf', { name: o.name })}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              {view === 'demand_month' && (
+              {
                 <label className="flex items-center gap-2">
-                  {t('water.month')}
+                  {t('water.monthPick')}
                   <select
                     value={month}
                     onChange={(e) => setMonth(Number(e.target.value))}
@@ -148,34 +160,18 @@ export function WaterPage() {
                     ))}
                   </select>
                 </label>
-              )}
+              }
             </div>
           </div>
           {site && (
             <BedMap
               siteId={site.id}
-              values={values}
-              ramp={RAMPS.blue}
+              layers={layers}
               overlays={overlays.data ?? []}
-              legendTitle={
-                view.startsWith('stress:')
-                  ? t('kpi.stressLegend')
-                  : view === 'demand_month'
-                    ? `L/m²/d, ${mname(month)}`
-                    : view === 'demand_year'
-                      ? 'm³/yr'
-                      : view === 'saving'
-                        ? '%'
-                        : 'Kc'
-              }
-              format={(v) =>
-                Number.isInteger(v) || Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2)
-              }
+              defaultOn={['demand_month']}
+              fillRamp={RAMPS.blue}
               testId="water-map"
             />
-          )}
-          {view.startsWith('stress:') && (
-            <p className="text-sm text-gray-700">{t('water.stressHelp')}</p>
           )}
         </section>
 

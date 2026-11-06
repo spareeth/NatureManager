@@ -7,8 +7,17 @@ import { BiodiversityPage } from './BiodiversityPage';
 import { WaterPage } from './WaterPage';
 
 vi.mock('../kpi/BedMap', () => ({
-  BedMap: ({ values }: { values: Record<string, { label: string }> }) => (
-    <div data-testid="bedmap">{Object.keys(values).join(',')}</div>
+  BedMap: ({
+    layers,
+    defaultOn,
+  }: {
+    layers: { key: string; help?: string; values: Record<string, { label: string }> }[];
+    defaultOn: string[];
+  }) => (
+    <div data-testid="bedmap">
+      {layers.map((l) => `${l.key}:${Object.keys(l.values).join('+')}`).join(',')} on=
+      {defaultOn.join(',')}
+    </div>
   ),
 }));
 vi.mock('../org/useSite', () => ({ useCurrentSite: () => ({ site: { id: 's1' } }) }));
@@ -227,7 +236,12 @@ describe('Biodiversity page', () => {
     expect(within(tiles).getByText('76')).toBeInTheDocument();
     expect(within(tiles).getByText('7.6 ± 4.4')).toBeInTheDocument();
     expect(within(tiles).getByText('22.4%')).toBeInTheDocument();
-    expect(screen.getByTestId('bedmap')).toHaveTextContent('EG-01');
+    expect(screen.getByTestId('bedmap')).toHaveTextContent('s:EG-01');
+    expect(screen.getByTestId('bedmap')).toHaveTextContent('shannon:EG-01');
+    expect(screen.getByTestId('bedmap')).toHaveTextContent('on=s');
+    expect(
+      within(screen.getByTestId('glossary')).getByText('Evenness (Pielou J)'),
+    ).toBeInTheDocument();
     expect(within(screen.getByTestId('params')).getByText('Unverified')).toBeInTheDocument();
     expect((await screen.findAllByText('98.1')).length).toBeGreaterThan(0);
     expect(screen.getByTestId('richness-curve')).toBeInTheDocument();

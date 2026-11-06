@@ -161,6 +161,8 @@ export const classOf = (x: number, breaks: number[]) => breaks.filter((b) => x >
 export const RAMPS = {
   green: ['#e3f1dc', '#b5d9a3', '#7fbf6a', '#4a9a44', '#1f6a2b'],
   blue: ['#deebf7', '#b3d1ea', '#79acd6', '#3f84bd', '#165a93'],
+  /** Outline scale for the second indicator: a hue apart from the fills. */
+  purple: ['#e9d5f5', '#c9a3e6', '#a26fd2', '#7a43b5', '#4f1f86'],
 };
 export const STRESS_COLOR: Record<Stress, string> = {
   none: '#cfe3c6',

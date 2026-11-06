@@ -1278,7 +1278,13 @@
     },
     "stressHelp": "Stress compares each bed with the rest of the garden on that layer: high when the bed is much less green than the typical bed (more than 1.5 robust standard deviations below the median), moderate beyond 0.75. It flags beds to check, not a measured plant or soil water status.",
     "method": "Method",
-    "basemap": "Base map"
+    "basemap": "Base map",
+    "indicators": "Indicators",
+    "indicatorsHelp": "Tick up to two to compare: the first fills the beds, the second colours their outline. Hover a bed for its values.",
+    "fill": "Fill",
+    "outline": "Outline",
+    "noIndicator": "Tick an indicator to colour the beds.",
+    "stressHelpShort": "Beds much less green than the typical bed on this layer: worth a look on site."
   },
   "bio": {
     "heading": "Biodiversity baseline and monitoring",
@@ -1379,6 +1385,109 @@
       "biomassSub": "above ground and roots",
       "perHa": "Carbon per hectare of bed",
       "perHaSub": "carbon stock / bed area"
+    },
+    "help": {
+      "s": "How many different species grow in the bed.",
+      "n": "How many plants are recorded in the bed.",
+      "shannon": "Richness and balance together: higher when there are more species and none dominates.",
+      "evenness": "How equally the plants are shared among the species (0 to 1; 1 = all equally common).",
+      "hill_q1": "The number of equally common species that would give the same diversity (an 'effective' species count).",
+      "species_density_ha": "Species per hectare of bed: richness adjusted for bed size.",
+      "pct_native_species": "Share of the bed's species native to the Arabian Peninsula and nearby arid regions.",
+      "mean_sorensen": "How different the bed is from the other beds (0 = same species, 1 = none shared). High = distinctive bed.",
+      "carbon_t_ha": "Carbon stored in the bed's plants and roots per hectare (indicative coefficients).",
+      "sat": "Average of the satellite layer over the bed: higher = greener, more vigorous vegetation."
+    },
+    "gloss": {
+      "heading": "Indicators explained",
+      "s": {
+        "term": "Species (S), richness",
+        "text": "The number of different species in a bed, a garden or the whole site. The simplest measure of biodiversity."
+      },
+      "n": {
+        "term": "Plants (N), abundance",
+        "text": "The number of plants recorded. Richness depends partly on it: more plants usually means more species."
+      },
+      "shannon": {
+        "term": "Shannon diversity (H)",
+        "text": "Combines richness and evenness. Rises with more species and with plants spread evenly over them. Typical garden beds: 1 to 3."
+      },
+      "simpson": {
+        "term": "Simpson diversity",
+        "text": "The chance that two plants picked at random are different species (0 to 1). Less sensitive to rare species than Shannon."
+      },
+      "evenness": {
+        "term": "Evenness (Pielou J)",
+        "text": "Shannon divided by its maximum for that number of species (0 to 1). 1 means every species is equally common; low values mean one or two species dominate."
+      },
+      "margalef": {
+        "term": "Margalef index",
+        "text": "Richness corrected for the number of plants, (S - 1) / ln N, so beds with different plant counts compare more fairly."
+      },
+      "hill": {
+        "term": "Hill numbers (q0, q1, q2)",
+        "text": "Diversity as an 'effective number of species': q0 counts all species, q1 weighs them by abundance (exp of Shannon), q2 counts only the common ones (inverse Simpson)."
+      },
+      "density": {
+        "term": "Species per hectare",
+        "text": "Richness divided by bed area, to compare small and large beds."
+      },
+      "native": {
+        "term": "Native species",
+        "text": "Species whose natural range includes the Arabian Peninsula and nearby arid regions, matched on the distribution text from the plant database. A broad match that may over-count."
+      },
+      "threatened": {
+        "term": "Threatened species",
+        "text": "Species listed by the IUCN as Critically Endangered, Endangered or Vulnerable."
+      },
+      "beta": {
+        "term": "Dissimilarity between beds (Bray-Curtis, Jaccard, Sørensen)",
+        "text": "How different two beds are in species (0 = identical, 1 = nothing in common). Bray-Curtis also uses plant counts; Jaccard and Sørensen use presence only. The map shows each bed's average against all others."
+      },
+      "turnover": {
+        "term": "Turnover and nestedness",
+        "text": "The two parts of Sørensen dissimilarity: turnover means beds hold different species; nestedness means one bed holds a subset of another's species."
+      },
+      "chao1": {
+        "term": "Estimated species (Chao1)",
+        "text": "An estimate of how many species there really are, including ones not yet recorded, from the number of species with one or two plants. A lower bound."
+      },
+      "coverage": {
+        "term": "Sample coverage",
+        "text": "The share of plants whose species is already in the records (Good-Turing). Near 100% means few species are missing."
+      },
+      "curve": {
+        "term": "Richness curve",
+        "text": "How the species count grows as more plants are recorded (solid), and the expected count if twice as many were recorded (dashed). A flattening curve means most species are already known."
+      },
+      "ordination": {
+        "term": "Ordination of beds (PCoA)",
+        "text": "Beds placed on a plane so that beds with similar species sit close together, from the Bray-Curtis dissimilarity. The axis percentages show how much of the variation each axis captures."
+      },
+      "moran": {
+        "term": "Spatial pattern (Moran's I)",
+        "text": "Whether beds that touch have similar values. Above the expected value (about 0) means neighbours are alike; p is the chance of a pattern this strong by random arrangement."
+      },
+      "carbon": {
+        "term": "Biomass and carbon",
+        "text": "Dry weight of plants and roots from life-form averages, times 0.47 for carbon, and x 44/12 for CO2. Indicative: assumes mature plants and unverified coefficients."
+      },
+      "ndvi": {
+        "term": "NDVI",
+        "text": "Normalised difference vegetation index from red and near-infrared light (-1 to 1). Over about 0.2 means living vegetation; higher means denser, more vigorous plants."
+      },
+      "greenness": {
+        "term": "Greenness (VARI)",
+        "text": "A vegetation index from the visible colours only, for images without near-infrared. Weaker than NDVI; shown on vegetation-coloured pixels only."
+      },
+      "stress": {
+        "term": "Stress (relative)",
+        "text": "A bed much less green than the typical bed on that layer. It flags beds to check; it is not a measurement of water or plant health."
+      },
+      "change": {
+        "term": "Vegetation change",
+        "text": "Vegetation in Feb 2025 compared with Oct 2026 on the satellite images: red lost, blue new. Exploratory: confirm on site."
+      }
     }
   },
   "water": {
@@ -1427,7 +1536,16 @@
     "notMetered": "Not metered",
     "stressHelp": "A visible or near-infrared greenness proxy compared across beds. Low greenness can mean too little water, but also young planting, pruning, bare mulch or succulents; check on site.",
     "method": "FAO-56: ETc = Kc × ET0. Kc per bed is the mean, over its plants, of the Kc of their life form (from the Hortis life forms); gross demand = ETc / drip efficiency × bed area, per month with the monthly ET0 (Terra Garden baseline study method). Compared with the flat rate per m² every day. The parameters below are all unverified.",
-    "meters": "Measured use will come from flow meters registered as assets of type Flow meter in a bed; their readings arrive with the sensor module (Phase 4). Until then every bed shows Not metered."
+    "meters": "Measured use will come from flow meters registered as assets of type Flow meter in a bed; their readings arrive with the sensor module (Phase 4). Until then every bed shows Not metered.",
+    "layers": "Water",
+    "monthPick": "Month for the monthly demand",
+    "help": {
+      "demand_month": "Water the bed's plants need per m2 per day in the chosen month (FAO-56, with drip losses).",
+      "demand_year": "Water the bed needs in a year, in m3.",
+      "saving": "How much less water the FAO-56 demand needs than the current flat rate (negative = the flat rate is too low).",
+      "kc": "Crop coefficient: the bed's water use relative to reference grass, from its plants' life forms.",
+      "months_under": "Months in which the flat rate gives less water than the plants need."
+    }
   },
   "zones": {
     "EG": "East Garden",

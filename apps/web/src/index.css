@@ -102,3 +102,8 @@ main .shadow:not(.absolute) {
   transform: rotate(45deg);
   box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 }
+
+/* Indicator maps: no focus box around a clicked bed (the beds are not keyboard targets there). */
+.kpi-map .leaflet-interactive:focus {
+  outline: none;
+}

@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useOrg } from '../org/context';
 import { useCurrentSite } from '../org/useSite';
-import { BedMap, type BedValue } from '../kpi/BedMap';
+import { BedMap, type BedValue, type IndicatorLayer } from '../kpi/BedMap';
 import { ParamsPanel } from '../kpi/ParamsPanel';
 import { KpiTile } from '../kpi/KpiTile';
 import { RichnessCurve } from '../kpi/RichnessCurve';
@@ -42,6 +42,31 @@ const METRICS: Metric[] = [
   'mean_sorensen',
 ];
 
+const GLOSSARY = [
+  's',
+  'n',
+  'shannon',
+  'simpson',
+  'evenness',
+  'margalef',
+  'hill',
+  'density',
+  'native',
+  'threatened',
+  'beta',
+  'turnover',
+  'chao1',
+  'coverage',
+  'curve',
+  'ordination',
+  'moran',
+  'carbon',
+  'ndvi',
+  'greenness',
+  'stress',
+  'change',
+] as const;
+
 /** Biodiversity baseline and monitoring (KPI reporting): kit script 02 on the live plant records,
  *  and vegetation from the satellite layers. */
 export function BiodiversityPage() {
@@ -49,7 +74,6 @@ export function BiodiversityPage() {
   const { current } = useOrg();
   const { site } = useCurrentSite();
   const qc = useQueryClient();
-  const [metric, setMetric] = useState<Metric | string>('s');
   const bio = useQuery({
     queryKey: ['kpi', 'bio', site?.id],
     queryFn: () => fetchBio(site!.id),
@@ -82,39 +106,67 @@ export function BiodiversityPage() {
   const isManager = !!current?.roles.includes('manager');
   const sat = (overlays.data ?? []).filter((o) => o.kind === 'ndvi' || o.kind === 'greenness');
 
-  // Map values: a diversity measure, or a satellite layer's bed mean (code "sat:<overlay>"), or its
-  // stress class ("stress:<overlay>").
-  const values = useMemo<Record<string, BedValue>>(() => {
-    const out: Record<string, BedValue> = {};
-    if (metric.startsWith('sat:') || metric.startsWith('stress:')) {
-      const o = sat.find((x) => x.code === metric.split(':')[1]);
-      for (const [bed, v] of Object.entries(o?.beds ?? {}))
-        out[bed] = metric.startsWith('stress:')
-          ? {
-              value: null,
-              color: STRESS_COLOR[v.stress],
-              label: `${t(`kpi.stress.${v.stress}`)} (${v.mean.toFixed(3)})`,
-            }
-          : { value: v.mean, label: `${o!.name}: ${v.mean.toFixed(3)}` };
-      return out;
-    }
-    if (metric === 'carbon_t_ha') {
-      for (const c of analytics.data?.carbon.beds ?? [])
-        out[c.bed] = {
-          value: c.carbon_t_ha,
-          label: `${t('bio.carbon.perHa')}: ${c.carbon_t_ha} t C/ha · ${c.carbon_t} ± ${c.carbon_ci95_t} t C`,
+  // Indicator layers for the map: diversity per bed, carbon, satellite values and their stress classes.
+  const layers = useMemo<IndicatorLayer[]>(() => {
+    const out: IndicatorLayer[] = [];
+    const div = t('bio.diversity');
+    for (const m of METRICS) {
+      const values: Record<string, BedValue> = {};
+      for (const b of bio.data?.beds ?? []) {
+        const v = b[m];
+        values[b.bed] = {
+          value: v == null ? null : Number(v),
+          label: `${t(`bio.m.${m}`)}: ${v ?? t('kpi.noData')}`,
         };
-      return out;
+      }
+      out.push({ key: m, group: div, label: t(`bio.m.${m}`), help: t(`bio.help.${m}`), values });
     }
-    for (const b of bio.data?.beds ?? []) {
-      const v = b[metric as Metric];
-      out[b.bed] = {
-        value: v == null ? null : Number(v),
-        label: `${t(`bio.m.${metric}`)}: ${v ?? t('kpi.noData')} · S ${b.s} · N ${b.n}`,
+    const carbon: Record<string, BedValue> = {};
+    for (const c of analytics.data?.carbon.beds ?? [])
+      carbon[c.bed] = {
+        value: c.carbon_t_ha,
+        label: `${t('bio.carbon.perHa')}: ${c.carbon_t_ha} t C/ha (${c.carbon_t} ± ${c.carbon_ci95_t} t C)`,
       };
+    out.push({
+      key: 'carbon_t_ha',
+      group: div,
+      label: t('bio.carbon.perHa'),
+      help: t('bio.help.carbon_t_ha'),
+      values: carbon,
+    });
+    const satG = t('kpi.satellite');
+    for (const o of sat) {
+      const mean: Record<string, BedValue> = {};
+      const stress: Record<string, BedValue> = {};
+      for (const [bed, v] of Object.entries(o.beds)) {
+        mean[bed] = { value: v.mean, label: `${o.name}: ${v.mean.toFixed(3)}` };
+        stress[bed] = {
+          value: null,
+          color: STRESS_COLOR[v.stress],
+          label: `${t('kpi.stressOf', { name: o.name })}: ${t(`kpi.stress.${v.stress}`)}`,
+        };
+      }
+      out.push({
+        key: `sat:${o.code}`,
+        group: satG,
+        label: o.name,
+        help: t('bio.help.sat'),
+        values: mean,
+      });
+      out.push({
+        key: `stress:${o.code}`,
+        group: satG,
+        label: t('kpi.stressOf', { name: o.name }),
+        help: t('kpi.stressHelpShort'),
+        values: stress,
+        classes: (['none', 'moderate', 'high'] as const).map((k) => ({
+          color: STRESS_COLOR[k],
+          label: t(`kpi.stress.${k}`),
+        })),
+      });
     }
     return out;
-  }, [metric, bio.data, analytics.data, sat, t]);
+  }, [bio.data, analytics.data, sat, t]);
 
   const g = bio.data?.garden;
   return (
@@ -192,57 +244,16 @@ export function BiodiversityPage() {
             <h2 id="bio-map-h" className="text-lg font-semibold">
               {t('bio.mapTitle')}
             </h2>
-            <label className="flex items-center gap-2 text-sm">
-              {t('kpi.colourBy')}
-              <select
-                value={metric}
-                onChange={(e) => setMetric(e.target.value)}
-                className="min-h-10 rounded border px-2"
-              >
-                <optgroup label={t('bio.diversity')}>
-                  {METRICS.map((m) => (
-                    <option key={m} value={m}>
-                      {t(`bio.m.${m}`)}
-                    </option>
-                  ))}
-                  <option value="carbon_t_ha">{t('bio.carbon.perHa')}</option>
-                </optgroup>
-                {sat.length > 0 && (
-                  <optgroup label={t('kpi.satellite')}>
-                    {sat.flatMap((o) => [
-                      <option key={`sat:${o.code}`} value={`sat:${o.code}`}>
-                        {o.name}
-                      </option>,
-                      <option key={`stress:${o.code}`} value={`stress:${o.code}`}>
-                        {t('kpi.stressOf', { name: o.name })}
-                      </option>,
-                    ])}
-                  </optgroup>
-                )}
-              </select>
-            </label>
           </div>
           {site && (
             <BedMap
               siteId={site.id}
-              values={values}
-              ramp={RAMPS.green}
+              layers={layers}
               overlays={overlays.data ?? []}
-              legendTitle={
-                metric.startsWith('stress:')
-                  ? t('kpi.stressLegend')
-                  : metric.startsWith('sat:')
-                    ? t('kpi.bedMean')
-                    : t(`bio.m.${metric}`)
-              }
-              format={(v) =>
-                Number.isInteger(v) || Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2)
-              }
+              defaultOn={['s']}
+              fillRamp={RAMPS.green}
               testId="bio-map"
             />
-          )}
-          {metric.startsWith('stress:') && (
-            <p className="text-sm text-gray-700">{t('kpi.stressHelp')}</p>
           )}
         </section>
 
@@ -482,6 +493,20 @@ export function BiodiversityPage() {
             </div>
           </details>
         )}
+
+        <section className="space-y-2" aria-labelledby="bio-gloss-h" data-testid="glossary">
+          <h2 id="bio-gloss-h" className="text-lg font-semibold">
+            {t('bio.gloss.heading')}
+          </h2>
+          <dl className="grid gap-x-6 gap-y-2 text-sm md:grid-cols-2">
+            {GLOSSARY.map((k) => (
+              <div key={k}>
+                <dt className="font-semibold">{t(`bio.gloss.${k}.term`)}</dt>
+                <dd className="text-gray-700">{t(`bio.gloss.${k}.text`)}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
 
         <section className="space-y-1 text-sm text-gray-700" aria-labelledby="bio-method-h">
           <h2 id="bio-method-h" className="text-lg font-semibold text-gray-900">
