@@ -5,7 +5,15 @@ const paths = (roles: Parameters<typeof visibleNav>[0]) => visibleNav(roles).map
 
 describe('role-aware nav', () => {
   it('owner is read-only: map and assets', () => {
-    expect(paths(['owner'])).toEqual(['/', '/assets', '/taxa', '/work', '/requests']);
+    expect(paths(['owner'])).toEqual([
+      '/',
+      '/assets',
+      '/taxa',
+      '/work',
+      '/requests',
+      '/biodiversity',
+      '/water',
+    ]);
   });
   it('green team and field engineers get the field app, not members', () => {
     expect(paths(['green_team'])).toEqual([
@@ -15,6 +23,8 @@ describe('role-aware nav', () => {
       '/work',
       '/field',
       '/requests',
+      '/biodiversity',
+      '/water',
     ]);
     expect(paths(['field_engineer'])).toEqual([
       '/',
@@ -23,6 +33,8 @@ describe('role-aware nav', () => {
       '/work',
       '/field',
       '/requests',
+      '/biodiversity',
+      '/water',
     ]);
   });
   it('managers and field managers see members', () => {
@@ -33,6 +45,8 @@ describe('role-aware nav', () => {
       '/work',
       '/field',
       '/requests',
+      '/biodiversity',
+      '/water',
       '/observations',
       '/plan',
       '/control-points',
@@ -46,6 +60,8 @@ describe('role-aware nav', () => {
       '/work',
       '/field',
       '/requests',
+      '/biodiversity',
+      '/water',
       '/plan',
       '/control-points',
       '/members',
@@ -59,11 +75,21 @@ describe('role-aware nav', () => {
       '/work',
       '/field',
       '/requests',
+      '/biodiversity',
+      '/water',
       '/observations',
     ]);
   });
   it('no roles still sees items open to every member', () => {
-    expect(paths([])).toEqual(['/', '/assets', '/taxa', '/work', '/requests']);
+    expect(paths([])).toEqual([
+      '/',
+      '/assets',
+      '/taxa',
+      '/work',
+      '/requests',
+      '/biodiversity',
+      '/water',
+    ]);
   });
 });
 
@@ -75,7 +101,7 @@ describe('phone tabs', () => {
   it('field roles: Map, Field app, Work orders; the rest under More', () => {
     expect(paths(['green_team'])).toEqual([
       ['/', '/field', '/work'],
-      ['/assets', '/taxa', '/requests'],
+      ['/assets', '/taxa', '/requests', '/biodiversity', '/water'],
     ]);
   });
   it('owner (no field app): Map, Work orders', () => {

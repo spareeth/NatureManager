@@ -1,14 +1,15 @@
 import L from 'leaflet';
 import { supabase } from '../lib/supabase';
+import { pmtilesLayer } from './pmtilesLayer';
 
 // Base maps per site (site_basemap). Google and Esri need an API key in .env.local and are never
-// stored for offline use; XYZ layers (OpenStreetMap, our own orthophoto) may be, when marked.
+// stored for offline use; PMTiles archives (the CAD plan) are online only too; XYZ layers (OpenStreetMap, our own orthophoto) may be, when marked.
 
 export type Basemap = {
   id: string;
   site_id: string;
   name: string;
-  kind: 'xyz' | 'google' | 'esri';
+  kind: 'xyz' | 'google' | 'esri' | 'pmtiles';
   url: string | null;
   attribution: string | null;
   min_zoom: number;
@@ -55,6 +56,7 @@ export function resolveBasemaps(
       (b) =>
         b.active &&
         (b.kind === 'xyz' ||
+          (b.kind === 'pmtiles' && !!b.url) ||
           (b.kind === 'google' && !!keys.google) ||
           (b.kind === 'esri' && !!keys.esri)),
     )
@@ -90,8 +92,16 @@ export const FALLBACK: Basemap = {
   active: true,
 };
 
-/** Leaflet layer for an XYZ or Esri base map (Google needs a session first, see googleTiles.ts). */
-export function tileLayerFor(b: Basemap, keys: Keys = KEYS): L.TileLayer {
+/** Leaflet layer for an XYZ, PMTiles or Esri base map (Google needs a session first, see
+ *  googleTiles.ts). */
+export function tileLayerFor(b: Basemap, keys: Keys = KEYS): L.GridLayer {
+  if (b.kind === 'pmtiles')
+    return pmtilesLayer(b.url!, {
+      minZoom: b.min_zoom,
+      maxZoom: b.max_zoom,
+      maxNativeZoom: b.max_native_zoom,
+      attribution: b.attribution ?? undefined,
+    });
   const url = b.kind === 'esri' ? ESRI_IMAGERY + encodeURIComponent(keys.esri ?? '') : b.url!;
   return L.tileLayer(url, {
     minZoom: b.min_zoom,

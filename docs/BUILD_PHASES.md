@@ -82,6 +82,23 @@ Suggested way to start each phase in Claude Code:
 
 ---
 
+## Addition (approved 5 Nov 2026): Biodiversity baseline and Water requirement (demo for KPI reporting)
+
+Built between tasks 3.6 and 3.7 at the owner's request. Not daily maintenance: performance and KPI
+reporting of the garden and its assets.
+
+| Task | Covers |
+| --- | --- |
+| B.1 Biodiversity page (More): per-bed and garden diversity from the live plant records, following the baseline kit script 02 (alpha, beta, zones), monthly KPI snapshots. | KPI |
+| B.2 Water page (More): FAO-56 demand per bed (kit script 06) against the flat rate, saving, beds short in summer, metered use slot (flow meters, Phase 4 readings). | KPI |
+| B.4 Analytics in the platform (no R): richness estimation (Chao1, coverage, curves), PCoA ordination, Moran's I with permutations, biomass and carbon. | KPI |
+| B.3 Satellite layers (scripts/imagery): October 2026 30 cm image for the ECD extent, visible-band greenness, Feb 2025 NDVI, per-bed values and relative stress; CAD plan base map. One PMTiles file per layer. | KPI |
+
+**Checks:** indices equal R vegan and betapart, Chao1, coverage and extrapolation equal iNEXT, Moran's I equals spdep moran.mc and the PCoA equals cmdscale, on the same data (verified once, 5 Nov 2026); FAO-56 demand of a bed equals Kc x ET0 / efficiency
+x area; another organisation sees nothing; every coefficient shows its source and an Unverified badge until checked.
+
+---
+
 ## Phase 4: Alerts, dashboards, simulation and demo (weeks 10 to 11)
 
 | Task | Covers |

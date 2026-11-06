@@ -232,6 +232,29 @@ in the same step, so nothing is lost or sent twice.
   orthophoto can be added as a tile layer and stored offline.
 - **Project picker**: Terra Garden today; Expo Valley appears as coming soon.
 
+## 10b. Biodiversity and Water (KPI reporting)
+
+Two pages under More, for everyone in the organisation; parameters are edited by managers and curators.
+
+- **Biodiversity**: species in the garden, species per bed, Shannon diversity, evenness, native and
+  threatened species, and how different the beds are from each other, per bed and per garden, from the
+  current plant records. The map colours the beds by any of these, or by a satellite layer and its stress
+  class. A KPI snapshot of the garden and zone figures is saved on the 1st of each month (or now, by a
+  manager), for trends. It also shows how many species there probably are (Chao1, with the richness curve
+  per garden), an ordination of beds by species composition, whether similar beds sit next to each other
+  (Moran's I) and the biomass and carbon stock of the planting (indicative coefficients).
+- **Water**: the FAO-56 water demand of each bed per month and year against the flat 6 L/m2 a day, the
+  possible saving in m3 and AED, the beds that get too little in summer, and a monthly chart. The map
+  colours beds by demand, saving, Kc or satellite stress. Measured use shows Not metered until flow meters
+  (asset type Flow meter in a bed) report through the sensor module.
+- **Satellite layers**: the 10 Oct 2026 image (30 cm, true colour) under the beds for all of Expo City
+  Dubai, a greenness layer from it (visible bands, a weaker proxy than NDVI), and the Feb 2025 NDVI
+  (15 cm). Stress is relative: a bed much less green than the typical bed. It flags beds to check on site.
+- **Parameters**: ET0, Kc per life form, drip efficiency, flat rate, tariff and the native-species pattern,
+  each with its source; all marked Unverified until checked against a real source. Changing one
+  recalculates the pages.
+- **CAD plan**: an extra base map (Base maps page), online only.
+
 ## 11. Background jobs
 
 | When | What |

@@ -34,7 +34,7 @@ export function useBaseLayers(
     if (!map || !overlays || !basemaps) return;
     const { layers, defaultId } = resolveBasemaps(basemaps);
     const googleRow = layers.find((b) => b.kind === 'google');
-    const bases: Record<string, L.TileLayer> = {};
+    const bases: Record<string, L.GridLayer> = {};
     // Standard layers are translated; a site's own layers keep their name.
     const label = (b: Basemap) => t(`map.layers.named.${b.name}`, { defaultValue: b.name });
     for (const b of layers) if (b.kind !== 'google') bases[label(b)] = tileLayerFor(b);

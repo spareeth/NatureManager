@@ -17,3 +17,7 @@ data/hortis/out/
 
 # R baseline kit (internal collection data, local only)
 data/baseline-kit/
+# Imagery: intermediate rasters and generated tile archives (scripts/imagery)
+data/imagery/
+apps/web/public/tiles/
+data/trees/

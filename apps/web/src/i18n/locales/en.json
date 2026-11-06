@@ -16,7 +16,9 @@
     "basemaps": "Base maps",
     "phone": "Quick menu",
     "more": "More",
-    "observations": "Observations"
+    "observations": "Observations",
+    "biodiversity": "Biodiversity",
+    "water": "Water"
   },
   "map": {
     "heading": "Site map",
@@ -1244,5 +1246,193 @@
       "curator_verified": "Verified",
       "rejected": "Rejected"
     }
+  },
+  "kpi": {
+    "noData": "No data",
+    "layer": "Overlay",
+    "noLayer": "None",
+    "opacity": "Opacity",
+    "showBeds": "Colour the beds",
+    "showTable": "Show the numbers as a table",
+    "params": "Parameters",
+    "paramsHelp": "The coefficients behind these figures. Values marked Unverified come from the Terra Garden baseline study and still need a checked source; changing one recalculates the page.",
+    "unverified": "Unverified",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "badValue": "Not a valid value (use numbers, a list in [ ] or a table in { }).",
+    "headline": "Headline figures",
+    "snapshot": "Save a KPI snapshot now",
+    "lastSnapshot": "Last KPI snapshot",
+    "none": "None yet",
+    "snapshotSub": "{{n}} saved; one is taken on the 1st of each month",
+    "colourBy": "Colour beds by",
+    "satellite": "Satellite",
+    "stressOf": "Stress from {{name}}",
+    "stressLegend": "Stress (relative to the garden)",
+    "bedMean": "Bed mean",
+    "stress": {
+      "none": "No stress",
+      "moderate": "Moderate stress",
+      "high": "High stress"
+    },
+    "stressHelp": "Stress compares each bed with the rest of the garden on that layer: high when the bed is much less green than the typical bed (more than 1.5 robust standard deviations below the median), moderate beyond 0.75. It flags beds to check, not a measured plant or soil water status.",
+    "method": "Method",
+    "basemap": "Base map"
+  },
+  "bio": {
+    "heading": "Biodiversity baseline and monitoring",
+    "intro": "Diversity of the living collection per bed and garden, from the current plant records, with vegetation from very high resolution satellite images. For KPI reporting, not daily maintenance.",
+    "t": {
+      "gamma": "Species in the garden",
+      "gammaSub": "{{plants}} living plants",
+      "meanS": "Species per bed",
+      "meanSSub": "mean ± sd over {{beds}} beds",
+      "shannon": "Shannon diversity (garden)",
+      "shannonSub": "mean per bed {{mean}}",
+      "evenness": "Evenness (Pielou J)",
+      "evennessSub": "mean per bed, 1 = all species equally common",
+      "native": "Native species",
+      "nativeSub": "{{n}} species; {{plants}}% of plants",
+      "nativeWarn": "Broad keyword match, may over-count",
+      "threatened": "Threatened species",
+      "threatenedSub": "IUCN CR, EN or VU",
+      "beta": "Dissimilarity between beds",
+      "betaSub": "mean Sørensen, 0 same species, 1 none shared"
+    },
+    "mapTitle": "Beds",
+    "diversity": "Diversity",
+    "m": {
+      "s": "Species (S)",
+      "n": "Plants (N)",
+      "shannon": "Shannon H",
+      "simpson": "Simpson",
+      "evenness": "Evenness J",
+      "margalef": "Margalef",
+      "hill_q1": "Hill q1",
+      "hill_q2": "Hill q2",
+      "species_density_ha": "Species per ha",
+      "pct_native_species": "% native species",
+      "mean_bray": "Bray-Curtis",
+      "mean_sorensen": "Sørensen",
+      "mean_turnover": "Turnover"
+    },
+    "zones": "Gardens",
+    "beds": "All beds",
+    "col": {
+      "zone": "Garden",
+      "beds": "Beds",
+      "gamma": "Species",
+      "plants": "Plants",
+      "meanS": "Species per bed",
+      "meanH": "Shannon per bed",
+      "meanJ": "Evenness per bed",
+      "bed": "Bed"
+    },
+    "method": "Computed in the platform from the living plant records: each record is one plant and every plant counts through its bed (Terra Garden baseline study method). Per bed: species, plants, Shannon, Simpson, inverse Simpson, Pielou evenness, Margalef and Hill numbers; between beds: mean Bray-Curtis, Jaccard and Sørensen dissimilarity with Simpson turnover and nestedness. Verified identical to the R packages vegan and betapart on the same data.",
+    "methodMore": "Richness estimation follows Chao et al. (2014) for abundance data (Chao1, sample coverage, interpolation and extrapolation to twice the sample; equal to iNEXT). The spatial pattern is Moran's I with queen contiguity (bed corners within 1 m), row-standardised weights and 999 permutations (equal to spdep moran.mc). The ordination is a principal coordinates analysis of Bray-Curtis. Biomass uses life-form coefficients per plant with lognormal spread; plants are treated as independent.",
+    "rich": {
+      "heading": "How many species are there?",
+      "title": "Species against plants sampled",
+      "all": "Whole garden",
+      "plants": "plants",
+      "dashed": "Dashed: estimated beyond the plants recorded",
+      "observed": "Species recorded",
+      "chao1": "Estimated species (Chao1)",
+      "chao1Sub": "lower-bound estimate of the true number",
+      "coverage": "Sample coverage",
+      "coverageSub": "share of plants whose species is already recorded",
+      "singletons": "Species with one plant",
+      "singletonsSub": "rare species drive the estimate",
+      "col": {
+        "group": "Garden",
+        "n": "Plants",
+        "sObs": "Species",
+        "chao1": "Chao1",
+        "coverage": "Coverage",
+        "f1": "One plant",
+        "f2": "Two plants"
+      }
+    },
+    "ord": {
+      "title": "Beds by species composition",
+      "axis": "Axis {{n}} ({{pct}}%)",
+      "species": "{{n}} species",
+      "help": "Each dot is a bed; beds close together have similar species (principal coordinates of Bray-Curtis). The percentages are the share of variation each axis shows."
+    },
+    "moran": {
+      "heading": "Are similar beds next to each other?",
+      "richness": "Species per bed (Moran's I)",
+      "shannon": "Shannon per bed (Moran's I)",
+      "clustered": "neighbouring beds are more alike than by chance",
+      "noPattern": "no clear pattern",
+      "few": "Only {{n}} of {{beds}} beds touch another bed (within 1 m); read with care",
+      "help": "Moran's I compares each bed with the beds touching it. Above the expected value means neighbours are alike; p is the share of 999 random shuffles that give an I as large."
+    },
+    "carbon": {
+      "heading": "Biomass and carbon",
+      "stock": "Carbon stock",
+      "stockSub": "plants and roots, ± 95% interval",
+      "warn": "Indicative coefficients for mature plants (unverified)",
+      "co2e": "As CO₂",
+      "biomass": "Dry biomass",
+      "biomassSub": "above ground and roots",
+      "perHa": "Carbon per hectare of bed",
+      "perHaSub": "carbon stock / bed area"
+    }
+  },
+  "water": {
+    "heading": "Water requirement",
+    "intro": "Crop water demand per bed by the FAO-56 method against the current flat irrigation rate, a satellite proxy of water stress, and metered use once flow meters report. For KPI reporting, not daily maintenance.",
+    "t": {
+      "demand": "FAO-56 demand per year",
+      "demandSub": "{{area}} m² of beds, mean Kc {{kc}}",
+      "current": "Flat rate per year",
+      "currentSub": "{{rate}} L/m² every day",
+      "saving": "Possible saving",
+      "savingSub": "{{m3}} m³, about AED {{aed}} a year",
+      "under": "Beds short in summer",
+      "underSub": "demand above the flat rate in at least one month",
+      "metered": "Beds with a flow meter",
+      "meteredSub": "measured use, when meters report",
+      "noMeters": "No flow meters yet: demand is estimated, not measured"
+    },
+    "mapTitle": "Beds",
+    "month": "Month",
+    "v": {
+      "demandMonth": "Demand in {{month}}",
+      "demandMonthPick": "Demand in a month (L/m²/day)",
+      "demandYear": "Demand per year (m³)",
+      "saving": "Saving against the flat rate (%)"
+    },
+    "chart": {
+      "title": "Garden water per day: FAO-56 demand and the flat rate",
+      "demand": "FAO-56 demand",
+      "flat": "Flat rate"
+    },
+    "beds": "All beds",
+    "col": {
+      "bed": "Bed",
+      "area": "Area (m²)",
+      "kc": "Kc",
+      "lifeForm": "Main life form",
+      "demand": "Demand (m³/yr)",
+      "current": "Flat rate (m³/yr)",
+      "saving": "Saving",
+      "under": "Months short",
+      "peak": "Peak month",
+      "metered": "Measured use"
+    },
+    "metered": "{{n}} flow meter(s), readings from Phase 4",
+    "notMetered": "Not metered",
+    "stressHelp": "A visible or near-infrared greenness proxy compared across beds. Low greenness can mean too little water, but also young planting, pruning, bare mulch or succulents; check on site.",
+    "method": "FAO-56: ETc = Kc × ET0. Kc per bed is the mean, over its plants, of the Kc of their life form (from the Hortis life forms); gross demand = ETc / drip efficiency × bed area, per month with the monthly ET0 (Terra Garden baseline study method). Compared with the flat rate per m² every day. The parameters below are all unverified.",
+    "meters": "Measured use will come from flow meters registered as assets of type Flow meter in a bed; their readings arrive with the sensor module (Phase 4). Until then every bed shows Not metered."
+  },
+  "zones": {
+    "EG": "East Garden",
+    "NG": "North Garden",
+    "SG": "South Garden",
+    "WG": "West Garden"
   }
 }

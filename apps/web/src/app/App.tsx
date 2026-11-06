@@ -22,6 +22,8 @@ import { RequestDetailPage } from '../pages/RequestDetailPage';
 import { PlanPage } from '../pages/PlanPage';
 import { SopEditorPage } from '../pages/SopEditorPage';
 import { ObservationsPage } from '../pages/ObservationsPage';
+import { BiodiversityPage } from '../pages/BiodiversityPage';
+import { WaterPage } from '../pages/WaterPage';
 import { canEditAssets } from '../auth/canEdit';
 import { OrgSwitcher } from '../components/OrgSwitcher';
 import { Centered, Loading, RequireRole } from './guards';
@@ -148,6 +150,8 @@ export function App() {
             }
           />
           <Route path="/requests" element={<RequestsPage />} />
+          <Route path="/biodiversity" element={<BiodiversityPage />} />
+          <Route path="/water" element={<WaterPage />} />
           <Route
             path="/observations"
             element={

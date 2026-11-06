@@ -23,6 +23,11 @@ Anything else is flagged here before use. Update this file when adding a depende
 | Pillow | AI service image decoding | MIT-CMU (HPND) | OK |
 | Pl@ntNet identify API | Plant ID (task 3.3), remote service | Terms of service, free plan 500/day | OK for pilot; Pro plan above 200k a year |
 | SpeciesNet | Camera traps | Apache-2.0 | OK |
+| pmtiles (npm 4.5) | Reads satellite and CAD layers in the web app | BSD-3-Clause | OK |
+| pmtiles (Python) | Converts MBTiles to PMTiles (scripts/imagery, build time only) | BSD-3-Clause | OK |
+| scikit-learn 1.9 | Vegetation classifier for the change analysis (scripts/imagery, build time only) | BSD-3-Clause | OK |
+| GDAL 3.11 | Tiling and NDVI processing (scripts/imagery, build time only, not distributed) | MIT | OK |
+| Satellite imagery (SuperView Neo, ECD GIS team) | Layers on the Biodiversity and Water pages | Expo City Dubai licence from the provider | Internal use; check the provider licence before any public page |
 | MegaDetector | Camera traps | MIT / Apache-2.0 / AGPL-3.0 by variant | Use MIT or Apache variant only |
 | BirdNET models | Bird audio | CC BY-NC-SA 4.0 | Pilot only; licence before paid use |
 | Pl@ntNet API | Plant ID | Service terms | Free plan pilot; Pro plan for service |

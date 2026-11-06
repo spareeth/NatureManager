@@ -8,7 +8,8 @@ grant select on tg to authenticated;
 create function pg_temp.as_user(u text) returns void language sql as
   $$ select set_config('request.jwt.claims', json_build_object('sub', u, 'role', 'authenticated')::text, true) $$;
 
-select is((select array_agg(name order by sort_order) from site_basemap where site_id = (select site from tg)),
+-- (layers from the imagery scripts, such as the CAD plan, are kind pmtiles and loaded separately)
+select is((select array_agg(name order by sort_order) from site_basemap where site_id = (select site from tg) and kind <> 'pmtiles'),
   '{OpenStreetMap,"Google satellite","Esri World Imagery"}', 'Terra has the standard layers');
 select is((select name from site_basemap where site_id = (select site from tg) and is_default), 'Google satellite', 'Google satellite is the default');
 select throws_ok($$insert into site_basemap (organisation_id, site_id, name, kind, offline_allowed) select org, site, 'G2', 'google', true from tg$$,
@@ -18,7 +19,7 @@ select throws_ok($$insert into site_basemap (organisation_id, site_id, name, kin
 
 select pg_temp.as_user('10000000-0000-0000-0000-000000000005');
 set local role authenticated;
-select is((select count(*)::int from site_basemap), 3, 'green team reads the layers');
+select is((select count(*)::int from site_basemap where kind <> 'pmtiles'), 3, 'green team reads the layers');
 select throws_ok($$insert into site_basemap (organisation_id, site_id, name, kind, url) select org, site, 'Mine', 'xyz', 'https://t.example.org/{z}/{x}/{y}.png' from tg$$,
   '42501', null, 'green team cannot add layers');
 

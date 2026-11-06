@@ -46,8 +46,8 @@ select is((select count(*)::int from auth.users where email like '%@terra.test' 
 
 select results_eq(
   $$select asset_class::text, count(*)::int from asset_type group by 1 order by 1$$,
-  $$values ('built'::text, 12), ('living', 3)$$,
-  'asset type catalogue: 3 living, 12 built (FR-AST-01)');
+  $$values ('built'::text, 13), ('living', 3)$$,
+  'asset type catalogue: 3 living, 13 built (12 plus the flow meter, 5 Nov 2026) (FR-AST-01)');
 select is(
   (select array_agg(code order by code) from asset_type where asset_class = 'living'),
   '{GROUP,PLANT,TREE}'::text[], 'living asset types');

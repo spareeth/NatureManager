@@ -84,6 +84,8 @@ describe('shell', () => {
       'Assets',
       'Taxa',
       'Item requests',
+      'Biodiversity',
+      'Water',
     ]);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
@@ -97,6 +99,8 @@ describe('shell', () => {
       'Assets',
       'Taxa',
       'Item requests',
+      'Biodiversity',
+      'Water',
       'Observations',
       'Planning',
       'Control points',
@@ -114,7 +118,15 @@ describe('shell', () => {
 
   it('owner cannot open the field app', () => {
     renderApp({ path: '/field', memberships: [membership(['owner'])] });
-    expect(navLinks()).toEqual(['Map', 'Work orders', 'Assets', 'Taxa', 'Item requests']);
+    expect(navLinks()).toEqual([
+      'Map',
+      'Work orders',
+      'Assets',
+      'Taxa',
+      'Item requests',
+      'Biodiversity',
+      'Water',
+    ]);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 

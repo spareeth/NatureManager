@@ -127,7 +127,8 @@ select throws_ok($$insert into work_order_event (organisation_id, work_order_id,
                    select org, (select id from v limit 1), 'closed', null from tg$$,
   '23514', null, 'a user event must have an actor');
 select results_eq($$select jobname, schedule from cron.job order by 1$$,
-  $$values ('pm-generate-nightly'::text, '30 20 * * *'::text), ('wo-autoclose-hourly', '5 * * * *')$$,
+  $$values ('kpi-monthly-snapshot'::text, '0 21 * * *'::text), ('pm-generate-nightly', '30 20 * * *'),
+          ('wo-autoclose-hourly', '5 * * * *')$$,
   'nightly generation at 00:30 Dubai and hourly auto-close are scheduled');
 
 select * from finish();

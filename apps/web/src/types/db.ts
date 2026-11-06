@@ -496,6 +496,61 @@ export type Database = {
           },
         ];
       };
+      bed_raster_stat: {
+        Row: {
+          location_id: string;
+          mean: number;
+          organisation_id: string;
+          overlay_id: string;
+          p10: number | null;
+          p90: number | null;
+          stress: string | null;
+          valid_share: number | null;
+        };
+        Insert: {
+          location_id: string;
+          mean: number;
+          organisation_id: string;
+          overlay_id: string;
+          p10?: number | null;
+          p90?: number | null;
+          stress?: string | null;
+          valid_share?: number | null;
+        };
+        Update: {
+          location_id?: string;
+          mean?: number;
+          organisation_id?: string;
+          overlay_id?: string;
+          p10?: number | null;
+          p90?: number | null;
+          stress?: string | null;
+          valid_share?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'bed_raster_stat_location_id_organisation_id_fkey';
+            columns: ['location_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'location';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+          {
+            foreignKeyName: 'bed_raster_stat_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'bed_raster_stat_overlay_id_organisation_id_fkey';
+            columns: ['overlay_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'raster_overlay';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
       control_point: {
         Row: {
           accuracy_m: number | null;
@@ -1013,6 +1068,89 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: 'organisation';
             referencedColumns: ['id'];
+          },
+        ];
+      };
+      kpi_parameter: {
+        Row: {
+          key: string;
+          module: string;
+          organisation_id: string;
+          source: string | null;
+          unit: string | null;
+          updated_at: string;
+          updated_by: string | null;
+          value: NonNullable<Json>;
+          verified: boolean;
+        };
+        Insert: {
+          key: string;
+          module: string;
+          organisation_id: string;
+          source?: string | null;
+          unit?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          value: NonNullable<Json>;
+          verified?: boolean;
+        };
+        Update: {
+          key?: string;
+          module?: string;
+          organisation_id?: string;
+          source?: string | null;
+          unit?: string | null;
+          updated_at?: string;
+          updated_by?: string | null;
+          value?: NonNullable<Json>;
+          verified?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'kpi_parameter_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      kpi_snapshot: {
+        Row: {
+          data: NonNullable<Json>;
+          module: string;
+          organisation_id: string;
+          site_id: string;
+          taken_on: string;
+        };
+        Insert: {
+          data: NonNullable<Json>;
+          module: string;
+          organisation_id: string;
+          site_id: string;
+          taken_on: string;
+        };
+        Update: {
+          data?: NonNullable<Json>;
+          module?: string;
+          organisation_id?: string;
+          site_id?: string;
+          taken_on?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'kpi_snapshot_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'kpi_snapshot_site_id_organisation_id_fkey';
+            columns: ['site_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'site';
+            referencedColumns: ['id', 'organisation_id'];
           },
         ];
       };
@@ -1624,6 +1762,75 @@ export type Database = {
             columns: ['template_id', 'organisation_id'];
             isOneToOne: false;
             referencedRelation: 'wo_template';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
+      raster_overlay: {
+        Row: {
+          acquired_on: string | null;
+          code: string;
+          created_at: string;
+          id: string;
+          kind: string;
+          legend: NonNullable<Json>;
+          max_zoom: number;
+          min_zoom: number;
+          module: string;
+          name: string;
+          notes: string | null;
+          organisation_id: string;
+          site_id: string;
+          sort_order: number;
+          url: string;
+        };
+        Insert: {
+          acquired_on?: string | null;
+          code: string;
+          created_at?: string;
+          id?: string;
+          kind: string;
+          legend?: NonNullable<Json>;
+          max_zoom?: number;
+          min_zoom?: number;
+          module: string;
+          name: string;
+          notes?: string | null;
+          organisation_id: string;
+          site_id: string;
+          sort_order?: number;
+          url: string;
+        };
+        Update: {
+          acquired_on?: string | null;
+          code?: string;
+          created_at?: string;
+          id?: string;
+          kind?: string;
+          legend?: NonNullable<Json>;
+          max_zoom?: number;
+          min_zoom?: number;
+          module?: string;
+          name?: string;
+          notes?: string | null;
+          organisation_id?: string;
+          site_id?: string;
+          sort_order?: number;
+          url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'raster_overlay_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'raster_overlay_site_id_organisation_id_fkey';
+            columns: ['site_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'site';
             referencedColumns: ['id', 'organisation_id'];
           },
         ];
@@ -2580,7 +2787,10 @@ export type Database = {
         }[];
       };
       asset_detail: { Args: { p_asset: string }; Returns: Json };
+      asset_geom: { Args: { p_asset: string }; Returns: unknown };
+      asset_hidden: { Args: { p_asset: string }; Returns: boolean };
       asset_labels: { Args: { p_assets: string[] }; Returns: Json };
+      asset_local_xy: { Args: { p_asset: string }; Returns: Record<string, unknown> };
       asset_move_offset: {
         Args: { p_accuracy?: number; p_asset: string; p_dx: number; p_dy: number };
         Returns: Json;
@@ -2614,6 +2824,23 @@ export type Database = {
         Returns: string;
       };
       auth_org_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
+      bed_plants: {
+        Args: { p_site: string };
+        Returns: {
+          bed_code: string;
+          iucn: string;
+          life_form: string;
+          location_id: string;
+          n: number;
+          native: boolean;
+          scientific_name: string;
+          taxon_id: string;
+          zone_code: string;
+        }[];
+      };
+      bio_analytics: { Args: { p_site: string }; Returns: Json };
+      bio_baseline: { Args: { p_site: string }; Returns: Json };
+      bio_community: { Args: { p_site: string }; Returns: Json };
       check_tag: {
         Args: {
           p_asset?: string;
@@ -2686,6 +2913,11 @@ export type Database = {
         Returns: Json;
       };
       item_generate_plants: { Args: { p_org: string }; Returns: number };
+      kpi_history: { Args: { p_module: string; p_site: string }; Returns: Json };
+      kpi_param: { Args: { p_key: string; p_module: string; p_org: string }; Returns: Json };
+      kpi_parameter_defaults: { Args: { p_org: string }; Returns: undefined };
+      kpi_take_snapshot: { Args: { p_site?: string }; Returns: number };
+      life_form_class: { Args: { p_life_forms: Json }; Returns: string };
       map_asset_detail: { Args: { p_site: string; p_tag: string }; Returns: Json };
       map_assets: {
         Args: {
@@ -2700,6 +2932,10 @@ export type Database = {
       };
       map_locations: { Args: { p_site: string }; Returns: Json };
       map_site: { Args: { p_site: string }; Returns: Json };
+      moran_mc: {
+        Args: { p_from: number[]; p_nsim?: number; p_to: number[]; p_values: number[] };
+        Returns: Json;
+      };
       nearest_bed_corner: {
         Args: { p_lat: number; p_lon: number; p_max_m?: number; p_site: string };
         Returns: Json;
@@ -2707,6 +2943,9 @@ export type Database = {
       new_qr_code: { Args: { p_site: string }; Returns: string };
       next_ir_number: { Args: { p_org: string }; Returns: string };
       next_wo_number: { Args: { p_org: string }; Returns: string };
+      obscured_point: { Args: { p_geom: unknown; p_location: string }; Returns: unknown };
+      observation_geom: { Args: { p_obs: string }; Returns: unknown };
+      observation_hidden: { Args: { p_obs: string }; Returns: boolean };
       org_sla_hours: { Args: { p_org: string; p_priority: string }; Returns: number };
       org_today: { Args: { p_org: string }; Returns: string };
       org_working_days: { Args: { p_org: string }; Returns: number[] };
@@ -2730,6 +2969,9 @@ export type Database = {
       receiver_create: { Args: { p_name: string; p_org: string }; Returns: Json };
       receiver_rotate_key: { Args: { p_receiver: string }; Returns: string };
       resolve_location: { Args: { p_geom: unknown; p_site?: string }; Returns: string };
+      richness_at: { Args: { p_counts: number[]; p_m: number }; Returns: number };
+      richness_summary: { Args: { p_counts: number[] }; Returns: Json };
+      sees_exact_location: { Args: { p_org: string }; Returns: boolean };
       site_basemap_defaults: { Args: { p_site: string }; Returns: undefined };
       site_basemap_set_default: { Args: { p_basemap: string }; Returns: undefined };
       site_from_local: { Args: { p_site: string; p_x: number; p_y: number }; Returns: unknown };
@@ -2745,6 +2987,7 @@ export type Database = {
         Args: { p_dx: number; p_dy: number; p_geom: unknown; p_site: string };
         Returns: unknown;
       };
+      site_overlays: { Args: { p_module: string; p_site: string }; Returns: Json };
       site_point: {
         Args: { p_a: number; p_b: number; p_site: string; p_system: string };
         Returns: Json;
@@ -2770,6 +3013,7 @@ export type Database = {
       };
       taxon_detail: { Args: { p_org: string; p_taxon: string }; Returns: Json };
       taxon_history: { Args: { p_org: string; p_taxon: string }; Returns: Json };
+      taxon_is_sensitive: { Args: { p_org: string; p_taxon: string }; Returns: boolean };
       taxon_list: {
         Args: {
           p_code?: string;
@@ -2787,6 +3031,7 @@ export type Database = {
       };
       taxon_search: { Args: { p_limit?: number; p_org: string; p_q: string }; Returns: Json };
       taxon_tag_code: { Args: { p_org: string; p_taxon: string }; Returns: string };
+      water_requirement: { Args: { p_site: string }; Returns: Json };
       weekday0: { Args: { d: string }; Returns: number };
       wo_allowed_transitions: {
         Args: { p_wo: string };

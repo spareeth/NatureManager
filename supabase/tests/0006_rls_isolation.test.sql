@@ -39,7 +39,10 @@ insert into definer_allowlist values
   -- return them only within the caller's organisations, obscured unless the caller is a curator or
   -- manager. wo_from_observation checks membership itself and places the work order at that point.
   ('taxon_is_sensitive'), ('sees_exact_location'), ('obscured_point'), ('asset_hidden'), ('asset_geom'),
-  ('asset_local_xy'), ('observation_hidden'), ('observation_geom'), ('wo_from_observation');
+  ('asset_local_xy'), ('observation_hidden'), ('observation_geom'), ('wo_from_observation'),
+  -- KPI modules: default parameters for a new organisation (no client access); the monthly snapshot
+  -- (managers only, checked inside; pg_cron runs it without a user).
+  ('kpi_parameter_defaults'), ('kpi_take_snapshot');
 
 create temp view public_tables as
   select c.relname::text as tbl,
@@ -168,6 +171,14 @@ select '20000000-0000-0000-0000-0000000000e1', org, site, 'flora', pg_temp.lp(55
        '20000000-0000-0000-0000-0000000000d1' from terra;
 insert into ai_suggestion (organisation_id, observation_id, engine, rank, taxon_name, score)
 select org, '20000000-0000-0000-0000-0000000000e1', 'plantnet', 1, 'Rls fixturea', 0.9 from terra;
+-- KPI modules: a snapshot, an overlay and a bed value.
+insert into kpi_snapshot (organisation_id, site_id, module, taken_on, data)
+select org, site, 'water', date '2000-01-01', '{}' from terra;
+insert into raster_overlay (id, organisation_id, site_id, module, code, name, kind, url)
+select '20000000-0000-0000-0000-0000000000f1', org, site, 'both', 'rls_fixture', 'RLS fixture', 'ndvi', '/tiles/x.pmtiles' from terra;
+insert into bed_raster_stat (organisation_id, overlay_id, location_id, mean)
+select org, '20000000-0000-0000-0000-0000000000f1', (select id from location l where l.site_id = terra.site and l.kind = 'bed' limit 1), 0.2
+from terra;
 
 select is(
   (select coalesce(array_agg(tbl order by tbl), '{}') from (

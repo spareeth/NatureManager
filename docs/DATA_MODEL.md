@@ -682,6 +682,40 @@ refuses a hidden asset). `wo_from_observation` is now security definer with its 
 places the work order at the visible point. Open: `audit_log` rows keep exact positions and are readable by
 owners.
 
+## 6b. KPI modules: biodiversity baseline and water requirement (added 5 Nov 2026)
+
+Migration `20261105000300_baseline_modules.sql`. Methods from the Terra Garden baseline kit (R scripts 02 and 06).
+
+```
+kpi_parameter (organisation_id, module 'biodiversity'|'water', key, value jsonb, unit, source, verified bool,
+               updated_at, updated_by)   -- pk (organisation_id, module, key); manager or curator write
+  water: eto_mm_day [12], drip_efficiency, flat_rate_l_m2_day, tariff_aed_m3, kc_by_life_form {class: Kc}
+  biodiversity: native_pattern (regex over WCVP native distribution)
+raster_overlay (id, organisation_id, site_id, module 'biodiversity'|'water'|'both', code, name,
+                kind 'ndvi'|'greenness'|'stress'|'imagery', acquired_on, url (PMTiles), min_zoom, max_zoom,
+                legend jsonb, notes, sort_order)         -- manager write
+bed_raster_stat (organisation_id, overlay_id, location_id, mean, p10, p90, valid_share,
+                 stress 'none'|'moderate'|'high')        -- manager write; loaded by scripts/imagery
+kpi_snapshot (organisation_id, site_id, module, taken_on, data jsonb)   -- garden and zone figures, monthly
+```
+
+Functions (security invoker unless noted): `life_form_class(life_forms)` (kit 05 classes),
+`bed_plants(site)` (living plants per bed and species; one record is one individual), `bio_baseline(site)`
+(alpha per bed: S, N, Shannon, Simpson, inverse Simpson, Pielou J, Margalef, Hill q0 to q2, species per ha,
+% native, threatened; beta per bed: mean Bray-Curtis, Jaccard, Sorensen, Simpson turnover, nestedness;
+garden and zone summaries), `water_requirement(site)` (per bed: Kc mean of its plants' life forms, monthly
+demand L/day = Kc x ET0 / efficiency x area, annual m3 against the flat rate, months short, peak, meters),
+`site_overlays(site, module)`, `kpi_history(site, module)`, `kpi_take_snapshot(site)` (security definer,
+managers; pg_cron at 01:00 Dubai on the 1st).
+Analytics (migration `20261105000400_baseline_analytics.sql`, no R dependency): `richness_at(counts, m)` and
+`richness_summary(counts)` (Chao1, sample coverage, interpolated and extrapolated richness, Chao et al. 2014),
+`moran_mc(values, from, to, nsim)` (Moran's I, row-standardised, permutation p as spdep moran.mc),
+`bio_analytics(site)` (richness per garden and site, Moran's I of richness and Shannon with queen contiguity of
+bed vertices within 1 m in UTM 40N, biomass and carbon per bed with a 95% interval, plants independent),
+`bio_community(site)` (beds x species counts; the web app runs the PCoA of Bray-Curtis). Parameters added:
+`biodiversity.biomass_by_life_form` ([mean AGB kg, CV, root:shoot] per class) and `biodiversity.carbon_fraction`. Bed areas in EPSG:3997. Asset type `FLOWMETER` added for
+metered use (readings with the Phase 4 sensor tables). `site_basemap.kind` gains `pmtiles` (online only).
+
 ## 7. Sensors and alerts
 
 ```sql
