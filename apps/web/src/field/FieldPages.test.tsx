@@ -17,6 +17,12 @@ const api = vi.hoisted(() => ({
   addJobPhoto: vi.fn(),
   signedPhoto: vi.fn(),
   saveJobRecord: vi.fn(),
+  queueRequest: vi.fn(),
+  queueAttachments: vi.fn(),
+}));
+vi.mock('./observe', async (orig) => ({
+  ...(await orig<typeof import('./observe')>()),
+  fetchPlaces: async () => [{ id: 'l1', code: 'NG-02', lon: 55.15, lat: 24.95 }],
 }));
 vi.mock('./api', async (orig) => ({ ...(await orig<typeof import('./api')>()), ...api }));
 vi.mock('./SyncBar', () => ({ SyncBar: () => null }));
@@ -166,6 +172,25 @@ describe('field app', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Map' }));
     expect(screen.getByTestId('map')).toBeInTheDocument();
+  });
+
+  it('My day: Report a problem queues a request at the chosen bed', async () => {
+    api.fetchMyDay.mockResolvedValue({ offline: false, data: [] });
+    api.queueRequest.mockResolvedValue({ id: 'w9', number: '' });
+    renderAt('/field');
+    fireEvent.click(await screen.findByRole('button', { name: 'Report a problem' }));
+    fireEvent.change(await screen.findByLabelText(/What is wrong|What should change|Title/i), {
+      target: { value: 'Broken sprinkler' },
+    });
+    const bed = await screen.findByRole('option', { name: 'NG-02' });
+    fireEvent.change(bed.closest('select')!, { target: { value: 'l1' } });
+    fireEvent.click(screen.getByRole('button', { name: /Send|Submit|Report/ }));
+    await waitFor(() =>
+      expect(api.queueRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Broken sprinkler', locationId: 'l1' }),
+      ),
+    );
+    expect(await screen.findByRole('status')).toBeInTheDocument();
   });
 
   it('runs SOP steps and blocks complete until required steps are done', async () => {

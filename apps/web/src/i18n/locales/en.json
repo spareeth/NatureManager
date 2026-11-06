@@ -243,7 +243,8 @@
     "moveHow": "How to move",
     "moveByClick": "Click new position",
     "moveByOffset": "Offset from a marker",
-    "moveByOffsetLink": "Move by offset"
+    "moveByOffsetLink": "Move by offset",
+    "addByTap": "Tap a point on the map"
   },
   "form": {
     "createTitle": "New asset",

@@ -22,6 +22,9 @@ type Props = {
   /** How to store photos and the voice note once the request exists; the field app queues them.
    *  Default: upload now. */
   attach?: (orgId: string, woId: string, a: Attachments) => Promise<void>;
+  /** Beds and zones to choose from when there is no asset or point; the field app passes the copy it
+   *  keeps offline. Default: read them now. */
+  places?: { id: string; code: string }[];
 };
 
 /** Report a problem: any member raises a request (FR-WO-06). */
@@ -34,6 +37,7 @@ export function RequestForm({
   onCancel,
   submit: send = raiseRequest,
   attach = uploadAttachments,
+  places,
 }: Props) {
   const { t } = useTranslation();
   const [title, setTitle] = useState('');
@@ -48,7 +52,7 @@ export function RequestForm({
   const [locationId, setLocationId] = useState('');
   const beds = useQuery({
     queryKey: ['request-places', siteId],
-    enabled: askPlace,
+    enabled: askPlace && !places,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('location')
@@ -145,7 +149,7 @@ export function RequestForm({
             className={input}
           >
             <option value="">{t('wo.placeNone')}</option>
-            {(beds.data ?? []).map((l) => (
+            {(places ?? beds.data ?? []).map((l) => (
               <option key={l.id} value={l.id}>
                 {l.code}
               </option>

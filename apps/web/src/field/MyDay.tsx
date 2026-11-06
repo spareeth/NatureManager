@@ -11,10 +11,14 @@ import { PriorityTag, StatusPill } from '../work/badges';
 import { useOutbox } from '../offline/outbox';
 import type { OutboxItem } from '../offline/db';
 import type { WoStatus } from '../work/model';
+import { RequestForm } from '../work/RequestForm';
+import { fetchPlaces } from './observe';
 import {
   fetchFieldRequests,
   fetchMyDay,
   NotOffline,
+  queueAttachments,
+  queueRequest,
   readBasemaps,
   type DayJob,
   type OpenRequest,
@@ -46,6 +50,14 @@ export function MyDay() {
   const planner = !!current?.roles.some((r) => r === 'manager' || r === 'field_manager');
   const outbox = useOutbox();
   const list = jobs.data ? withPending(jobs.data.data, outbox) : undefined;
+  const [reporting, setReporting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  // Beds and zones from the offline copy, for choosing where the problem is.
+  const places = useQuery({
+    queryKey: ['places', site?.id],
+    enabled: !!site && reporting,
+    queryFn: () => fetchPlaces(site!.id),
+  });
 
   return (
     <section className="mx-auto flex h-full max-w-xl flex-col p-3 text-base">
@@ -85,6 +97,40 @@ export function MyDay() {
           {t('obs.button')}
         </Link>
       </div>
+      {/* Report a problem from My day: the bed or zone is chosen from the offline copy, and the request
+          and its photos and voice note go through the outbox like every field change. */}
+      {notice && (
+        <p role="status" className="mt-2 rounded bg-green-50 p-2 text-green-900">
+          {notice}
+        </p>
+      )}
+      {reporting && current && site ? (
+        <div className="mt-2 rounded border-2 border-amber-700 p-3">
+          <RequestForm
+            orgId={current.organisationId}
+            siteId={site.id}
+            places={places.data ?? []}
+            submit={queueRequest}
+            attach={queueAttachments}
+            onCancel={() => setReporting(false)}
+            onDone={() => {
+              setReporting(false);
+              setNotice(t('fieldApp.requestQueued'));
+            }}
+          />
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setNotice(null);
+            setReporting(true);
+          }}
+          className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-amber-700 text-lg font-semibold text-amber-900"
+        >
+          {t('wo.report')}
+        </button>
+      )}
       {planner && (
         <Link
           to="/field/verify"

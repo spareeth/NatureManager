@@ -62,6 +62,9 @@ def match_hist(src, ref, valid_s, valid_r):
     return out
 
 
+
+
+
 def features(rgb):
     r, g, b = rgb
     bright = r + g + b + 1
@@ -76,11 +79,42 @@ def features(rgb):
     return np.stack([v.ravel() for v in f.values()], axis=1).astype("float32")
 
 
-def predict(model, X, shape):
-    p = np.zeros(X.shape[0], "float32")
-    for i in range(0, X.shape[0], 3_000_000):
-        p[i:i + 3_000_000] = model.predict_proba(X[i:i + 3_000_000])[:, 1]
-    return p.reshape(shape)
+STRIP = 600   # rows per strip (features are computed strip by strip to keep memory low)
+MARGIN = 16   # overlap so the neighbourhood filters (up to 15 px) are right at strip edges
+
+
+def strips(h):
+    for y0 in range(0, h, STRIP):
+        a = max(0, y0 - MARGIN); b = min(h, y0 + STRIP + MARGIN)
+        yield y0, min(h, y0 + STRIP), a, b
+
+
+def prob_map(model, rgb):
+    """Vegetation probability for a whole image, strip by strip."""
+    h, w = rgb.shape[1:]
+    out = np.zeros((h, w), "float32")
+    for y0, y1, a, b in strips(h):
+        X = features(rgb[:, a:b])
+        p = model.predict_proba(X)[:, 1].reshape(b - a, w)
+        out[y0:y1] = p[y0 - a:y0 - a + (y1 - y0)]
+    return out
+
+
+def training_sample(rgb, labels, mask, n, rng):
+    """Random pixels (natural class shares) with their features, strip by strip."""
+    h, w = rgb.shape[1:]
+    total = int(mask.sum())
+    Xs, ys, cols = [], [], []
+    for y0, y1, a, b in strips(h):
+        m = mask[y0:y1]
+        k = int(round(n * m.sum() / max(total, 1)))
+        if k == 0:
+            continue
+        idx = rng.choice(np.flatnonzero(m.ravel()), min(k, int(m.sum())), replace=False)
+        F = features(rgb[:, a:b])
+        X = F.reshape(b - a, w, -1)[y0 - a:y0 - a + (y1 - y0)].reshape(-1, F.shape[1])
+        Xs.append(X[idx]); ys.append(labels[y0:y1].ravel()[idx]); cols.append(idx % w)
+    return np.concatenate(Xs), np.concatenate(ys), np.concatenate(cols)
 
 
 def crowns(prob, valid):
@@ -148,34 +182,30 @@ def main():
     sm = ndimage.gaussian_filter(ndvi, 0.8)
     vegl = sm > 0.3
     nonl = sm < 0.1
-    X = features(dec)
-    lab_mask = (vegl | nonl).ravel() & valid["dec2025"].ravel()
-    idx = np.flatnonzero(lab_mask)
     rng = np.random.default_rng(42)
-    pick = rng.choice(idx, min(500_000, idx.size), replace=False)
+    lab_mask = (vegl | nonl) & valid["dec2025"]
+    Xs, ys, cols = training_sample(dec, vegl, lab_mask, 500_000, rng)
     # hold out the east third of the extent to measure accuracy on unseen ground
     W = dec.shape[2]
-    cols = pick % W
-    train, test = pick[cols < 2 * W // 3], pick[cols >= 2 * W // 3]
+    tr_m = cols < 2 * W // 3
     model = HistGradientBoostingClassifier(max_iter=300, learning_rate=0.1, random_state=42)
-    model.fit(X[train], vegl.ravel()[train])
-    pt = model.predict_proba(X[test])[:, 1] > 0.5
-    yt = vegl.ravel()[test]
+    model.fit(Xs[tr_m], ys[tr_m])
+    pt = model.predict_proba(Xs[~tr_m])[:, 1] > 0.5
+    yt = ys[~tr_m]
     acc = {"pixel_accuracy": round(float((pt == yt).mean()), 3),
            "vegetation_found": round(float((pt & yt).sum() / max(yt.sum(), 1)), 3),
            "vegetation_correct": round(float((pt & yt).sum() / max(pt.sum(), 1)), 3)}
+    del Xs
     print("held-out accuracy (December, RGB vs NDVI):", acc, f"{time.time() - t0:.0f} s", flush=True)
 
     probs, pts, areas = {}, {}, {}
     for d in DATES:
-        Xd = X if d == "dec2025" else features(imgs[d])
-        probs[d] = predict(model, Xd, dec.shape[1:])
+        probs[d] = prob_map(model, imgs[d])
         probs[d][~valid[d]] = 0
         _, p, a, _ = crowns(probs[d], valid[d])
         pts[d], areas[d] = p, a
         print(f"{d}: {len(p)} tree crowns (>= {MIN_CROWN_M2} m2); vegetated "
               f"{(probs[d] > 0.5).sum() * PX_M2 / 1e4:.1f} ha", flush=True)
-        del Xd
 
     # Same-date check: RGB crowns against crowns from the December NDVI itself
     _, ndvi_pts, _, _ = crowns(np.clip((sm - 0.1) / 0.4, 0, 1), valid["dec2025"])
@@ -249,7 +279,9 @@ def main():
     li = np.flatnonzero(lost_oct)
     write("lost_trees.geojson", pts["dec2025"][li], areas["dec2025"][li],
           [{"when": "by Apr 2026" if lost_by_apr[i] else "Apr to Oct 2026"} for i in li])
-    np.save(OUT / "prob_dec2025.npy", probs["dec2025"]); np.save(OUT / "prob_oct2026.npy", probs["oct2026"])
+    for d in DATES:  # vegetation maps (and where each image has data) for isolated_trees.py
+        np.save(OUT / f"prob_{d}.npy", probs[d].astype("float16"))
+        np.save(OUT / f"valid_{d}.npy", valid[d])
     print(f"done in {time.time() - t0:.0f} s")
 
 

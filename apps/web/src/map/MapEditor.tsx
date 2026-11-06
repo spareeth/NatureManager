@@ -30,6 +30,7 @@ const ll = (c: LngLat): L.LatLngTuple => [c[1], c[0]];
  * or bed corner; move a point asset (?move=id, by click or offset); shift any asset by dx, dy (?shift=id).
  */
 export function MapEditor({ map, orgId, siteId, canEdit, toolbarExtra }: Props) {
+  const [addMenu, setAddMenu] = useState(false);
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -209,27 +210,46 @@ export function MapEditor({ map, orgId, siteId, canEdit, toolbarExtra }: Props) 
     <>
       {mode === 'idle' && (
         <div className="absolute start-14 top-2 z-[1000] flex max-w-[calc(100%-4.5rem)] flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setMode('point')}
-            className="rounded bg-green-800 px-3 py-1.5 text-sm font-medium text-white shadow"
-          >
-            {t('edit.addPoint')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('polygon')}
-            className="rounded bg-white px-3 py-1.5 text-sm font-medium text-green-900 shadow"
-          >
-            {t('edit.addGroup')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('offset')}
-            className="rounded bg-white px-3 py-1.5 text-sm font-medium text-green-900 shadow"
-          >
-            {t('edit.addOffset')}
-          </button>
+          {/* One "Add asset" button; the three ways to place it are in its menu (simpler toolbar). */}
+          <div className="relative">
+            <button
+              type="button"
+              aria-haspopup="menu"
+              aria-expanded={addMenu}
+              onClick={() => setAddMenu((o) => !o)}
+              className="rounded bg-green-800 px-3 py-1.5 text-sm font-medium text-white shadow"
+            >
+              {t('edit.addPoint')}
+            </button>
+            {addMenu && (
+              <div
+                role="menu"
+                aria-label={t('edit.addPoint')}
+                className="absolute start-0 top-full z-[1002] mt-1 w-64 rounded bg-white py-1 text-sm shadow-lg"
+              >
+                {(
+                  [
+                    ['point', 'edit.addByTap'],
+                    ['polygon', 'edit.addGroup'],
+                    ['offset', 'edit.addOffset'],
+                  ] as const
+                ).map(([m, key]) => (
+                  <button
+                    key={m}
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setAddMenu(false);
+                      setMode(m);
+                    }}
+                    className="block w-full px-3 py-2 text-start text-green-900 hover:bg-green-50"
+                  >
+                    {t(key)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {toolbarExtra}
         </div>
       )}

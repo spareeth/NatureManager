@@ -255,7 +255,8 @@
     "moveHow": "طريقة النقل",
     "moveByClick": "النقر على الموقع الجديد",
     "moveByOffset": "إزاحة من علامة",
-    "moveByOffsetLink": "النقل بالإزاحة"
+    "moveByOffsetLink": "النقل بالإزاحة",
+    "addByTap": "انقر نقطة على الخريطة"
   },
   "form": {
     "createTitle": "أصل جديد",
