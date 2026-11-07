@@ -60,13 +60,24 @@ describe('shell', () => {
 
   it('green team sees map and field app, not members', () => {
     renderApp({ memberships: [membership(['green_team'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Field app']);
+    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work', 'Field app', 'Requests']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
   it('manager sees members', async () => {
     renderApp({ path: '/members', memberships: [membership(['manager'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Field app', 'Control points', 'Members']);
+    expect(navLinks()).toEqual([
+      'Map',
+      'Assets',
+      'Taxa',
+      'Work',
+      'Field app',
+      'Requests',
+      'Planning',
+      'Control points',
+      'Base maps',
+      'Members',
+    ]);
     expect(await screen.findByRole('heading', { name: 'Members' })).toBeInTheDocument();
   });
 
@@ -78,7 +89,7 @@ describe('shell', () => {
 
   it('owner cannot open the field app', () => {
     renderApp({ path: '/field', memberships: [membership(['owner'])] });
-    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa']);
+    expect(navLinks()).toEqual(['Map', 'Assets', 'Taxa', 'Work', 'Requests']);
     expect(screen.getByTestId('map')).toBeInTheDocument();
   });
 
@@ -97,10 +108,10 @@ describe('shell', () => {
     expect(screen.getByText('Terra')).toBeInTheDocument();
   });
 
-  it('sign out calls auth', () => {
+  it('sign out calls auth', async () => {
     const { auth } = renderApp({ memberships: [membership(['curator'])] });
     fireEvent.click(screen.getByRole('button', { name: 'Sign out' }));
-    expect(auth.signOut).toHaveBeenCalled();
+    await waitFor(() => expect(auth.signOut).toHaveBeenCalled());
   });
 });
 

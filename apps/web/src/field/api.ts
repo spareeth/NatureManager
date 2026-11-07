@@ -1,0 +1,417 @@
+import { supabase } from '../lib/supabase';
+import type { Json } from '../types/db';
+import type { WoDetail } from '../work/api';
+import type { WoStatus } from '../work/model';
+import { db, dayKey, type CachedAsset } from '../offline/db';
+import { isTransient } from '../offline/errors';
+import { enqueue } from '../offline/outbox';
+import { kickSync } from '../offline/kick';
+import { compressImage } from './image';
+import { audioExt } from '../work/media';
+import { fetchBasemaps, type Basemap } from '../map/basemaps';
+
+// Field app data. Reads go to the server and fall back to the offline store when there is no
+// network; writes go to the outbox first (CLAUDE.md rule 5) and are sent by the sync worker.
+
+type Res = { data: unknown; error: { message: string; code?: string } | null; status?: number };
+export function check<T>(res: Res): T {
+  if (res.error)
+    throw Object.assign(new Error(res.error.message), { code: res.error.code, status: res.status });
+  return res.data as T;
+}
+
+export class NotOffline extends Error {}
+
+/** Server first; on a network problem use the offline copy (or say it is not available offline). */
+async function readThrough<T>(
+  server: () => Promise<T>,
+  save: (v: T) => Promise<unknown>,
+  cached: () => Promise<T | undefined>,
+) {
+  try {
+    // Known to be offline: do not wait for requests to fail.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false)
+      throw new TypeError('offline');
+    const v = await server();
+    await save(v).catch(() => undefined);
+    return { data: v, offline: false };
+  } catch (e) {
+    if (!isTransient(e)) throw e;
+    const c = await cached();
+    if (c === undefined) throw new NotOffline((e as Error).message);
+    return { data: c, offline: true };
+  }
+}
+
+export type Bilingual = { en: string; ar?: string };
+export type DayJob = {
+  id: string;
+  number: string;
+  title: string;
+  status: WoStatus;
+  priority: string;
+  wo_type: string;
+  planned_start: string | null;
+  due_at: string | null;
+  location_code: string | null;
+  est_minutes: number | null;
+  mine: boolean;
+  lon: number | null;
+  lat: number | null;
+  steps: number;
+  answered: number;
+  overdue: boolean;
+};
+export type StepInput = 'tick' | 'number' | 'text' | 'photo' | 'choice';
+export type JobStep = {
+  id: string;
+  seq: number;
+  text: Bilingual;
+  input_type: StepInput;
+  choices: string[] | null;
+  unit: string | null;
+  required: boolean;
+  media_path: string | null;
+  value: Json | null;
+  media_id: string | null;
+  media_path_answer: string | null;
+  /** Photo taken on the phone and not yet sent (offline store blob id). */
+  blobId?: string;
+};
+export type Material = { item: string; qty?: number; unit?: string };
+export type ItemLine = {
+  id: string;
+  item_id: string | null;
+  description: string;
+  quantity: number;
+  unit: string;
+  reason: 'maintain' | 'replace' | 'procure_new';
+  asset_id: string | null;
+};
+export type JobItemRequest = {
+  id: string;
+  number: string;
+  status: string;
+  lines: Pick<ItemLine, 'description' | 'quantity' | 'unit' | 'reason'>[];
+};
+export type CatalogueItem = {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  unit: string;
+};
+export type FieldJob = Omit<WoDetail, 'sop' | 'materials'> & {
+  mine: boolean;
+  organisation_id: string;
+  materials: Material[];
+  sop: {
+    id: string;
+    code: string;
+    version: number;
+    title: Bilingual;
+    ppe: string[] | null;
+    hazards: string[] | null;
+  } | null;
+  steps: JobStep[];
+  missing: number[];
+  /** Item requests raised from this job (FR-REQ-04); queued ones have no number yet. */
+  item_requests?: JobItemRequest[];
+  photos: {
+    id: string;
+    path: string | null;
+    caption: string | null;
+    taken_at: string | null;
+    blobId?: string;
+  }[];
+};
+
+export type ScanJob = {
+  id: string;
+  number: string;
+  title: string;
+  status: WoStatus;
+  priority: string;
+  planned_start: string | null;
+  mine: boolean;
+};
+export type ScannedAsset = {
+  id: string;
+  organisation_id: string;
+  site_id: string;
+  tag_code: string;
+  name: string | null;
+  status: string;
+  location_id: string | null;
+  location_code: string | null;
+  scientific_name: string | null;
+  lon: number | null;
+  lat: number | null;
+  jobs: ScanJob[];
+};
+
+export const fetchMyDay = async (siteId: string, day: string) =>
+  readThrough(
+    async () => check<DayJob[]>(await supabase.rpc('field_my_day', { p_site: siteId, p_day: day })),
+    (list) => db.days.put({ key: dayKey(siteId, day), list, savedAt: new Date().toISOString() }),
+    async () => (await db.days.get(dayKey(siteId, day)))?.list,
+  );
+
+export const fetchJob = async (id: string) =>
+  readThrough(
+    async () => check<FieldJob | null>(await supabase.rpc('field_job', { p_wo: id })),
+    (job) =>
+      job ? db.jobs.put({ id, data: job, savedAt: new Date().toISOString() }) : db.jobs.delete(id),
+    async () => (await db.jobs.get(id))?.data,
+  );
+
+/** Asset by scanned tag or barcode, with its open jobs. Offline: the assets kept for my zones. */
+export const scanCode = async (code: string, orgId?: string) =>
+  readThrough<ScannedAsset | null>(
+    async () => {
+      const hit = check<{ id: string }[]>(
+        await supabase.rpc('asset_by_code', { p_code: code, p_org: orgId }),
+      )?.[0];
+      return hit
+        ? check<ScannedAsset | null>(await supabase.rpc('field_scan', { p_asset: hit.id }))
+        : null;
+    },
+    async () => undefined,
+    async () => {
+      const a: CachedAsset | undefined =
+        (await db.assets.where('tag_code').equals(code).first()) ??
+        (await db.assets.where('barcode').equals(code).first());
+      if (!a) return null;
+      const jobs = (await db.jobs.toArray())
+        .map((r) => r.data)
+        .filter(
+          (j) =>
+            j.assets.some((x) => x.id === a.id) &&
+            ['requested', 'approved', 'scheduled', 'in_progress', 'on_hold'].includes(j.status),
+        )
+        .map((j) => ({
+          id: j.id,
+          number: j.number,
+          title: j.title,
+          status: j.status,
+          priority: j.priority,
+          planned_start: j.planned_start,
+          mine: j.mine,
+        }));
+      return { ...a, jobs };
+    },
+  );
+
+// Writes: queued, then synced -------------------------------------------------------------
+
+type JobRef = Pick<FieldJob, 'id' | 'organisation_id'>;
+
+export async function moveJob(job: JobRef, to: WoStatus, note?: string) {
+  await enqueue('transition', job.id, { to, note: note || null });
+  kickSync();
+}
+
+export async function answerStep(
+  job: JobRef,
+  stepId: string,
+  answer: { value?: Json | null; mediaId?: string | null },
+) {
+  await enqueue('answer', job.id, {
+    org: job.organisation_id,
+    stepId,
+    ...('value' in answer ? { value: answer.value ?? null } : {}),
+    ...(answer.mediaId ? { mediaId: answer.mediaId } : {}),
+  });
+  kickSync();
+}
+
+/** Compress (max 1600 px), keep the photo on the phone and queue its upload. Returns the media id. */
+export async function addJobPhoto(job: JobRef, file: Blob, caption?: string) {
+  const blob = await compressImage(file);
+  const mediaId = crypto.randomUUID();
+  await db.blobs.put({ id: mediaId, blob });
+  await enqueue('photo', job.id, {
+    org: job.organisation_id,
+    mediaId,
+    path: `${job.organisation_id}/wo/${job.id}/${mediaId}.jpg`,
+    caption: caption || null,
+    takenAt: new Date().toISOString(),
+  });
+  kickSync();
+  return mediaId;
+}
+
+export async function saveJobRecord(
+  job: JobRef,
+  v: { completion_notes: string | null; actual_minutes: number | null; materials: Material[] },
+) {
+  await enqueue('record', job.id, v);
+  kickSync();
+}
+
+/** Raise a request from the phone (FR-WO-06), queued; the work order id is made here so the asset link
+ *  and replays use the same row. */
+export async function queueRequest(v: {
+  orgId: string;
+  siteId: string;
+  title: string;
+  description: string | null;
+  priority: string;
+  woType?: 'reactive' | 'project';
+  assetId?: string | null;
+  locationId?: string | null;
+  geom?: string | null;
+}) {
+  const id = crypto.randomUUID();
+  await enqueue('request', null, { ...v, id });
+  kickSync();
+  return { id, number: '' };
+}
+
+/** Items needed for the job (FR-REQ-04): queued, then sent as one submitted request linked to the job. */
+export async function queueJobItems(job: JobRef, lines: Omit<ItemLine, 'id'>[]) {
+  await enqueue('items', job.id, { lines: lines.map((l) => ({ ...l, id: crypto.randomUUID() })) });
+  kickSync();
+}
+
+/** Active item catalogue; kept on the phone (offline pack and each online read). */
+export const fetchCatalogue = async (orgId: string) =>
+  readThrough(
+    async () =>
+      check<CatalogueItem[]>(
+        await supabase
+          .from('item')
+          .select('id, code, name, category, unit')
+          .eq('organisation_id', orgId)
+          .eq('active', true)
+          .order('category')
+          .order('name'),
+      ),
+    (list) => db.kv.put({ key: `items:${orgId}`, value: list, savedAt: new Date().toISOString() }),
+    async () => (await db.kv.get(`items:${orgId}`))?.value as CatalogueItem[] | undefined,
+  );
+
+/** The site's base maps; the copy kept by the offline pack when there is no network. */
+export const readBasemaps = async (siteId: string) =>
+  (
+    await readThrough(
+      () => fetchBasemaps(siteId),
+      (rows) =>
+        db.kv.put({ key: `basemaps:${siteId}`, value: rows, savedAt: new Date().toISOString() }),
+      async () => ((await db.kv.get(`basemaps:${siteId}`))?.value as Basemap[] | undefined) ?? [],
+    )
+  ).data;
+
+export type OpenRequest = {
+  id: string;
+  number: string;
+  title: string;
+  status: WoStatus;
+  priority: string;
+  wo_type: string;
+  location_code: string | null;
+  created_at: string;
+  created_by_name: string | null;
+  mine: boolean;
+  lon: number | null;
+  lat: number | null;
+};
+export type MyRequest = {
+  kind: 'work' | 'items';
+  id: string;
+  number: string;
+  title: string | null;
+  status: string;
+  wo_type: string | null;
+  location_code: string | null;
+  created_at: string;
+  planned_start: string | null;
+  note: string | null;
+};
+export type FieldRequests = { open: OpenRequest[]; mine: MyRequest[] };
+
+/** Open requests of the site and the ones I raised; the offline pack keeps a copy. */
+export const fetchFieldRequests = async (siteId: string) =>
+  readThrough(
+    async () => check<FieldRequests>(await supabase.rpc('field_requests', { p_site: siteId })),
+    (v) => db.kv.put({ key: `requests:${siteId}`, value: v, savedAt: new Date().toISOString() }),
+    async () => (await db.kv.get(`requests:${siteId}`))?.value as FieldRequests | undefined,
+  );
+
+/** A request's photos and voice note from the field app: kept on the phone and queued behind the
+ *  queued request (same outbox, in order), so they work offline. */
+export async function queueAttachments(
+  orgId: string,
+  woId: string,
+  a: { photos: File[]; voice: Blob | null },
+) {
+  for (const f of a.photos) {
+    const blob = await compressImage(f);
+    const mediaId = crypto.randomUUID();
+    await db.blobs.put({ id: mediaId, blob });
+    await enqueue('photo', woId, {
+      org: orgId,
+      mediaId,
+      path: `${orgId}/wo/${woId}/${mediaId}.jpg`,
+      caption: null,
+      takenAt: new Date().toISOString(),
+    });
+  }
+  if (a.voice) {
+    const mediaId = crypto.randomUUID();
+    const type = a.voice.type || 'audio/webm';
+    await db.blobs.put({ id: mediaId, blob: a.voice });
+    await enqueue('photo', woId, {
+      org: orgId,
+      mediaId,
+      path: `${orgId}/wo/${woId}/${mediaId}.${audioExt(type)}`,
+      caption: 'voice note',
+      takenAt: new Date().toISOString(),
+      bucket: 'audio',
+      kind: 'audio',
+      contentType: type,
+    });
+  }
+  kickSync();
+}
+
+export async function signedPhoto(bucket: 'photos' | 'sop-media', path: string) {
+  try {
+    const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 3600);
+    return data?.signedUrl ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/** A step counts as answered the way wo_missing_steps sees it. */
+export function isAnswered(step: Pick<JobStep, 'input_type' | 'value' | 'media_id'>) {
+  if (step.input_type === 'photo') return !!step.media_id;
+  if (step.input_type === 'tick') return step.value === true;
+  return step.value !== null && step.value !== undefined && step.value !== '';
+}
+
+export type VerifyItem = {
+  id: string;
+  number: string;
+  title: string;
+  priority: string;
+  wo_type: string;
+  location_code: string | null;
+  completed_at: string;
+  completed_by_name: string | null;
+  assignee_name: string | null;
+  team_name: string | null;
+  photos: number;
+  steps: number;
+  can_verify: boolean;
+};
+
+/** Completed jobs waiting for verification (FR-WO-10); the last copy is kept for offline use. */
+export const fetchVerifyQueue = async (siteId: string) =>
+  readThrough(
+    async () => check<VerifyItem[]>(await supabase.rpc('wo_verify_queue', { p_site: siteId })),
+    (list) =>
+      db.kv.put({ key: `verify:${siteId}`, value: list, savedAt: new Date().toISOString() }),
+    async () => (await db.kv.get(`verify:${siteId}`))?.value as VerifyItem[] | undefined,
+  );

@@ -1,10 +1,12 @@
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { A4_24, labelSlots, type SheetSpec } from './layout';
-import { assetUrl } from './qrPayload';
+import { assetUrl, qrUrl } from './qrPayload';
 
 export type LabelData = {
   tag_code: string;
+  /** Permanent QR code; the label's QR encodes it when present. */
+  qr_code?: string | null;
   scientific_name: string | null;
   common_name: string | null;
   type_name: string;
@@ -49,7 +51,7 @@ export async function buildLabelPdf(
       doc.setDrawColor(200);
       doc.rect(s.x, s.y, sheet.labelWidth, sheet.labelHeight);
     }
-    const url = assetUrl(l.tag_code, opts.baseUrl);
+    const url = l.qr_code ? qrUrl(l.qr_code, opts.baseUrl) : assetUrl(l.tag_code, opts.baseUrl);
     const png = await QRCode.toDataURL(url, { errorCorrectionLevel: 'M', margin: 0, width: 256 });
     doc.addImage(png, 'PNG', s.x + PAD, s.y + (sheet.labelHeight - QR) / 2, QR, QR);
 
@@ -72,6 +74,12 @@ export async function buildLabelPdf(
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.text((doc.splitTextToSize(l.common_name, tw) as string[]).slice(0, 2), tx, ty);
+    }
+    // The QR code in text along the bottom, so a label can also be typed in if the QR is damaged.
+    if (l.qr_code) {
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(7.5);
+      doc.text(l.qr_code, tx, s.y + sheet.labelHeight - PAD);
     }
     if (l.location_code) {
       doc.setFont('helvetica', 'normal');

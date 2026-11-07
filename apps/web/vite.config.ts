@@ -23,6 +23,28 @@ export default defineConfig({
         background_color: '#ffffff',
         icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
       },
+      workbox: {
+        // App shell offline: every route falls back to index.html (FR-FLD-04).
+        navigateFallback: '/index.html',
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        runtimeCaching: [
+          {
+            // Map tiles of layers that may be stored offline (site_basemap.offline_allowed:
+            // OpenStreetMap, our own orthophoto): any .../{z}/{x}/{y}[.ext] tile path. Google and Esri
+            // tiles are never matched: their terms forbid caching.
+            urlPattern: ({ url }) =>
+              !/(^|\.)(googleapis\.com|arcgis\.com|arcgisonline\.com)$/.test(url.hostname) &&
+              /\/\d{1,2}\/\d+\/\d+(\.(png|jpe?g|webp))?$/.test(url.pathname),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tiles',
+              expiration: { maxEntries: 2000, maxAgeSeconds: 30 * 24 * 3600 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
+      },
     }),
   ],
   server: { port: 5173 },

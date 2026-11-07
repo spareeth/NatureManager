@@ -45,5 +45,7 @@ export async function viewportAttribution(
   const res = await fetchFn(`${API}/tile/v1/viewport?${q}`);
   if (!res.ok) return 'Google';
   const body = (await res.json()) as { copyright?: string };
-  return body.copyright ? `Imagery ${body.copyright}` : 'Google';
+  if (!body.copyright) return 'Google';
+  // The live API already starts the text with "Imagery"; add it only when missing.
+  return /^imagery\b/i.test(body.copyright) ? body.copyright : `Imagery ${body.copyright}`;
 }

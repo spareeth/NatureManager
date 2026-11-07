@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type L from 'leaflet';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { LeafletMap } from '../components/LeafletMap';
 import { useNavigate } from 'react-router-dom';
 import { useCurrentSite } from '../org/useSite';
 import { listControlPoints } from '../geo/api';
 import { fetchAssetDetail, fetchAssets, fetchLocations, fetchMapSite } from '../map/api';
+import { fetchBasemaps } from '../map/basemaps';
 import { CursorReadout } from '../map/CursorReadout';
 import { Legend } from '../map/Legend';
 import { MapEditor } from '../map/MapEditor';
@@ -18,9 +19,15 @@ import {
   setControlPoints,
   setAssets,
   setLocations,
+  setWork,
   useBaseLayers,
   type MapLayers,
+  type ReportTarget,
 } from '../map/useMapLayers';
+import { usePickPoint } from '../map/usePickPoint';
+import { fetchBoard } from '../work/api';
+import { STATUS_COLOURS, type WoStatus } from '../work/model';
+import { RequestForm } from '../work/RequestForm';
 
 type BBox = { west: number; south: number; east: number; north: number };
 
@@ -43,6 +50,21 @@ export function MapPage() {
   const [map, setMap] = useState<L.Map | null>(null);
   const [overlays, setOverlays] = useState<MapLayers | null>(null);
   const [bbox, setBbox] = useState<BBox | null>(null);
+  const queryClient = useQueryClient();
+  // Report a problem from the map: pick a spot, or from an asset's popup.
+  const [report, setReport] = useState<
+    | { step: 'pick' }
+    | { step: 'form'; point?: { lat: number; lon: number }; asset?: ReportTarget }
+    | null
+  >(null);
+  const [reported, setReported] = useState<{ id: string; number: string } | null>(null);
+  const reportRef = useRef<(a: ReportTarget) => void>(() => {});
+  useEffect(() => {
+    reportRef.current = (a) => {
+      setReported(null);
+      setReport({ step: 'form', asset: a });
+    };
+  }, []);
 
   const sites = useCurrentSite();
   const siteId = sites.site?.id;
@@ -58,6 +80,11 @@ export function MapPage() {
     queryKey: ['map-site', siteId],
     enabled: !!siteId,
     queryFn: () => fetchMapSite(siteId!),
+  });
+  const basemaps = useQuery({
+    queryKey: ['basemaps', siteId],
+    enabled: !!siteId,
+    queryFn: () => fetchBasemaps(siteId!),
   });
   const locations = useQuery({
     queryKey: ['map-locations', siteId],
@@ -89,13 +116,52 @@ export function MapPage() {
         (tag) => (siteRef.current ? fetchAssetDetail(siteRef.current, tag) : Promise.resolve(null)),
         (id) => navigateRef.current(`/assets/${id}`),
         () => tRef.current('map.openAsset'),
+        (a) => reportRef.current(a),
+        () => tRef.current('wo.report'),
       ),
     );
     m.on('moveend', () => setBbox(roundBox(bboxOf(m))));
     setMap(m);
   }, []);
 
-  useBaseLayers(map, site.data, overlays, t);
+  useBaseLayers(map, basemaps.data, overlays, t);
+
+  const reportButton = (
+    <button
+      type="button"
+      onClick={() => {
+        setReported(null);
+        setReport({ step: 'pick' });
+      }}
+      className="rounded bg-amber-600 px-3 py-1.5 text-sm font-medium text-white shadow"
+    >
+      {t('wo.reportHere')}
+    </button>
+  );
+  const pick = useCallback(
+    (p: { lat: number; lon: number }) => setReport({ step: 'form', point: p }),
+    [],
+  );
+  const cancelPick = useCallback(() => setReport(null), []);
+  usePickPoint(map, report?.step === 'pick', pick, cancelPick);
+
+  // Open work orders with a place, on the "Open work" layer.
+  const work = useQuery({
+    queryKey: ['wo-board', siteId, 'map-layer'],
+    enabled: !!siteId,
+    queryFn: () => fetchBoard(siteId!, { openOnly: true }),
+  });
+  useEffect(() => {
+    if (!overlays || !work.data) return;
+    setWork(
+      overlays,
+      work.data,
+      (s) => STATUS_COLOURS[s as WoStatus] ?? '#666',
+      (s) => t(`wo.status.${s}`),
+      (id) => navigate(`/work/${id}`),
+      t('wo.open'),
+    );
+  }, [overlays, work.data, t, navigate]);
 
   // Fit the site once it loads.
   useEffect(() => {
@@ -148,7 +214,53 @@ export function MapPage() {
           orgId={current.organisationId}
           siteId={siteId}
           canEdit={canEditAssets(current.roles)}
+          toolbarExtra={!report ? reportButton : null}
         />
+      )}
+      {current && siteId && !report && !canEditAssets(current.roles) && (
+        <div className="absolute start-14 top-2 z-[1000]">{reportButton}</div>
+      )}
+      {report?.step === 'pick' && (
+        <div
+          role="status"
+          className="absolute start-14 top-2 z-[1000] flex items-center gap-2 rounded bg-white px-3 py-1.5 text-sm shadow"
+        >
+          {t('wo.pickSpot')}
+          <button type="button" onClick={cancelPick} className="underline">
+            {t('wo.cancelPick')}
+          </button>
+        </div>
+      )}
+      {report?.step === 'form' && current && siteId && (
+        <div className="absolute end-2 top-2 z-[1001] max-h-[calc(100%-1rem)] w-80 max-w-[calc(100%-1rem)] overflow-auto rounded bg-white shadow-lg">
+          <RequestForm
+            orgId={current.organisationId}
+            siteId={siteId}
+            point={report.asset ? undefined : report.point}
+            asset={report.asset}
+            onCancel={() => setReport(null)}
+            onDone={(wo) => {
+              setReport(null);
+              setReported(wo);
+              void queryClient.invalidateQueries({ queryKey: ['wo-board'] });
+            }}
+          />
+        </div>
+      )}
+      {reported && (
+        <p
+          role="status"
+          className="absolute start-1/2 top-4 z-[1000] -translate-x-1/2 rounded bg-green-50 px-3 py-1 text-green-900 shadow"
+        >
+          {t('wo.reportedAs', { number: reported.number })}{' '}
+          <button
+            type="button"
+            onClick={() => navigate(`/work/${reported.id}`)}
+            className="underline"
+          >
+            {t('wo.open')}
+          </button>
+        </p>
       )}
       <CursorReadout map={map} siteId={siteId} hasGrid={site.data?.has_grid ?? false} />
       {sites.sites && sites.sites.length === 0 && (

@@ -12,12 +12,16 @@ export const NAV: NavItem[] = [
   { path: '/', labelKey: 'nav.map' },
   { path: '/assets', labelKey: 'nav.assets' },
   { path: '/taxa', labelKey: 'nav.taxa' },
+  { path: '/work', labelKey: 'nav.work' },
   {
     path: '/field',
     labelKey: 'nav.field',
     roles: ['manager', 'field_manager', 'curator', 'green_team', 'field_engineer'],
   },
+  { path: '/requests', labelKey: 'nav.requests' },
+  { path: '/plan', labelKey: 'nav.plan', roles: ['manager', 'field_manager'] },
   { path: '/control-points', labelKey: 'nav.controlPoints', roles: ['manager', 'field_manager'] },
+  { path: '/basemaps', labelKey: 'nav.basemaps', roles: ['manager'] },
   { path: '/members', labelKey: 'nav.members', roles: ['manager', 'field_manager'] },
 ];
 
@@ -27,4 +31,15 @@ export function canSee(item: Pick<NavItem, 'roles'>, roles: readonly Role[]): bo
 
 export function visibleNav(roles: readonly Role[], items: NavItem[] = NAV): NavItem[] {
   return items.filter((i) => canSee(i, roles));
+}
+
+// Phone header tabs: the first three of these that the user may see; the rest go under "More".
+const PHONE_FIRST = ['/field', '/', '/work', '/requests'];
+
+export function phoneTabs(items: NavItem[]): { tabs: NavItem[]; more: NavItem[] } {
+  const ranked = PHONE_FIRST.map((p) => items.find((i) => i.path === p)).filter(
+    (i): i is NavItem => !!i,
+  );
+  const tabs = ranked.slice(0, 3);
+  return { tabs, more: items.filter((i) => !tabs.includes(i)) };
 }

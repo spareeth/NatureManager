@@ -1,0 +1,237 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import L from 'leaflet';
+import { LeafletMap } from '../components/LeafletMap';
+import { useCurrentSite } from '../org/useSite';
+import { useOrg } from '../org/context';
+import { addDays, dubaiDate, STATUS_COLOURS } from '../work/model';
+import { PriorityTag, StatusPill } from '../work/badges';
+import { useOutbox } from '../offline/outbox';
+import type { OutboxItem } from '../offline/db';
+import type { WoStatus } from '../work/model';
+import {
+  fetchFieldRequests,
+  fetchMyDay,
+  NotOffline,
+  readBasemaps,
+  type DayJob,
+  type OpenRequest,
+} from './api';
+import { offlineBasemap, tileLayerFor } from '../map/basemaps';
+
+const TOUCH = 'min-h-12 min-w-12';
+
+/** "My day" (FR-FLD-01): today's jobs sorted by location, with a map. */
+export function MyDay() {
+  const { t } = useTranslation();
+  const { site } = useCurrentSite();
+  const [day, setDay] = useState(() => dubaiDate(new Date()));
+  const [showMap, setShowMap] = useState(false);
+  // Open requests of the site: the button count and squares on the map.
+  const requests = useQuery({
+    queryKey: ['field-requests', site?.id],
+    enabled: !!site,
+    queryFn: () => fetchFieldRequests(site!.id),
+  });
+  const open = requests.data?.data.open ?? NO_REQUESTS;
+  const jobs = useQuery({
+    queryKey: ['field-day', site?.id, day],
+    enabled: !!site,
+    queryFn: () => fetchMyDay(site!.id, day),
+  });
+  const today = dubaiDate(new Date());
+  const { current } = useOrg();
+  const planner = !!current?.roles.some((r) => r === 'manager' || r === 'field_manager');
+  const outbox = useOutbox();
+  const list = jobs.data ? withPending(jobs.data.data, outbox) : undefined;
+
+  return (
+    <section className="mx-auto flex h-full max-w-xl flex-col p-3 text-base">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className={`${TOUCH} rounded border px-3`}
+          aria-label={t('fieldApp.previousDay')}
+          onClick={() => setDay(addDays(day, -1))}
+        >
+          ‹
+        </button>
+        <h1 className="flex-1 text-center text-xl font-semibold">
+          {day === today ? t('fieldApp.myDay') : day}
+        </h1>
+        <button
+          type="button"
+          className={`${TOUCH} rounded border px-3`}
+          aria-label={t('fieldApp.nextDay')}
+          onClick={() => setDay(addDays(day, 1))}
+        >
+          ›
+        </button>
+      </div>
+      <Link
+        to="/field/scan"
+        className="mt-2 inline-flex min-h-14 w-full items-center justify-center rounded-lg bg-green-800 text-lg font-semibold text-white"
+      >
+        {t('fieldApp.scan')}
+      </Link>
+      {planner && (
+        <Link
+          to="/field/verify"
+          className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-green-800 text-lg font-semibold text-green-900"
+        >
+          {t('verify.heading')}
+        </Link>
+      )}
+      <Link
+        to="/field/requests"
+        className="mt-2 inline-flex min-h-12 w-full items-center justify-center rounded-lg border-2 border-amber-600 text-lg font-semibold text-amber-900"
+      >
+        {t('fieldReq.button', { count: open.length })}
+      </Link>
+      <div className="mt-2 flex gap-2">
+        <button
+          type="button"
+          aria-pressed={!showMap}
+          onClick={() => setShowMap(false)}
+          className={`${TOUCH} flex-1 rounded ${!showMap ? 'bg-green-800 text-white' : 'border'}`}
+        >
+          {t('fieldApp.list')}
+        </button>
+        <button
+          type="button"
+          aria-pressed={showMap}
+          onClick={() => setShowMap(true)}
+          className={`${TOUCH} flex-1 rounded ${showMap ? 'bg-green-800 text-white' : 'border'}`}
+        >
+          {t('fieldApp.map')}
+        </button>
+      </div>
+      {jobs.error && (
+        <p role="alert" className="mt-2 text-red-700">
+          {jobs.error instanceof NotOffline ? t('fieldApp.notOffline') : jobs.error.message}
+        </p>
+      )}
+      {jobs.isPending && site && <p className="mt-3">{t('common.loading')}</p>}
+      {list && list.length === 0 && !showMap && (
+        <p className="mt-6 text-center text-gray-700">{t('fieldApp.noJobs')}</p>
+      )}
+      {list && (list.length > 0 || showMap) && (
+        <div className="mt-3 min-h-0 flex-1">
+          {showMap ? <DayMap jobs={list} requests={open} /> : <JobList jobs={list} />}
+        </div>
+      )}
+    </section>
+  );
+}
+
+/** Status changes still waiting to sync show on the list at once. */
+function withPending(list: DayJob[], items: OutboxItem[]): DayJob[] {
+  const last = new Map<string, WoStatus>();
+  for (const i of items)
+    if (i.kind === 'transition' && i.status === 'pending' && i.woId)
+      last.set(i.woId, i.payload.to as WoStatus);
+  return list.map((j) => (last.has(j.id) ? { ...j, status: last.get(j.id)! } : j));
+}
+
+function JobList({ jobs }: { jobs: DayJob[] }) {
+  const { t } = useTranslation();
+  return (
+    <ul className="space-y-2">
+      {jobs.map((j) => (
+        <li key={j.id}>
+          <Link
+            to={`/field/jobs/${j.id}`}
+            className="block min-h-12 rounded-lg border-2 border-gray-300 bg-white p-3 active:bg-gray-100"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg font-bold">{j.location_code ?? '-'}</span>
+              <PriorityTag priority={j.priority} />
+              <span className="ms-auto">
+                <StatusPill status={j.status} />
+              </span>
+            </div>
+            <p className="mt-1 text-lg">{j.title}</p>
+            <p className="text-sm text-gray-700">
+              {j.number}
+              {j.steps > 0 && ` · ${t('fieldApp.stepsDone', { done: j.answered, total: j.steps })}`}
+              {!j.mine && ` · ${t('fieldApp.teamJob')}`}
+              {j.overdue && (
+                <span className="ms-1 font-semibold text-red-700">{t('wo.overdue')}</span>
+              )}
+            </p>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const NO_REQUESTS: OpenRequest[] = [];
+
+function DayMap({ jobs, requests = NO_REQUESTS }: { jobs: DayJob[]; requests?: OpenRequest[] }) {
+  const layer = useRef<L.LayerGroup | null>(null);
+  const [map, setMap] = useState<L.Map | null>(null);
+  const onReady = useCallback((m: L.Map | null) => {
+    setMap(m);
+    if (!m) return;
+    layer.current = L.layerGroup().addTo(m);
+  }, []);
+  // Base map: the site's default when it may be stored offline, else the first that may (offline use).
+  const { site } = useCurrentSite();
+  const rows = useQuery({
+    queryKey: ['field-basemaps', site?.id],
+    enabled: !!site,
+    queryFn: () => readBasemaps(site!.id),
+  });
+  useEffect(() => {
+    if (!map || !rows.data) return;
+    const base = tileLayerFor(offlineBasemap(rows.data)).addTo(map);
+    base.bringToBack();
+    return () => {
+      map.removeLayer(base);
+    };
+  }, [map, rows.data]);
+  useEffect(() => {
+    const g = layer.current;
+    if (!map || !g) return;
+    g.clearLayers();
+    const pts: L.LatLngTuple[] = [];
+    for (const j of jobs) {
+      if (j.lat == null || j.lon == null) continue;
+      pts.push([j.lat, j.lon]);
+      L.circleMarker([j.lat, j.lon], {
+        radius: 12,
+        weight: 3,
+        color: '#fff',
+        fillColor: STATUS_COLOURS[j.status],
+        fillOpacity: 1,
+      })
+        .bindPopup(
+          `<strong>${j.location_code ?? ''}</strong> ${j.title.replace(/</g, '&lt;')}<br><a href="/field/jobs/${j.id}">${j.number}</a>`,
+        )
+        .addTo(g);
+    }
+    // Open requests: small squares (jobs are large circles).
+    for (const r of requests) {
+      if (r.lat == null || r.lon == null) continue;
+      pts.push([r.lat, r.lon]);
+      L.marker([r.lat, r.lon], {
+        icon: L.divIcon({
+          className: 'work-marker',
+          html: '<span style="display:block;width:16px;height:16px;border:2px solid #fff;background:#d97706;box-shadow:0 0 2px #000"></span>',
+          iconSize: [16, 16],
+        }),
+      })
+        .bindPopup(
+          `<strong>${r.location_code ?? ''}</strong> ${r.title.replace(/</g, '&lt;')}<br><a href="/field/jobs/${r.id}">${r.number}</a>`,
+        )
+        .addTo(g);
+    }
+    if (pts.length) map.fitBounds(pts, { maxZoom: 19, padding: [30, 30] });
+  }, [map, jobs, requests]);
+  return (
+    <LeafletMap onReady={onReady} preferCanvas={false} className="h-[60vh] w-full rounded border" />
+  );
+}

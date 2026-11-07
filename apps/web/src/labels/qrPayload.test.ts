@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assetUrl } from './qrPayload';
+import { assetUrl, qrUrl } from './qrPayload';
 
 describe('QR payload', () => {
   it('is https://<host>/a/<tag>', () => {
@@ -12,5 +12,13 @@ describe('QR payload', () => {
   });
   it('defaults to the current origin', () => {
     expect(assetUrl('SG03-VLV02')).toBe(`${window.location.origin}/a/SG03-VLV02`);
+  });
+});
+
+describe('qrUrl', () => {
+  it('is https://<host>/q/<qr_code>', () => {
+    expect(qrUrl('TG-7K3QF9', 'https://garden.example.org/')).toBe(
+      'https://garden.example.org/q/TG-7K3QF9',
+    );
   });
 });

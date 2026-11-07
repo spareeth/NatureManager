@@ -2,8 +2,8 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(8);
-delete from media; delete from asset_status_change; delete from asset; delete from accession;
-delete from org_taxon; delete from taxon; delete from audit_log;
+delete from media; delete from asset_status_change; delete from work_order_asset; delete from asset; delete from accession;
+delete from item_request; delete from item; delete from org_taxon; delete from taxon; delete from audit_log;
 
 select has_column('public', 'org_taxon', 'attributes', 'org_taxon.attributes exists');
 select has_column('public', 'accession', 'attributes', 'accession.attributes exists');

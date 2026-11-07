@@ -38,6 +38,18 @@ describe('Google Map Tiles API client', () => {
       fetchFn as unknown as typeof fetch,
     );
     expect(text).toBe('Imagery ©2026 Airbus, Maxar Technologies');
+    const live = vi.fn(async () =>
+      json({ copyright: 'Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies' }),
+    );
+    expect(
+      await viewportAttribution(
+        'k',
+        's',
+        18,
+        { north: 1, south: 0, east: 1, west: 0 },
+        live as unknown as typeof fetch,
+      ),
+    ).toBe('Imagery ©2026 Airbus, CNES / Airbus, Maxar Technologies');
     const url = new URL((fetchFn.mock.calls[0] as unknown as [string])[0]);
     expect(url.pathname).toBe('/tile/v1/viewport');
     expect(url.searchParams.get('zoom')).toBe('18');

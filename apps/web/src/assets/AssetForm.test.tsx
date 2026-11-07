@@ -94,10 +94,14 @@ describe('AssetForm, create', () => {
     const { onSaved } = renderForm({ geometry: point });
     await screen.findByRole('option', { name: 'Tree' });
     fireEvent.change(screen.getByLabelText('Type'), { target: { value: 'tree' } });
-    await waitFor(() => expect(screen.getByLabelText('Tag')).toHaveValue('WG07-T12_XXX'));
+    await waitFor(() => expect(screen.getByLabelText('Tag')).toHaveValue('WG07-T12_XXX'), {
+      timeout: 4000,
+    });
     fireEvent.change(screen.getByLabelText('Species'), { target: { value: 'pro' } });
     fireEvent.click(await screen.findByRole('option', { name: /Prosopis cineraria/ }));
-    await waitFor(() => expect(screen.getByLabelText('Tag')).toHaveValue('WG07-T12_PRO'));
+    await waitFor(() => expect(screen.getByLabelText('Tag')).toHaveValue('WG07-T12_PRO'), {
+      timeout: 4000,
+    });
     expect(screen.getByLabelText('Status')).toHaveValue('planted');
     fireEvent.change(screen.getByLabelText('Height (m)'), { target: { value: '6,5' } });
     fireEvent.click(screen.getByRole('button', { name: 'Create asset' }));

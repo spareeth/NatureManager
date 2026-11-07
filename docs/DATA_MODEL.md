@@ -130,6 +130,29 @@ create table line_feature (
 );
 ```
 
+Base maps (migration `20261024000400_site_basemap.sql`, decision 24 Oct 2026): `site.basemap_url` is replaced
+by a list per site. `basemap_url` is kept (deprecated); a value is moved into the list as "Site orthophoto".
+
+```sql
+create table site_basemap (
+  id uuid primary key default gen_random_uuid(),
+  organisation_id uuid not null, site_id uuid not null references site,
+  name text not null,                    -- unique per site
+  kind text not null,                    -- xyz, google, esri
+  url text,                              -- xyz only, with {z} {x} {y}
+  attribution text,
+  min_zoom int, max_zoom int, max_native_zoom int,
+  offline_allowed boolean not null default false,  -- tiles may be stored on phones; never for google or esri
+  is_default boolean not null default false,       -- one active default per site
+  sort_order int, active boolean
+);
+```
+
+- Members read; managers edit (Base maps page). `site_basemap_set_default(id)` switches the default. Audited.
+- Google needs `VITE_GOOGLE_MAPS_API_KEY`, Esri `VITE_ESRI_API_KEY` (ArcGIS Location Platform); without
+  the key the layer is hidden. The field app map and the offline tile cache use only `offline_allowed` layers.
+- Each site gets OpenStreetMap, Google satellite (default) and Esri World Imagery (`site_basemap_defaults`).
+
 As built (migration `20260928000200_spatial.sql`):
 
 - PostGIS is installed in the `extensions` schema.
@@ -327,6 +350,12 @@ tags get `<ZONE><BED>-G<NN>_<SPECIES>`; built assets `<ZONE><BED>-<TYPE><NN>`, e
 Uniqueness is enforced; the 2 duplicate tags in the Hortis export must be resolved at migration.
 QR payload: `https://<host>/a/<tag_code>` so a phone camera opens the record.
 
+Permanent QR codes (migration `20261104000300_asset_qr_code.sql`, decision 4 Nov 2026): `asset.qr_code text
+not null unique`, generated on insert as `<site code>-<6 characters>` (no look-alike characters, e.g.
+`TG-7K3QF9`) and never changed, even when the tag code is corrected. New labels encode
+`https://<host>/q/<qr_code>` and print the code; `/a/<tag_code>` labels keep working. `asset_by_code`
+matches the QR code first, then the tag code, then the barcode. Managers see the QR image on the asset page.
+
 ## 5. SOPs, PM and work orders
 
 ```sql
@@ -374,6 +403,8 @@ create table pm_schedule (
   rule jsonb not null,                   -- {"freq":"weekly","interval":1,"byweekday":[0,1,2,3,4]}
                                          -- {"freq":"daily"} {"freq":"monthly","bymonthday":[1]}
                                          -- {"season":{"from_month":10,"to_month":4}}
+                                         -- optional: "interval":N, "start":"yyyy-mm-dd" (anchor),
+                                         -- "each":"bed" (one work order per bed under the location)
   max_per_day int,                       -- load spreading
   horizon_days int not null default 14,
   active boolean not null default true,
@@ -421,7 +452,8 @@ create table work_order_event (
   work_order_id uuid not null references work_order,
   from_status wo_status, to_status wo_status not null,
   note text, geom geometry(Point,4326),
-  actor uuid not null, at timestamptz not null default now(),
+  actor uuid, at timestamptz not null default now(),   -- null only for system events (12 Oct 2026)
+  source text not null default 'user',   -- user, system
   client_uuid uuid unique
 );
 
@@ -437,6 +469,131 @@ create table sop_response (
 `wo_transition(p_wo uuid, p_to wo_status, p_note text, p_geom geometry default null)`:
 checks the SRS 3.4.1 table with `has_role`, blocks `completed` if required SOP steps are missing,
 blocks the assignee from verifying their own job, writes `work_order_event`, updates status.
+
+As built (migration `20261012000100_work_orders.sql`, task 2.1):
+
+- `sop_step`, `work_order_asset` and `sop_response` also carry `organisation_id` (the every-business-table
+  rule above); all tables carry created/updated columns, and composite keys keep references inside one
+  organisation. `location` gained `unique (id, organisation_id)` for that.
+- Checks: SOP `title` and step `text` need an `en` key; `choice` steps need choices; `wo_type`, `priority`
+  (P1..P4), `source`, step `input_type` and SOP `status` take only the listed values; a PM schedule's target
+  columns must match its `target_kind`; `rule.freq` is daily, weekly or monthly.
+- Numbering: `work_order.number` is assigned on insert from `wo_number_seq` per organisation and year
+  (Asia/Dubai): `WO-2026-000123`.
+- Status changes only through `wo_transition()` (task 2.2): a trigger refuses any other change of
+  `work_order.status`. `work_order_event` is insert-only through that function.
+- RLS: members read. SOPs, steps, templates and schedules: `manager`. Work orders: any member may raise
+  one in `requested` (FR-WO-06); `manager` and `field_manager` create in any status and edit all; the
+  assignee or a member of the assigned team edits their own (notes, minutes, materials) and answers SOP
+  steps. Helper `wo_is_mine(org, assignee, team)`.
+- Audit trigger on `sop` and `pm_schedule`. `media.work_order_id` now references `work_order`.
+
+As built (migration `20261012000200_wo_transition.sql`, task 2.2):
+
+- `wo_transition(p_wo, p_to, p_note, p_geom, p_client_uuid)` applies the SRS 3.4.1 table, stored in
+  `wo_transition_rule` (shared, read-only reference data). "Assignee" means the assigned user or a member
+  of the assigned team. Refusals: a pair not in the table `22023`; a listed pair by the wrong person
+  `42501`; not a member of the work order's organisation `P0002` (same as not found).
+- Extra checks: scheduling needs an assignee or a team; `completed` needs every required SOP step answered
+  (`wo_missing_steps`: a tick must be true, a photo step needs `media_id`); `verified` is refused for the
+  assignee, team members and whoever completed the job; a failed verification (completed to in_progress)
+  needs a reason.
+- Writes the event (from, to, note, GPS, actor, client_uuid). A repeated `client_uuid` returns the first
+  result with `replayed: true`; reusing it for a different transition is refused.
+- `wo_allowed_transitions(p_wo)` lists the transitions the caller may make now (for the UI).
+
+As built (migration `20261012000300_pm_generator.sql`, task 2.3):
+
+- `pm_generate(org, until)`: periods from `pm_periods` (daily every N days; weekly ISO weeks every N, on
+  `byweekday` 0 = Monday or the working days from `organisation.settings.work_week`; monthly every N on
+  `bymonthday` or working days; `season` windows may wrap the year end), targets from `pm_targets` (asset;
+  live assets of a type in a location and below it; a location, or with `"each"` every location of that kind
+  below it). Load spreading: a period's work is divided evenly over its open days, never above
+  `max_per_day`; the rest goes to the last day and is reported as `over_capacity`.
+- Idempotent: each work order's `client_uuid` is derived from schedule, target and period, so re-runs
+  create nothing and a job moved to another day is not recreated. Status `scheduled` when the template has
+  a team, else `approved`; SOP pinned to the latest approved version of the template SOP's code; 07:00
+  Dubai start, due the same day. Managers and field managers may run it; signed-in others are refused.
+- `wo_autoclose()`: verified for more than 24 h becomes closed with a system event (`actor` null,
+  `source = 'system'`; user events must have an actor).
+- `pg_cron`: `pm-generate-nightly` (`pm_generate_all`, 00:30 Dubai) and `wo-autoclose-hourly`.
+
+As built (migration `20261012000400_wo_board.sql`, task 2.4):
+
+- SLA (FR-WO-11): hours per priority from `organisation.settings.sla_hours` (default P1 4, P2 24, P3 72,
+  P4 336). "Response" means work started: met when the job reaches `in_progress` within the hours after it
+  was raised; breached when the time has passed and work has not started. Overdue: past `due_at` and not
+  completed, verified, closed or cancelled.
+- Functions (security invoker): `wo_board` (inbox, board, calendar and map list with SLA and overdue
+  flags), `wo_detail`, `wo_schedule` (assign, time, then approve and schedule through `wo_transition`),
+  `wo_replan` (move start keeping the duration; not once started), `wo_bulk_move` (a day's open work to
+  another day), `wo_people` (members and teams for planning).
+
+As built (migration `20261012000500_sop_library.sql`, task 2.5):
+
+- Approved and retired SOP versions are read-only (trigger `sop_guard` on `sop` and `sop_step`): their
+  title, purpose, PPE, hazards and steps cannot change and they cannot be deleted, so a work order pinned to
+  a version keeps its exact steps (FR-SOP-02). New SOPs start as drafts. The guard applies to signed-in
+  users; system work without a user (seed, imports) is not limited.
+- `sop_new_version(p_sop)` copies a version and its steps into the next draft (one draft per code).
+  `sop_approve(p_sop)` (managers only, FR-SOP-05; needs at least one step) approves the draft and retires the
+  previously approved version of that code. `sop_reorder(p_sop, p_steps)` reorders a draft's steps.
+  `sop_library(p_org)` lists codes with current and draft versions.
+- Step images live in the private `sop-media` bucket under `<organisation_id>/sops/<sop_id>/`.
+
+As built (migration `20261013000100_field_app.sql`, task 2.6):
+
+- `sop_response` trigger `sop_response_guard`: answers are given only while the job is `in_progress`, only
+  for steps of the job's pinned SOP version, and record who answered and when. Signed-in users only.
+- `field_my_day(p_site, p_day)`: jobs of the signed-in user or their team planned for that day (Asia/Dubai),
+  plus unfinished jobs from earlier days, sorted by location code. `field_job(p_wo)`: `wo_detail` plus the
+  SOP steps with answers, missing required steps and photos.
+- Job photos are compressed on the phone to at most 1600 px and stored in `photos` under
+  `<organisation_id>/wo/<work_order_id>/`, with a `media` row (`kind = photo`, `work_order_id`).
+
+As built (migration `20261013000200_field_scan.sql`, task 2.7): `field_scan(p_asset)` returns a scanned asset
+with its open work orders (through `work_order_asset`), each marked `mine` for the signed-in user or their
+team. The phone resolves the scanned text with `asset_by_code` (tag from the `/a/<tag>` label URL, or an
+existing barcode).
+
+As built (migration `20261013000300_field_offline.sql`, task 2.8):
+
+- `field_offline_pack(p_site, p_from, p_to)` returns what the phone keeps for a shift: My day per date, the
+  full job (`field_job`) for each of the user's jobs, the assets in the zones of those jobs, and the site
+  extent for the map tile cache.
+- Offline writes are replayed safely with client-generated ids: `wo_transition(..., p_client_uuid)` for
+  status changes, `sop_response` upserts on its key, `media.id` set on the phone (photo path
+  `<organisation_id>/wo/<work_order_id>/<media_id>.jpg`), and `work_order.client_uuid` plus a phone-made
+  `work_order.id` for requests raised offline. No table changes.
+- Status events of offline work carry the time they reached the server, not the time on the phone.
+
+As built (migration `20261024000100_wo_verify.sql`, task 2.9): `wo_verify_queue(p_site)` lists completed
+work orders with who completed them and `can_verify` (false for the assignee, their team and whoever
+completed it). The supervisor checklist (work done as the SOP says, photos show the result, site left clean)
+is a fixed list in the field app; a pass writes the ticked items into the `verified` event note, a fail is
+`completed` to `in_progress` with the reason as the note (`wo_transition` requires it). No table changes.
+
+As built (migration `20261103000100_work_order_place.sql`, 3 Nov 2026): every work order with a place
+shows on the maps. Trigger `work_order_place`: a point without a location gets its bed or zone
+(`resolve_location`), and a location without a point gets a point inside it. Requests can be raised from
+the map (a picked spot or an asset's popup); anyone may raise a request as `reactive` (fix a problem) or
+`project` (improvement or modification), and planners approve it as before.
+
+As built (migration `20261104000100_field_requests.sql`, 4 Nov 2026): `field_requests(p_site)` gives the
+field app its Requests screen: `open` (work requests requested or approved and not yet scheduled, visible to
+every member, most urgent first) and `mine` (my work requests and item requests, open or closed in the last
+30 days, with the latest event note). The offline pack carries it as `requests`.
+
+Requests with photos and a voice note (4 Nov 2026, no table change): "Report a problem" takes up to 3 photos
+(compressed to 1600 px) and one voice note (up to 2 minutes, recorded in the browser). They are `media` rows
+on the work order (`kind` photo or audio, buckets `photos` and `audio`, path
+`<organisation_id>/wo/<work_order_id>/<media_id>.<ext>`). From the field app they are queued in the offline
+outbox behind the request.
+
+Priority (migration `20261104000200_wo_priority.sql`, 4 Nov 2026): `wo_set_priority(p_wo, p_priority,
+p_reason)` lets managers and field managers change a work order's priority (reason required, not when
+closed or cancelled). It writes a `work_order_event` with the same from and to status and the note
+"Priority P3 to P1: reason". A trigger refuses any other change of `priority` by a signed-in user.
 
 ## 6. Observations
 
@@ -608,6 +765,49 @@ create table integration_receiver (
 `approved` transition inserts the `integration_outbox` row in the same transaction.
 Trigger on `asset.status` to `dead`/`removed`: draft an `item_request` (source `plant_death`)
 with one `replace` line for the same taxon and location.
+
+As built (migration `20261024000200_item_requests.sql`, task 2.10):
+
+- `item_request.requested_by` is nullable, only for system drafts (`source` `plant_death` or `inspection`)
+  made with no signed-in user, such as the Hortis import (decision 24 Oct 2026, like the work order event
+  actor). When a person changes the asset, they are the requester.
+- `item_request_line` and `item_request_event` carry `organisation_id` (rule 1); all tables have created and
+  updated columns; composite keys keep items, assets, locations and work orders inside one organisation.
+  Deleting an asset, item, location or work order clears the link and keeps the request and its lines.
+  `item.unit` also allows `m2`. Numbering: `IR-YYYY-NNNNNN` per organisation and year (`ir_number_seq`).
+- Status changes only through `ir_transition()` (a trigger refuses any other change). Rules are in the
+  shared table `ir_transition_rule` (PROCUREMENT_HANDOFF section 3): submit or cancel by the requester or a
+  planner; approve or reject (reason required) by a manager, or a field manager while the estimated total is
+  within `organisation.settings.ir_field_manager_limit_aed` (default 0; lines without a cost count as 0);
+  nobody approves their own request; `approved` to `sent` only by the hand-off (task 2.11); acknowledged,
+  rejected by receiver (reason required) and fulfilled by hand by a manager. Submitting needs a line, and
+  lines change only while the request is a draft. `approved` writes the `integration_outbox` row
+  (`item_request.approved`, payload in the PROCUREMENT_HANDOFF line format) in the same transaction.
+- Auto-drafts (FR-REQ-03): status `dead` or `removed` (source `plant_death`), condition dropping to 1 or 2,
+  or a built asset going `out_of_service` (source `inspection`) draft one `replace` line for the asset with
+  the plant item of its taxon, unless a replacement for that asset is already open. The migration backfills
+  the existing data (9 dead plants and 9 in condition Poor from Hortis).
+- `item_generate_plants(org)`: one active plant item per taxon (code `PLT-<in-house code>`), idempotent;
+  the Hortis promote step runs it before assets.
+- `ir_add_wo_items(p_wo, p_client_uuid, p_lines, p_submit)`: items needed from a work order on the phone,
+  replay-safe (request by `client_uuid`, lines by id). `field_job` lists the job's item requests, and the
+  offline pack carries the active catalogue.
+- RLS: members read; `item` by manager; requests and lines by their requester (working roles) or a planner;
+  events and the outbox are written by `ir_transition()` only; the outbox is readable by managers.
+
+As built (migration `20261024000300_handoff.sql`, task 2.11):
+
+- `integration_receiver` as above, plus created and updated columns and `unique (organisation_id, name)`.
+  The API key is shown once; only its sha256 is kept, and clients cannot read `api_key_hash` (column grants).
+  Managers manage receivers (`receiver_create`, `receiver_rotate_key`).
+- `ir_export_rows(org, batch)` gives the line format v1 (approved and unsent, or one batch).
+  `ir_export(org)` (managers) and the pull API take every approved, unsent request as one batch: status
+  `sent` through `ir_system_transition()` (event `actor_system` `export` or `pull_api: <receiver>`),
+  `sent_batch_id` set, and the matching `integration_outbox` rows marked delivered with the channel, all in
+  one transaction. `ir_batches(org)` lists batches for downloading a file again.
+- Pull API: `api_item_requests(key, status, since)` and `api_ack(key, request, external_ref, status, note)`,
+  callable with the anon key; both check the receiver's API key and act only on its organisation.
+  Acknowledging the same reference again changes nothing.
 
 ## 9. Audit
 

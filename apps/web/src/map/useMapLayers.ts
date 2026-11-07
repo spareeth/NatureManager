@@ -2,10 +2,11 @@ import { useEffect } from 'react';
 import L from 'leaflet';
 import type { FeatureCollection, MultiPolygon, Point } from 'geojson';
 import type { TFunction } from 'i18next';
-import type { AssetDetail, AssetProps, LocationProps, MapSite } from './api';
+import type { AssetDetail, AssetProps, LocationProps } from './api';
 import { statusColour, zoneColour } from './style';
 import { formatGrid } from './format';
 import { createSatelliteSession, viewportAttribution } from './googleTiles';
+import { FALLBACK, resolveBasemaps, tileLayerFor, type Basemap } from './basemaps';
 
 const GOOGLE_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
 const BED_LABEL_MIN_ZOOM = 19;
@@ -15,30 +16,31 @@ export type MapLayers = {
   zones: L.GeoJSON;
   assets: L.GeoJSON;
   controls: L.LayerGroup;
+  /** Open work orders with a place (requests and jobs), by status. */
+  work: L.LayerGroup;
 };
 
-/** Base layers and the layer switcher. Rebuilt when the language or site basemap changes. */
+export type ReportTarget = { id: string; tag_code: string; lat: number; lon: number };
+
+/** Base layers (the site's list, site_basemap) and the layer switcher. Opens on the site default.
+ *  Rebuilt when the language or the list changes. */
 export function useBaseLayers(
   map: L.Map | null,
-  site: MapSite | undefined,
+  basemaps: Basemap[] | undefined,
   overlays: MapLayers | null,
   t: TFunction,
 ) {
   useEffect(() => {
-    if (!map || !overlays) return;
-    const bases: Record<string, L.TileLayer> = {
-      [t('map.layers.osm')]: L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 22,
-        maxNativeZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
-      }),
-    };
-    if (site?.basemap_url) {
-      bases[t('map.layers.orthophoto')] = L.tileLayer(site.basemap_url, {
-        maxZoom: 22,
-        maxNativeZoom: 21,
-      });
-    }
+    if (!map || !overlays || !basemaps) return;
+    const { layers, defaultId } = resolveBasemaps(basemaps);
+    const googleRow = layers.find((b) => b.kind === 'google');
+    const bases: Record<string, L.TileLayer> = {};
+    // Standard layers are translated; a site's own layers keep their name.
+    const label = (b: Basemap) => t(`map.layers.named.${b.name}`, { defaultValue: b.name });
+    for (const b of layers) if (b.kind !== 'google') bases[label(b)] = tileLayerFor(b);
+    // Shown until Google's session is ready when Google is the default.
+    const first = layers.find((b) => b.kind !== 'google') ?? FALLBACK;
+    if (!bases[label(first)]) bases[label(first)] = tileLayerFor(first);
 
     let google: L.TileLayer | null = null;
     let shownAttribution: string | null = null;
@@ -64,23 +66,33 @@ export function useBaseLayers(
       }
     };
 
-    const active = Object.values(bases)[0]!;
-    active.addTo(map);
+    const defaultRow = layers.find((b) => b.id === defaultId)!;
+    const opening = defaultRow.kind === 'google' ? bases[label(first)]! : bases[label(defaultRow)]!;
+    opening.addTo(map);
     const control = L.control.layers(bases, {
       [t('map.layers.beds')]: overlays.beds,
       [t('map.layers.zones')]: overlays.zones,
       [t('map.layers.assets')]: overlays.assets,
       [t('map.layers.controlPoints')]: overlays.controls,
+      [t('map.layers.work')]: overlays.work,
     });
     control.addTo(map);
 
     let onMove: (() => void) | null = null;
-    if (GOOGLE_KEY) {
+    if (googleRow && GOOGLE_KEY) {
       createSatelliteSession(GOOGLE_KEY)
         .then((s) => {
           if (cancelled) return;
-          google = L.tileLayer(s.tileUrl, { maxZoom: 22, maxNativeZoom: 21 });
-          control.addBaseLayer(google, t('map.layers.satellite'));
+          google = L.tileLayer(s.tileUrl, {
+            maxZoom: googleRow.max_zoom,
+            maxNativeZoom: googleRow.max_native_zoom,
+          });
+          control.addBaseLayer(google, label(googleRow));
+          if (defaultRow.kind === 'google' && map.hasLayer(opening)) {
+            map.removeLayer(opening);
+            google.addTo(map);
+            void updateAttribution(s.session);
+          }
           onMove = () => {
             clearAttribution();
             void updateAttribution(s.session);
@@ -98,7 +110,7 @@ export function useBaseLayers(
       Object.values(bases).forEach((l) => l.remove());
       google?.remove();
     };
-  }, [map, site?.basemap_url, overlays, t]);
+  }, [map, basemaps, overlays, t]);
 }
 
 const escapeHtml = (s: string) =>
@@ -112,6 +124,8 @@ export function createOverlays(
   getDetail?: (tag: string) => Promise<AssetDetail | null>,
   onOpen?: (assetId: string) => void,
   openLabel: () => string = () => 'Open',
+  onReport?: (a: ReportTarget) => void,
+  reportLabel: () => string = () => 'Report a problem',
 ): MapLayers {
   const zones = L.geoJSON(undefined, {
     style: (f) => ({
@@ -162,8 +176,19 @@ export function createOverlays(
               `<br>${escapeHtml(d.status)}${d.location_code ? ` · ${escapeHtml(d.location_code)}` : ''}${xy}` +
               (onOpen
                 ? `<br><a href="/assets/${d.id}" data-asset>${escapeHtml(openLabel())}</a>`
-                : ''),
+                : '') +
+              (onReport ? `<br><a href="#" data-report>${escapeHtml(reportLabel())}</a>` : ''),
           );
+          const latlng = (layer as L.CircleMarker).getLatLng();
+          layer
+            .getPopup()
+            ?.getElement()
+            ?.querySelector<HTMLAnchorElement>('a[data-report]')
+            ?.addEventListener('click', (ev) => {
+              ev.preventDefault();
+              map.closePopup();
+              onReport?.({ id: d.id, tag_code: d.tag_code, lat: latlng.lat, lon: latlng.lng });
+            });
           const el = layer
             .getPopup()
             ?.getElement()
@@ -180,10 +205,12 @@ export function createOverlays(
   });
   // Control points draw above assets, as blue diamonds with their code.
   const controls = L.layerGroup();
+  const work = L.layerGroup();
   zones.addTo(map);
   beds.addTo(map);
   assets.addTo(map);
   controls.addTo(map);
+  work.addTo(map);
 
   // Bed labels only when zoomed in, so the garden view stays readable.
   const toggleLabels = () => {
@@ -195,7 +222,7 @@ export function createOverlays(
   };
   map.on('zoomend', toggleLabels);
   beds.on('add', toggleLabels);
-  return { beds, zones, assets, controls };
+  return { beds, zones, assets, controls, work };
 }
 
 export function setLocations(
@@ -240,5 +267,52 @@ export function setControlPoints(
         `<strong>${escapeHtml(c.code)}</strong>${c.description ? `<br>${escapeHtml(c.description)}` : ''}`,
       )
       .addTo(layers.controls);
+  }
+}
+
+export type WorkPoint = {
+  id: string;
+  number: string;
+  title: string;
+  status: string;
+  priority: string;
+  wo_type: string;
+  lon: number | null;
+  lat: number | null;
+};
+
+/** Open work on the asset map: small squares (assets are circles), coloured by status, with a link
+ *  to the work order. */
+export function setWork(
+  layers: MapLayers,
+  items: WorkPoint[],
+  colour: (status: string) => string,
+  statusLabel: (status: string) => string,
+  onOpen: (id: string) => void,
+  openLabel: string,
+) {
+  layers.work.clearLayers();
+  for (const w of items) {
+    if (w.lat == null || w.lon == null) continue;
+    const icon = L.divIcon({
+      className: 'work-marker',
+      html: `<span style="display:block;width:12px;height:12px;border:2px solid #fff;background:${colour(w.status)};box-shadow:0 0 2px #000"></span>`,
+      iconSize: [12, 12],
+    });
+    const m = L.marker([w.lat, w.lon], { icon, title: `${w.number} ${w.title}` });
+    m.bindPopup(
+      `<strong>${escapeHtml(w.number)}</strong> ${escapeHtml(w.priority)}<br>${escapeHtml(w.title)}` +
+        `<br>${escapeHtml(statusLabel(w.status))}<br><a href="/work/${w.id}" data-wo>${escapeHtml(openLabel)}</a>`,
+    );
+    m.on('popupopen', () => {
+      m.getPopup()
+        ?.getElement()
+        ?.querySelector<HTMLAnchorElement>('a[data-wo]')
+        ?.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          onOpen(w.id);
+        });
+    });
+    m.addTo(layers.work);
   }
 }

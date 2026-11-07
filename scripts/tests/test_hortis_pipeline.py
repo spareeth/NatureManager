@@ -70,4 +70,7 @@ def test_tags_unique_and_duplicates_renumbered(run) -> None:
 
 def test_promote_dry_run_loads_everything(run) -> None:
     res = promote.promote("terra", dry_run=True)
-    assert {k: v["inserted"] + v["updated"] for k, v in res.items()} == {"taxa": 77, "org_taxa": 77, "accessions": 77, "assets": 666}
+    counts = {k: v["inserted"] + v["updated"] for k, v in res.items()}
+    # plant items (task 2.10) are only added for taxa without one: 77 on a fresh database, 0 on a re-run
+    assert counts.pop("plant_items") in (0, 77)
+    assert counts == {"taxa": 77, "org_taxa": 77, "accessions": 77, "assets": 666}

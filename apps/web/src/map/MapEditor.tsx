@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import L from 'leaflet';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -13,7 +14,14 @@ import { distinctCorners, pointEWKT, polygonEWKT, type LngLat } from './geometry
 import { formatLatLon } from './format';
 
 type Mode = 'idle' | 'point' | 'polygon' | 'form' | 'move' | 'offset' | 'shift';
-type Props = { map: L.Map | null; orgId: string; siteId: string | undefined; canEdit: boolean };
+type Props = {
+  map: L.Map | null;
+  orgId: string;
+  siteId: string | undefined;
+  canEdit: boolean;
+  /** More buttons in the same row (e.g. Report a problem), so they wrap together on a phone. */
+  toolbarExtra?: ReactNode;
+};
 
 const ll = (c: LngLat): L.LatLngTuple => [c[1], c[0]];
 
@@ -21,7 +29,7 @@ const ll = (c: LngLat): L.LatLngTuple => [c[1], c[0]];
  * Add assets by clicking (point), drawing (planting group polygon) or by offset from a control point
  * or bed corner; move a point asset (?move=id, by click or offset); shift any asset by dx, dy (?shift=id).
  */
-export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
+export function MapEditor({ map, orgId, siteId, canEdit, toolbarExtra }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -200,7 +208,7 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
   return (
     <>
       {mode === 'idle' && (
-        <div className="absolute start-14 top-2 z-[1000] flex gap-2">
+        <div className="absolute start-14 top-2 z-[1000] flex max-w-[calc(100%-4.5rem)] flex-wrap gap-2">
           <button
             type="button"
             onClick={() => setMode('point')}
@@ -222,6 +230,7 @@ export function MapEditor({ map, orgId, siteId, canEdit }: Props) {
           >
             {t('edit.addOffset')}
           </button>
+          {toolbarExtra}
         </div>
       )}
 
