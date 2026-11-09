@@ -88,6 +88,8 @@ export function BedMap({
     queryFn: () => fetchBasemaps(siteId),
   });
   const [baseId, setBaseId] = useState<string>('imagery');
+  const [compareId, setCompareId] = useState<string>('');
+  const [swipe, setSwipe] = useState(0.5);
   const bases = useMemo(
     () => (basemaps.data ? resolveBasemaps(basemaps.data).layers : []),
     [basemaps.data],
@@ -102,18 +104,13 @@ export function BedMap({
   const fillScale = useMemo(() => scaleOf(fill, fillRamp), [fill, fillRamp]);
   const lineScale = useMemo(() => scaleOf(line, RAMPS.purple), [line]);
 
-  // Base map
-  useEffect(() => {
-    if (!map) return;
+  // Draws one base map (the overlay image or a site base map) into a pane; returns the cleanup.
+  const addBase = (m: L.Map, id: string, pane: string): (() => void) => {
     let layer: L.GridLayer | null = null;
     let cancelled = false;
-    const b = bases.find((x) => x.id === baseId);
-    if (baseId === 'imagery' && imagery) {
-      layer = pmtilesLayer(imagery.url, {
-        maxNativeZoom: imagery.max_zoom,
-        maxZoom: 22,
-        zIndex: 1,
-      });
+    const b = bases.find((x) => x.id === id);
+    if (id === 'imagery' && imagery) {
+      layer = pmtilesLayer(imagery.url, { maxNativeZoom: imagery.max_zoom, maxZoom: 22, pane });
     } else if (b?.kind === 'google') {
       if (KEYS.google)
         void createSatelliteSession(KEYS.google).then((s) => {
@@ -122,28 +119,71 @@ export function BedMap({
             maxZoom: b.max_zoom,
             maxNativeZoom: b.max_native_zoom,
             attribution: 'Imagery &copy; Google',
-            zIndex: 1,
-          }).addTo(map);
+            pane,
+          }).addTo(m);
         });
     } else if (b) {
       layer = tileLayerFor(b);
-      layer.setZIndex(1);
+      L.Util.setOptions(layer, { pane });
     }
-    layer?.addTo(map);
+    layer?.addTo(m);
     return () => {
       cancelled = true;
       layer?.remove();
     };
+  };
+
+  // Base map
+  useEffect(() => {
+    if (!map) return;
+    return addBase(map, baseId, 'tilePane');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, imagery, baseId, bases]);
+
+  // Compare: a second base map in its own pane, shown right of the divider (swipe).
+  useEffect(() => {
+    if (!map || !compareId) return;
+    if (!map.getPane('comparePane')) {
+      const pane = map.createPane('comparePane');
+      pane.style.zIndex = '250'; // above the base tiles, below the overlay and the beds
+      pane.style.pointerEvents = 'none';
+    }
+    return addBase(map, compareId, 'comparePane');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, imagery, compareId, bases]);
+
+  useEffect(() => {
+    if (!map) return;
+    const pane = map.getPane('comparePane');
+    if (!pane) return;
+    const clip = () => {
+      if (!compareId) {
+        pane.style.clip = '';
+        return;
+      }
+      const size = map.getSize();
+      const nw = map.containerPointToLayerPoint([0, 0]);
+      const se = map.containerPointToLayerPoint(size);
+      const x = map.containerPointToLayerPoint([size.x * swipe, 0]).x;
+      pane.style.clip = `rect(${nw.y}px, ${se.x}px, ${se.y}px, ${x}px)`;
+    };
+    clip();
+    map.on('move zoom resize', clip);
+    return () => void map.off('move zoom resize', clip);
+  }, [map, compareId, swipe]);
 
   // Satellite overlay
   useEffect(() => {
     if (!map || !overlay) return;
+    if (!map.getPane('imageOverlayPane')) {
+      // above both base maps (and the compare pane), below the beds
+      map.createPane('imageOverlayPane').style.zIndex = '300';
+    }
     const l = pmtilesLayer(overlay.url, {
       maxNativeZoom: overlay.max_zoom,
       maxZoom: 22,
       opacity,
-      zIndex: 2,
+      pane: 'imageOverlayPane',
     });
     l.addTo(map);
     return () => void l.remove();
@@ -210,6 +250,10 @@ export function BedMap({
     }
   }, [map, beds.data]);
 
+  const nameOf = (id: string) =>
+    id === 'imagery' ? (imagery?.name ?? '') : (bases.find((b) => b.id === id)?.name ?? '');
+  const baseName = nameOf(baseId);
+  const compareName = nameOf(compareId);
   const groups = [...new Set(layers.map((l) => l.group))];
   const legendFor = (l: IndicatorLayer, s: Scale, asLine: boolean) => (
     <div key={l.key} className="mb-1">
@@ -255,6 +299,24 @@ export function BedMap({
           </select>
         </label>
         <label className="flex items-center gap-2">
+          {t('kpi.compareWith')}
+          <select
+            value={compareId}
+            onChange={(e) => setCompareId(e.target.value)}
+            className="min-h-10 rounded border px-2"
+          >
+            <option value="">{t('kpi.noCompare')}</option>
+            {imagery && baseId !== 'imagery' && <option value="imagery">{imagery.name}</option>}
+            {bases
+              .filter((b) => b.id !== baseId)
+              .map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2">
           {t('kpi.layer')}
           <select
             value={overlayCode}
@@ -287,6 +349,29 @@ export function BedMap({
       </div>
       <div className="relative h-[70vh] min-h-[32rem] overflow-hidden rounded border">
         <LeafletMap className="h-full w-full" zoom={17} onReady={setMap} preferCanvas={false} />
+        {compareId && (
+          <>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 z-[999] w-0.5 bg-white shadow"
+              style={{ left: `${swipe * 100}%` }}
+            />
+            <div className="absolute inset-x-16 bottom-1 z-[1001] flex items-center gap-2 rounded bg-white/90 px-2 py-1 text-xs shadow">
+              <span className="truncate">{baseName}</span>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.005}
+                value={swipe}
+                onChange={(e) => setSwipe(Number(e.target.value))}
+                aria-label={t('kpi.swipe')}
+                className="flex-1"
+              />
+              <span className="truncate">{compareName}</span>
+            </div>
+          </>
+        )}
 
         <div
           className="absolute end-2 top-2 z-[1000] w-72 max-w-[calc(100%-1rem)] rounded bg-white/95 text-xs shadow"

@@ -37,6 +37,13 @@ OVERLAYS = [
      [["low", "#e6c878"], ["", "#aad26e"], ["", "#5aaa46"], ["high", "#1e6e28"]],
      "Near-infrared from the September 4-band image. It covers the north of Expo City Dubai only, not Terra "
      "Garden. Raw digital numbers (not reflectance), so values are relative within this image.", 30, 18),
+    ("veg_change_dec_oct", "Vegetation change, Dec 2025 to Apr to Oct 2026", "stress", "biodiversity", "2026-10-10",
+     "veg_change_dec_oct", None,
+     [["lost by Apr", "#c2410c"], ["lost Apr-Oct", "#e9a23b"], ["new", "#286edc"], ["unchanged", "#96c878"]],
+     "Visible bands on three dates; each image read by a model trained on its own colours. Only confident "
+     "changes of 20 m2 or more. About two thirds of the losses checked by eye were real (cleared plots, removed "
+     "trees); the rest were dark shaded crowns. The October image is dark and hazy and hides about a third of "
+     "the vegetation, so smaller losses are missed. Exploratory: confirm on site.", 39, 18),
     ("veg_change_2025_2026", "Vegetation change, Feb 2025 to Oct 2026", "stress", "biodiversity", "2026-10-10",
      "veg_change_2025_2026", None, [["lost", "#dc2828"], ["new", "#286edc"], ["unchanged", "#96c878"]],
      "Vegetation in Feb 2025 (NDVI over 0.2) against vegetation in Oct 2026 (classifier on the colour image, "

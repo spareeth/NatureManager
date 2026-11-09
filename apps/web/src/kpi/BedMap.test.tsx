@@ -10,7 +10,13 @@ vi.mock('../map/api', () => ({
 }));
 vi.mock('../map/basemaps', () => ({
   fetchBasemaps: async () => [],
-  resolveBasemaps: () => ({ layers: [], defaultId: '' }),
+  resolveBasemaps: () => ({
+    layers: [
+      { id: 'b1', name: 'Dec 2025', kind: 'pmtiles', url: '/tiles/d.pmtiles' },
+      { id: 'b2', name: 'Google satellite', kind: 'google', url: null },
+    ],
+    defaultId: 'b1',
+  }),
   tileLayerFor: vi.fn(),
   KEYS: {},
 }));
@@ -74,5 +80,17 @@ describe('indicator overlays', () => {
     expect(box).toBeChecked();
     expect(p.getByRole('checkbox', { name: /^A/ })).toBeChecked(); // the indicators are untouched
     expect(screen.getAllByText('Lost by Apr').length).toBeGreaterThan(0);
+  });
+
+  it('compare: a second base map with a divider, never the same as the base map', async () => {
+    renderIt();
+    const base = screen.getByLabelText('Base map');
+    const cmp = screen.getByLabelText('Compare with');
+    await screen.findAllByRole('option', { name: 'Google satellite', hidden: true });
+    fireEvent.change(base, { target: { value: 'b1' } });
+    const names = Array.from((cmp as HTMLSelectElement).options).map((o) => o.textContent);
+    expect(names).toEqual(['No comparison', 'Google satellite']);
+    fireEvent.change(cmp, { target: { value: 'b2' } });
+    expect(screen.getByLabelText(/Move the divider/)).toBeInTheDocument();
   });
 });

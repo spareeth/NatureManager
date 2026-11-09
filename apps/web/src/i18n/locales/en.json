@@ -1285,7 +1285,10 @@
     "fill": "Fill",
     "outline": "Outline",
     "noIndicator": "Tick an indicator to colour the beds.",
-    "stressHelpShort": "Beds much less green than the typical bed on this layer: worth a look on site."
+    "stressHelpShort": "Beds much less green than the typical bed on this layer: worth a look on site.",
+    "compareWith": "Compare with",
+    "noCompare": "No comparison",
+    "swipe": "Move the divider: base map on the left, comparison on the right"
   },
   "bio": {
     "heading": "Biodiversity baseline and monitoring",

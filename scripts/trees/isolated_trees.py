@@ -47,7 +47,9 @@ PRESENT, ABSENT = 0.30, 0.10
 
 
 def load(d):
-    return np.load(IN / f"prob_{d}.npy").astype("float32"), np.load(IN / f"valid_{d}.npy")
+    # The image footprint: dark pixels inside it (shadowed canopy) are data, not gaps.
+    return (np.load(IN / f"prob_{d}.npy").astype("float32"),
+            ndimage.binary_fill_holes(np.load(IN / f"valid_{d}.npy")))
 
 
 def main():

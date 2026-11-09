@@ -324,7 +324,12 @@ def layer_change(_bounds) -> None:
     to_pmtiles(WORK / "change" / "change_rgba.tif", "veg_change_2025_2026", "WEBP", 90)
 
 
-LAYERS = {"dec2025": layer_dec2025, "change": layer_change, "sep2026": layer_sep2026, "oct2026": layer_oct2026, "ndvi2025": layer_ndvi2025, "cad": layer_cad}
+def layer_change_dec_oct(_bounds) -> None:
+    """Vegetation change Dec 2025 to Apr 2026 to Oct 2026 (scripts/trees/change_layer.py)."""
+    to_pmtiles(ROOT / "data/trees/change/change_rgba_3857.tif", "veg_change_dec_oct", "WEBP", 90)
+
+
+LAYERS = {"change_dec_oct": layer_change_dec_oct, "dec2025": layer_dec2025, "change": layer_change, "sep2026": layer_sep2026, "oct2026": layer_oct2026, "ndvi2025": layer_ndvi2025, "cad": layer_cad}
 
 if __name__ == "__main__":
     WORK.mkdir(parents=True, exist_ok=True)

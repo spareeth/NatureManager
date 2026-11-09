@@ -172,10 +172,11 @@ def main():
     ndvi = nds.GetRasterBand(1).ReadAsArray()
     nds = None
     imgs = {"dec2025": dec}
-    valid = {"dec2025": dec.sum(0) > 10}
+    # Image footprint (dark shadowed canopy inside it is data, not a gap)
+    valid = {"dec2025": ndimage.binary_fill_holes(dec.sum(0) > 10)}
     for d in DATES[1:]:
         _, x = read_rgb(d)
-        valid[d] = x.sum(0) > 10
+        valid[d] = ndimage.binary_fill_holes(x.sum(0) > 10)
         imgs[d] = match_hist(x, dec, valid[d], valid["dec2025"])
 
     # Train on December colours with December NDVI labels (natural share of vegetation)
