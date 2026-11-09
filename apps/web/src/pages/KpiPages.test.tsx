@@ -10,13 +10,15 @@ vi.mock('../kpi/BedMap', () => ({
   BedMap: ({
     layers,
     defaultOn,
+    pointLayers,
   }: {
     layers: { key: string; help?: string; values: Record<string, { label: string }> }[];
     defaultOn: string[];
+    pointLayers?: { points: unknown[] }[];
   }) => (
     <div data-testid="bedmap">
       {layers.map((l) => `${l.key}:${Object.keys(l.values).join('+')}`).join(',')} on=
-      {defaultOn.join(',')}
+      {defaultOn.join(',')} points={(pointLayers ?? []).reduce((n, p) => n + p.points.length, 0)}
     </div>
   ),
 }));
@@ -202,6 +204,47 @@ vi.mock('../kpi/api', async (orig) => ({
     },
   }),
   fetchCommunity: async () => ({ 'EG-01': { A: 1 }, 'EG-02': { A: 1, B: 2 }, 'NG-01': { C: 3 } }),
+  fetchAnalysis: async () => ({
+    code: 'tree_loss_2025_2026',
+    title: 'Isolated trees lost',
+    period_from: '2025-12-28',
+    period_to: '2026-10-10',
+    method: 'Visible bands only.',
+    summary: {
+      mature: {
+        isolated: 872,
+        lost: 57,
+        lost_low: 44,
+        lost_by_apr: 39,
+        lost_apr_to_oct: 18,
+        still_there: 181,
+        unclear: 620,
+        flicker_rate: 0.072,
+        lost_crown_m2: 2352,
+      },
+      small: {
+        isolated: 1280,
+        lost: 169,
+        lost_low: 100,
+        lost_by_apr: 102,
+        lost_apr_to_oct: 67,
+        still_there: 519,
+        unclear: 512,
+        flicker_rate: 0.13,
+        lost_crown_m2: 1514,
+      },
+      mature_min_crown_m2: 20,
+      vegetated_ha: { dec2025: 46.7, apr2026: 45.5, oct2026: 41.4 },
+    },
+    features: {
+      features: [
+        {
+          geometry: { coordinates: [55.15, 24.96] },
+          properties: { crown_m2: 25, when: 'lost by Apr 2026' },
+        },
+      ],
+    },
+  }),
   fetchOverlays: async () => [],
   fetchHistory: async () => [],
 }));
@@ -248,6 +291,10 @@ describe('Biodiversity page', () => {
     expect(within(screen.getByTestId('moran')).getByText('I = 0.0824')).toBeInTheDocument();
     expect(within(screen.getByTestId('carbon')).getByText('8.68 ± 0.31 t')).toBeInTheDocument();
     expect(await screen.findByTestId('ordination')).toBeInTheDocument();
+    const trees = await screen.findByTestId('tree-loss');
+    expect(within(trees).getAllByText('44 to 57').length).toBeGreaterThan(0);
+    expect(within(trees).getByText('39 / 18')).toBeInTheDocument();
+    expect(screen.getByTestId('bedmap')).toHaveTextContent('points=1');
     expect(
       within(screen.getByTestId('params')).getByRole('button', { name: 'Edit' }),
     ).toBeInTheDocument();

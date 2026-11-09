@@ -178,6 +178,66 @@ export type Database = {
           },
         ];
       };
+      analysis_result: {
+        Row: {
+          code: string;
+          created_at: string;
+          features: NonNullable<Json>;
+          id: string;
+          method: string | null;
+          organisation_id: string;
+          period_from: string | null;
+          period_to: string | null;
+          site_id: string;
+          summary: NonNullable<Json>;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          features?: NonNullable<Json>;
+          id?: string;
+          method?: string | null;
+          organisation_id: string;
+          period_from?: string | null;
+          period_to?: string | null;
+          site_id: string;
+          summary?: NonNullable<Json>;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          features?: NonNullable<Json>;
+          id?: string;
+          method?: string | null;
+          organisation_id?: string;
+          period_from?: string | null;
+          period_to?: string | null;
+          site_id?: string;
+          summary?: NonNullable<Json>;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'analysis_result_organisation_id_fkey';
+            columns: ['organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'organisation';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'analysis_result_site_id_organisation_id_fkey';
+            columns: ['site_id', 'organisation_id'];
+            isOneToOne: false;
+            referencedRelation: 'site';
+            referencedColumns: ['id', 'organisation_id'];
+          },
+        ];
+      };
       asset: {
         Row: {
           accession_id: string | null;

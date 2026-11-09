@@ -171,7 +171,8 @@ select '20000000-0000-0000-0000-0000000000e1', org, site, 'flora', pg_temp.lp(55
        '20000000-0000-0000-0000-0000000000d1' from terra;
 insert into ai_suggestion (organisation_id, observation_id, engine, rank, taxon_name, score)
 select org, '20000000-0000-0000-0000-0000000000e1', 'plantnet', 1, 'Rls fixturea', 0.9 from terra;
--- KPI modules: a snapshot, an overlay and a bed value.
+-- KPI modules: a snapshot, an overlay, a bed value and an analysis result.
+insert into analysis_result (organisation_id, site_id, code, title) select org, site, 'rls_fixture', 'RLS fixture' from terra;
 insert into kpi_snapshot (organisation_id, site_id, module, taken_on, data)
 select org, site, 'water', date '2000-01-01', '{}' from terra;
 insert into raster_overlay (id, organisation_id, site_id, module, code, name, kind, url)

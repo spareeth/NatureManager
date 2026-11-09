@@ -3,12 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useOrg } from '../org/context';
 import { useCurrentSite } from '../org/useSite';
-import { BedMap, type BedValue, type IndicatorLayer } from '../kpi/BedMap';
+import { BedMap, type BedValue, type IndicatorLayer, type PointLayer } from '../kpi/BedMap';
 import { ParamsPanel } from '../kpi/ParamsPanel';
 import { KpiTile } from '../kpi/KpiTile';
 import { RichnessCurve } from '../kpi/RichnessCurve';
 import { OrdinationPlot } from '../kpi/OrdinationPlot';
 import {
+  fetchAnalysis,
+  LOSS_COLOR,
   fetchAnalytics,
   fetchBio,
   fetchCommunity,
@@ -94,6 +96,11 @@ export function BiodiversityPage() {
     queryFn: () => fetchCommunity(site!.id),
     enabled: !!site,
   });
+  const treeLoss = useQuery({
+    queryKey: ['kpi', 'tree-loss', site?.id],
+    queryFn: () => fetchAnalysis(site!.id, 'tree_loss_2025_2026'),
+    enabled: !!site,
+  });
   const history = useQuery({
     queryKey: ['kpi', 'history', site?.id, 'biodiversity'],
     queryFn: () => fetchHistory(site!.id, 'biodiversity'),
@@ -167,6 +174,32 @@ export function BiodiversityPage() {
     }
     return out;
   }, [bio.data, analytics.data, sat, t]);
+
+  const pointLayers = useMemo<PointLayer[]>(() => {
+    const r = treeLoss.data;
+    if (!r) return [];
+    const whenLabel = (w: string) =>
+      w === 'lost by Apr 2026' ? t('bio.trees.byApr') : t('bio.trees.aprOct');
+    return [
+      {
+        key: 'tree_loss',
+        group: t('bio.trees.heading'),
+        label: t('bio.trees.layer'),
+        help: t('bio.trees.layerHelp'),
+        points: r.features.features.map((f) => ({
+          lon: f.geometry.coordinates[0],
+          lat: f.geometry.coordinates[1],
+          color: LOSS_COLOR[f.properties.when as keyof typeof LOSS_COLOR] ?? '#6b7280',
+          radius: Math.min(11, 4 + Math.sqrt(f.properties.crown_m2) / 1.5),
+          label: `${whenLabel(f.properties.when)} · ${t('bio.trees.crown', { m2: f.properties.crown_m2 })}`,
+        })),
+        classes: [
+          { color: LOSS_COLOR['lost by Apr 2026'], label: t('bio.trees.byApr') },
+          { color: LOSS_COLOR['lost Apr to Oct 2026'], label: t('bio.trees.aprOct') },
+        ],
+      },
+    ];
+  }, [treeLoss.data, t]);
 
   const g = bio.data?.garden;
   return (
@@ -251,6 +284,7 @@ export function BiodiversityPage() {
               layers={layers}
               overlays={overlays.data ?? []}
               defaultOn={['s']}
+              pointLayers={pointLayers}
               fillRamp={RAMPS.green}
               testId="bio-map"
             />
@@ -381,6 +415,88 @@ export function BiodiversityPage() {
                 </tbody>
               </table>
             </div>
+          </section>
+        )}
+
+        {treeLoss.data && (
+          <section className="space-y-3" aria-labelledby="bio-trees-h" data-testid="tree-loss">
+            <h2 id="bio-trees-h" className="text-lg font-semibold">
+              {t('bio.trees.heading')}
+            </h2>
+            <p className="text-sm text-gray-700">{t('bio.trees.intro')}</p>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              <KpiTile
+                label={t('bio.trees.lost')}
+                value={`${treeLoss.data.summary.mature.lost_low} to ${treeLoss.data.summary.mature.lost}`}
+                sub={t('bio.trees.lostSub', { m2: treeLoss.data.summary.mature_min_crown_m2 })}
+                warn={t('bio.trees.lowerBound')}
+              />
+              <KpiTile
+                label={t('bio.trees.when')}
+                value={`${treeLoss.data.summary.mature.lost_by_apr} / ${treeLoss.data.summary.mature.lost_apr_to_oct}`}
+                sub={t('bio.trees.whenSub')}
+              />
+              <KpiTile
+                label={t('bio.trees.crownArea')}
+                value={`${treeLoss.data.summary.mature.lost_crown_m2.toLocaleString()} m²`}
+                sub={t('bio.trees.crownAreaSub')}
+              />
+              <KpiTile
+                label={t('bio.trees.vegArea')}
+                value={`${treeLoss.data.summary.vegetated_ha.dec2025} → ${treeLoss.data.summary.vegetated_ha.apr2026} → ${treeLoss.data.summary.vegetated_ha.oct2026} ha`}
+                sub={t('bio.trees.vegAreaSub')}
+              />
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr>
+                    {[
+                      'size',
+                      'isolated',
+                      'lost',
+                      'byApr',
+                      'aprOct',
+                      'still',
+                      'unclear',
+                      'error',
+                    ].map((h) => (
+                      <th key={h} className={h === 'size' ? 'text-start' : 'text-end'}>
+                        {t(`bio.trees.col.${h}`)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(['mature', 'small'] as const).map((k) => {
+                    const c = treeLoss.data!.summary[k];
+                    return (
+                      <tr key={k} className="border-t">
+                        <td>
+                          {t(`bio.trees.${k}`, { m2: treeLoss.data!.summary.mature_min_crown_m2 })}
+                        </td>
+                        <td className="text-end tabular-nums">{c.isolated}</td>
+                        <td className="text-end tabular-nums">
+                          {c.lost_low} to {c.lost}
+                        </td>
+                        <td className="text-end tabular-nums">{c.lost_by_apr}</td>
+                        <td className="text-end tabular-nums">{c.lost_apr_to_oct}</td>
+                        <td className="text-end tabular-nums">{c.still_there}</td>
+                        <td className="text-end tabular-nums">{c.unclear}</td>
+                        <td className="text-end tabular-nums">
+                          {(c.flicker_rate * 100).toFixed(0)}%
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-sm text-amber-900">{t('bio.trees.smallWarn')}</p>
+            <details className="text-sm text-gray-700">
+              <summary className="cursor-pointer underline">{t('kpi.method')}</summary>
+              <p className="mt-1">{treeLoss.data.method}</p>
+            </details>
           </section>
         )}
 

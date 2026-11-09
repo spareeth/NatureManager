@@ -24,6 +24,16 @@ export type IndicatorLayer = {
   classes?: { color: string; label: string }[];
 };
 
+/** Points shown on top of the beds (for example trees lost), switched on and off on their own. */
+export type PointLayer = {
+  key: string;
+  group: string;
+  label: string;
+  help?: string;
+  points: { lon: number; lat: number; color: string; radius?: number; label: string }[];
+  classes: { color: string; label: string }[];
+};
+
 type Scale = { nums: number[]; breaks: number[]; ramp: string[]; edges: number[] } | null;
 
 const fmt = (v: number) => (Number.isInteger(v) || Math.abs(v) >= 10 ? v.toFixed(0) : v.toFixed(2));
@@ -54,10 +64,12 @@ export function BedMap({
   overlays,
   defaultOn = [],
   fillRamp = RAMPS.green,
+  pointLayers = [],
   testId,
 }: {
   siteId: string;
   layers: IndicatorLayer[];
+  pointLayers?: PointLayer[];
   overlays: Overlay[];
   defaultOn?: string[];
   fillRamp?: string[];
@@ -69,6 +81,7 @@ export function BedMap({
   const [opacity, setOpacity] = useState(0.85);
   const [on, setOn] = useState<string[]>(defaultOn);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [pointsOn, setPointsOn] = useState<string[]>([]);
   const beds = useQuery({ queryKey: ['locations', siteId], queryFn: () => fetchLocations(siteId) });
   const basemaps = useQuery({
     queryKey: ['basemaps', siteId],
@@ -171,6 +184,25 @@ export function BedMap({
     return () => void layer.remove();
   }, [map, beds.data, fill, line, fillScale, lineScale, t]);
 
+  // Point layers, above the beds
+  useEffect(() => {
+    if (!map) return;
+    const group = L.layerGroup();
+    for (const pl of pointLayers.filter((x) => pointsOn.includes(x.key)))
+      for (const pt of pl.points)
+        L.circleMarker([pt.lat, pt.lon], {
+          radius: pt.radius ?? 6,
+          color: '#ffffff',
+          weight: 2,
+          fillColor: pt.color,
+          fillOpacity: 0.95,
+        })
+          .bindTooltip(pt.label)
+          .addTo(group);
+    group.addTo(map);
+    return () => void group.remove();
+  }, [map, pointLayers, pointsOn]);
+
   useEffect(() => {
     if (map && beds.data) {
       const b = L.geoJSON(beds.data).getBounds();
@@ -271,6 +303,27 @@ export function BedMap({
           {panelOpen && (
             <div className="max-h-[calc(70vh-6rem)] space-y-2 overflow-auto border-t px-2 py-1.5">
               <p className="text-gray-600">{t('kpi.indicatorsHelp')}</p>
+              {pointLayers.map((pl) => (
+                <fieldset key={pl.key}>
+                  <legend className="font-semibold text-gray-800">{pl.group}</legend>
+                  <label className="flex cursor-pointer items-start gap-2 py-0.5">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5"
+                      checked={pointsOn.includes(pl.key)}
+                      onChange={() =>
+                        setPointsOn((cur) =>
+                          cur.includes(pl.key) ? cur.filter((k) => k !== pl.key) : [...cur, pl.key],
+                        )
+                      }
+                    />
+                    <span>
+                      <span className="font-medium">{pl.label}</span>
+                      {pl.help && <span className="block text-gray-600">{pl.help}</span>}
+                    </span>
+                  </label>
+                </fieldset>
+              ))}
               {groups.map((g) => (
                 <fieldset key={g}>
                   <legend className="font-semibold text-gray-800">{g}</legend>
@@ -305,8 +358,24 @@ export function BedMap({
         </div>
 
         <div className="absolute bottom-6 start-2 z-[1000] max-w-[60%] rounded bg-white/95 p-2 text-xs shadow">
-          {!fill && <p className="text-gray-700">{t('kpi.noIndicator')}</p>}
+          {!fill && !pointsOn.length && <p className="text-gray-700">{t('kpi.noIndicator')}</p>}
           {fill && legendFor(fill, fillScale, false)}
+          {pointLayers
+            .filter((pl) => pointsOn.includes(pl.key))
+            .map((pl) => (
+              <div key={pl.key} className="mb-1">
+                <p className="font-semibold">{pl.label}</p>
+                {pl.classes.map((c) => (
+                  <p key={c.label} className="flex items-center gap-2">
+                    <span
+                      className="inline-block h-3 w-3 rounded-full border border-white"
+                      style={{ background: c.color }}
+                    />
+                    {c.label}
+                  </p>
+                ))}
+              </div>
+            ))}
           {line && legendFor(line, lineScale, true)}
           {overlay && (
             <div className="mt-1 border-t pt-1">

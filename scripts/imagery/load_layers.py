@@ -89,6 +89,12 @@ on conflict (site_id, code) do update set name = excluded.name, url = excluded.u
 select _site.org, o.id, l.id, {r['mean']}, {r['p10']}, {r['p90']}, {r['valid_share']}, {q(cls[r['bed']])}
 from _site join raster_overlay o on o.site_id = _site.site and o.code = {q(code)}
 join location l on l.site_id = _site.site and l.code = {q(r['bed'])} and l.kind = 'bed';""")
+    if (TILES / "dec2025_rgb.pmtiles").exists():
+        print("""insert into site_basemap (organisation_id, site_id, name, kind, url, attribution, min_zoom, max_zoom,
+  max_native_zoom, offline_allowed, is_default, sort_order)
+select org, site, 'Satellite image, 28 Dec 2025 (Pleiades Neo)', 'pmtiles', '/tiles/dec2025_rgb.pmtiles',
+  'Pleiades Neo, Expo City Dubai GIS', 12, 22, 19, false, false, 35 from _site
+where not exists (select 1 from site_basemap b where b.site_id = _site.site and b.url = '/tiles/dec2025_rgb.pmtiles');""")
     if (TILES / "cad_plan.pmtiles").exists():
         print("""insert into site_basemap (organisation_id, site_id, name, kind, url, attribution, min_zoom, max_zoom,
   max_native_zoom, offline_allowed, is_default, sort_order)

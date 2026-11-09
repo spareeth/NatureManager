@@ -1489,6 +1489,37 @@
         "term": "Vegetation change",
         "text": "Vegetation in Feb 2025 compared with Oct 2026 on the satellite images: red lost, blue new. Exploratory: confirm on site."
       }
+    },
+    "trees": {
+      "heading": "Tree loss",
+      "layer": "Mature trees lost, Dec 2025 to Oct 2026",
+      "layerHelp": "Isolated trees with a crown of 20 m2 or more that were there in December and gone by October. Hover for when and crown size.",
+      "byApr": "Lost by Apr 2026",
+      "aprOct": "Lost Apr to Oct 2026",
+      "crown": "crown {{m2}} m2",
+      "intro": "Trees that stand apart (street, car-park and plaza trees, palms) counted on three satellite dates using the visible colours only. Continuous planting (dense beds, hedges) is measured as area instead.",
+      "lost": "Mature trees lost",
+      "lostSub": "crowns of {{m2}} m2 or more, Dec 2025 to Oct 2026",
+      "lowerBound": "A lower bound: many trees could not be judged",
+      "when": "Lost by April / after April",
+      "whenSub": "28 Dec 2025 to 24 Apr 2026 / to 10 Oct 2026",
+      "crownArea": "Crown area lost",
+      "crownAreaSub": "mature isolated trees",
+      "vegArea": "Vegetated area",
+      "vegAreaSub": "all vegetation in the ECD extent: Dec, Apr, Oct",
+      "mature": "Mature (crown {{m2}} m2 or more)",
+      "small": "Smaller (under {{m2}} m2)",
+      "col": {
+        "size": "Crown size",
+        "isolated": "Isolated trees",
+        "lost": "Lost",
+        "byApr": "By April",
+        "aprOct": "April to October",
+        "still": "Still there",
+        "unclear": "Could not judge",
+        "error": "Error rate"
+      },
+      "smallWarn": "Counts for smaller crowns are not reliable at 30 cm (most of a checked sample were roof features or trees still standing) and are not mapped."
     }
   },
   "water": {

@@ -41,6 +41,7 @@ BEDS = ROOT / "data/gis/TG_beds_new.geojson"
 EXTENT = ROOT / "data/gis/ECD_extent.geojson"
 
 SRC = {
+    "dec2025": "/mnt/d/ECD_satellite_data/Jan2026/PNEO3_15HD_202512280657198_PMS_ORT_PWOI_000461930_1_2_F_1_RGBN_8bit_GEO.TIF",
     "sep2026": "/mnt/d/ECD_satellite_data/20260423 - 2026 Sep/30cm_Native_Imagery.tif",
     "oct2026": "/mnt/d/ECD_satellite_data/20261010 - 2026 Oct/SVN1-01_20261010_L2A0001683424_30cm_RGB_8bit.tif",
     "ndvi2025": "/mnt/c/ECD_work/OneDrive - Expocitydubai/ECD_documents/Work/Terra_research/ECD_Biodiversity/ndvi_feb2025.tif",
@@ -264,6 +265,23 @@ def layer_sep2026(bounds) -> None:
     to_pmtiles(col, "sep2026_ndvi", "WEBP", 85)
 
 
+def layer_dec2025(bounds) -> None:
+    """True colour, Pleiades Neo, 28 Dec 2025 (folder Jan2026; 15 cm, bands R G B NIR): bands 1 to 3 at about
+    30 cm (zoom 19) for the ECD extent, as a base map."""
+    rgb = WORK / "dec2025_rgb_z19.tif"
+    # Prefer the original; if the drive is not attached, the 30 cm copy made for the tree analysis
+    # (data/trees/dec2025_rgb30.tif, same extent) is used.
+    src = SRC["dec2025"] if Path(SRC["dec2025"]).exists() else str(ROOT / "data/trees/dec2025_rgb30.tif")
+    if not rgb.exists():
+        run("gdalwarp", "-overwrite", "-t_srs", "EPSG:3857", "-te", *map(str, bounds), "-tr", str(Z18 / 2), str(Z18 / 2),
+            "-r", "average", "-co", "COMPRESS=DEFLATE", "-co", "TILED=YES", "-multi", "-wo", "NUM_THREADS=ALL_CPUS",
+            "-srcnodata", "0", "-dstalpha", src, str(WORK / "dec2025_4b.tif"))
+        alpha = "5" if gdal.Open(str(WORK / "dec2025_4b.tif")).RasterCount == 5 else "4"
+        run("gdal_translate", "-q", "-b", "1", "-b", "2", "-b", "3", "-b", alpha, "-colorinterp", "red,green,blue,alpha",
+            "-co", "COMPRESS=DEFLATE", "-co", "TILED=YES", str(WORK / "dec2025_4b.tif"), str(rgb))
+    to_pmtiles(rgb, "dec2025_rgb", "WEBP", 80)
+
+
 def layer_cad(_bounds) -> None:
     ds = gdal.Open(SRC["cad"])
     gt = ds.GetGeoTransform()
@@ -306,7 +324,7 @@ def layer_change(_bounds) -> None:
     to_pmtiles(WORK / "change" / "change_rgba.tif", "veg_change_2025_2026", "WEBP", 90)
 
 
-LAYERS = {"change": layer_change, "sep2026": layer_sep2026, "oct2026": layer_oct2026, "ndvi2025": layer_ndvi2025, "cad": layer_cad}
+LAYERS = {"dec2025": layer_dec2025, "change": layer_change, "sep2026": layer_sep2026, "oct2026": layer_oct2026, "ndvi2025": layer_ndvi2025, "cad": layer_cad}
 
 if __name__ == "__main__":
     WORK.mkdir(parents=True, exist_ok=True)

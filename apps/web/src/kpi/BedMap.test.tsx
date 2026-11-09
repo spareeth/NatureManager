@@ -31,6 +31,16 @@ function renderIt() {
         layers={[layer('a'), layer('b'), layer('c')]}
         overlays={[]}
         defaultOn={['a']}
+        pointLayers={[
+          {
+            key: 'loss',
+            group: 'Tree loss',
+            label: 'Trees lost',
+            help: 'lost help',
+            points: [{ lon: 55, lat: 25, color: '#c2410c', label: 'Lost by Apr' }],
+            classes: [{ color: '#c2410c', label: 'Lost by Apr' }],
+          },
+        ]}
       />
     </QueryClientProvider>,
   );
@@ -54,5 +64,15 @@ describe('indicator overlays', () => {
     expect(p.getByRole('checkbox', { name: /^A/ })).not.toBeChecked();
     expect(p.getByRole('checkbox', { name: /^B/ }).closest('label')).toHaveTextContent('Fill');
     expect(p.getByRole('checkbox', { name: /^C/ }).closest('label')).toHaveTextContent('Outline');
+  });
+
+  it('a point layer is switched on and off on its own, with its legend', () => {
+    const p = renderIt();
+    const box = p.getByRole('checkbox', { name: /Trees lost/ });
+    expect(box).not.toBeChecked();
+    fireEvent.click(box);
+    expect(box).toBeChecked();
+    expect(p.getByRole('checkbox', { name: /^A/ })).toBeChecked(); // the indicators are untouched
+    expect(screen.getAllByText('Lost by Apr').length).toBeGreaterThan(0);
   });
 });

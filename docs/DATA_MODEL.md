@@ -716,6 +716,12 @@ bed vertices within 1 m in UTM 40N, biomass and carbon per bed with a 95% interv
 `biodiversity.biomass_by_life_form` ([mean AGB kg, CV, root:shoot] per class) and `biodiversity.carbon_fraction`. Bed areas in EPSG:3997. Asset type `FLOWMETER` added for
 metered use (readings with the Phase 4 sensor tables). `site_basemap.kind` gains `pmtiles` (online only).
 
+`analysis_result (organisation_id, site_id, code, title, period_from, period_to, summary jsonb, features
+jsonb FeatureCollection, method)` (migration `20261107000100`, 7 Nov 2026): results of offline image analyses
+for the KPI pages, one row per site and analysis; read by members, written by managers. First result:
+`tree_loss_2025_2026`, isolated trees lost Dec 2025 to Oct 2026 (scripts/trees/crowns_rgb.py,
+isolated_trees.py, load_tree_loss.py): summary per crown size class and the lost mature trees as points.
+
 ## 7. Sensors and alerts
 
 ```sql

@@ -225,3 +225,51 @@ export const ZONE_COLOR: Record<string, string> = {
   WG: '#eda100',
   all: '#1f2937',
 };
+
+export type TreeLossClass = {
+  isolated: number;
+  lost: number;
+  lost_low: number;
+  lost_by_apr: number;
+  lost_apr_to_oct: number;
+  still_there: number;
+  unclear: number;
+  flicker_rate: number;
+  lost_crown_m2: number;
+};
+export type AnalysisResult = {
+  code: string;
+  title: string;
+  period_from: string | null;
+  period_to: string | null;
+  method: string | null;
+  summary: {
+    mature: TreeLossClass;
+    small: TreeLossClass;
+    mature_min_crown_m2: number;
+    vegetated_ha: Record<string, number>;
+  };
+  features: {
+    features: {
+      geometry: { coordinates: [number, number] };
+      properties: { crown_m2: number; when: string };
+    }[];
+  };
+};
+
+export async function fetchAnalysis(siteId: string, code: string): Promise<AnalysisResult | null> {
+  const { data, error } = await supabase
+    .from('analysis_result')
+    .select('code, title, period_from, period_to, method, summary, features')
+    .eq('site_id', siteId)
+    .eq('code', code)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as unknown as AnalysisResult | null;
+}
+
+/** Colours for when a tree was lost (status colours: serious, critical). */
+export const LOSS_COLOR = {
+  'lost by Apr 2026': '#c2410c',
+  'lost Apr to Oct 2026': '#e9a23b',
+} as const;
