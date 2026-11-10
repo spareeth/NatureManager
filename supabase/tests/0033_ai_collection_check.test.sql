@@ -1,5 +1,6 @@
 begin;
 select plan(4);
+\ir fixture_trees.inc
 
 -- A living asset with a taxon, its location and point.
 select a.id as asset_id, a.taxon_id, a.location_id, a.organisation_id,

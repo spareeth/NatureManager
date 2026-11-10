@@ -1,0 +1,28 @@
+# Caddy (Apache-2.0) in front of everything: HTTPS certificates are automatic once DNS points here.
+# Replace the three names with your own (or set APP_DOMAIN, API_DOMAIN and AI_DOMAIN in the environment).
+
+{$APP_DOMAIN:app.example.org} {
+	# The web app (apps/web/dist) and the map layers (PMTiles, read with range requests).
+	root * /srv/terragarden/web
+	encode zstd gzip
+	@tiles path /tiles/*
+	header @tiles Cache-Control "public, max-age=604800"
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	header /sw.js Cache-Control "no-cache"
+	try_files {path} /index.html
+	file_server
+}
+
+{$API_DOMAIN:api.example.org} {
+	# Supabase (Kong gateway of the self-hosted stack)
+	reverse_proxy localhost:8000
+}
+
+{$AI_DOMAIN:ai.example.org} {
+	# Species identify service
+	request_body {
+		max_size 60MB
+	}
+	reverse_proxy localhost:8088
+}

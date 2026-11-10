@@ -12,11 +12,10 @@ dependencies = [
   "pillow>=10",
 ]
 
-# BioCLIP 2 (CPU is enough for the pilot). Install torch from the CPU index first, see the Dockerfile.
-bioclip = ["torch>=2.3", "open_clip_torch>=2.29"]
-
 [project.optional-dependencies]
 dev = ["pytest>=8", "anyio>=4", "ruff>=0.6"]
+# BioCLIP 2 (CPU is enough for the pilot). Install torch from the CPU index first, see the Dockerfile.
+bioclip = ["torch>=2.3", "open_clip_torch>=2.29"]
 
 [build-system]
 requires = ["setuptools>=68"]

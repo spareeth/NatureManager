@@ -2,6 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(16);
+\ir fixture_trees.inc
 create function pg_temp.as_user(u text) returns void language sql as
   $$ select set_config('request.jwt.claims', json_build_object('sub', u, 'role', 'authenticated')::text, true) $$;
 

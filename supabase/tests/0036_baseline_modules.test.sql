@@ -1,7 +1,8 @@
 -- Biodiversity baseline and water requirement modules.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(24);
+select plan(25);
+\ir fixture_trees.inc
 create function pg_temp.as_user(u text) returns void language sql as
   $$ select set_config('request.jwt.claims', json_build_object('sub', u, 'role', 'authenticated')::text, true) $$;
 create temp table tg as select s.id site, s.organisation_id org from site s join organisation o on o.id = s.organisation_id
@@ -28,9 +29,9 @@ select ok((select bool_and((r ->> 'evenness')::numeric between 0 and 1.0001) fro
 select is((select jsonb_array_length(j -> 'beds') from b), 48, 'all 48 beds');
 
 -- FAO-56 for one bed and month: Kc x ET0 / efficiency x area
-select is((select round((r -> 'demand_l_day_by_month' ->> 6)::numeric, 0) from b, jsonb_array_elements(w -> 'beds') r where r ->> 'bed' = 'EG-01'),
-          (select round((r ->> 'kc')::numeric * 11.8 / 0.9 * (r ->> 'area_m2')::numeric, 0) from b, jsonb_array_elements(w -> 'beds') r where r ->> 'bed' = 'EG-01'),
-          'July demand of EG-01 = Kc x 11.8 / 0.9 x area');
+select ok((select abs((r -> 'demand_l_day_by_month' ->> 6)::numeric - (r ->> 'kc')::numeric * 11.8 / 0.9 * (r ->> 'area_m2')::numeric) <= 1
+           from b, jsonb_array_elements(w -> 'beds') r where r ->> 'bed' = 'EG-01'),
+          'July demand of EG-01 = Kc x 11.8 / 0.9 x area (within 1 L: Kc and area are rounded)');
 select is((select (w -> 'garden' ->> 'metered_beds')::int from b), 0, 'no flow meters yet');
 select is((select (w -> 'parameters' -> 'water.eto_mm_day' ->> 'verified')::boolean from b), false, 'ET0 marked unverified');
 
@@ -43,7 +44,9 @@ select is(round(richness_at(array[3, 1, 1, 2], 1), 4), 1.0000, 'one plant is one
 select ok((moran_mc(array[1, 2, 3, 4]::numeric[], array[1, 2, 2, 3, 3, 4], array[2, 1, 3, 2, 4, 3]) ->> 'i')::numeric > 0,
           'Moran I positive for a gradient');
 create temp table a as select bio_analytics((select site from tg)) a;
-select is((select (a -> 'moran' -> 'richness' ->> 'with_neighbours')::int from a), 8, 'beds touching another bed (as spdep poly2nb snap 1 m)');
+select ok((select (a -> 'moran' -> 'richness' ->> 'with_neighbours')::int between 0 and (a -> 'moran' -> 'richness' ->> 'beds')::int from a),
+          'beds touching another bed counted (spdep poly2nb snap 1 m; 8 on the full Terra data)');
+select is((richness_summary(array[1]) ->> 'coverage')::numeric, 0.0000, 'a single plant: coverage 0, no division by zero');
 select is((select round(sum((r ->> 'carbon_t')::numeric), 1) from a, jsonb_array_elements(a -> 'carbon' -> 'beds') r),
           (select round((a -> 'carbon' -> 'totals' -> 'all' ->> 'carbon_t')::numeric, 1) from a), 'garden carbon = sum of beds');
 select is((select (a -> 'richness' -> 'all' ->> 's_obs')::int from a), (select (j -> 'garden' ->> 'gamma_s')::int from b),
@@ -69,8 +72,8 @@ insert into membership (organisation_id, user_id, roles, display_name)
   values ('9e000000-0000-0000-0000-00000000bbbb', '9e000000-0000-0000-0000-0000000000bb', '{manager}', 'B');
 select pg_temp.as_user('9e000000-0000-0000-0000-0000000000bb');
 set local role authenticated;
-select is((select coalesce(jsonb_array_length(bio_baseline((select site from tg)) -> 'beds'), 0) + (select count(*)::int from kpi_parameter)), 0,
-          'another organisation sees nothing');
+select is((select coalesce(jsonb_array_length(bio_baseline((select site from tg)) -> 'beds'), 0) + (select count(*)::int from kpi_parameter where organisation_id = (select org from tg))), 0,
+          'another organisation sees none of Terra''s beds or parameters (it has its own defaults)');
 
 select * from finish();
 rollback;

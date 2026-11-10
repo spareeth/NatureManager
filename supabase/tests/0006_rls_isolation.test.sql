@@ -42,7 +42,9 @@ insert into definer_allowlist values
   ('asset_local_xy'), ('observation_hidden'), ('observation_geom'), ('wo_from_observation'),
   -- KPI modules: default parameters for a new organisation (no client access); the monthly snapshot
   -- (managers only, checked inside; pg_cron runs it without a user).
-  ('kpi_parameter_defaults'), ('kpi_take_snapshot');
+  ('kpi_parameter_defaults'), ('kpi_take_snapshot'),
+  -- 10 Nov 2026: new organisations get the KPI parameter defaults (trigger).
+  ('organisation_defaults');
 
 create temp view public_tables as
   select c.relname::text as tbl,

@@ -1,0 +1,13 @@
+# The species identify service (services/ai). Build: docker compose -f deploy/ai.compose.yml build
+services:
+  ai:
+    build: ../services/ai
+    image: terragarden-ai:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8088:8088"   # only Caddy reaches it
+    environment:
+      AI_ALLOWED_ORIGINS: "https://${APP_DOMAIN}"
+      AI_SUPABASE_URL: "https://${API_DOMAIN}"
+      AI_SUPABASE_ANON_KEY: "${ANON_KEY}"
+      PLANTNET_API_KEY: "${PLANTNET_API_KEY:-}"
