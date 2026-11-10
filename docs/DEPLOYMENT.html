@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nature OS Test Server</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a runbook. Narrow step rail on the left (wide screens), one reading column, commands in
+   copyable blocks. Terra forest green with the app's teal accent. */
+:root {
+  --bg: #f6f8f7;
+  --surface: #ffffff;
+  --ink: #14312c;
+  --ink-2: #3f5a54;
+  --line: #d9e3df;
+  --accent: #0f8f82;
+  --accent-soft: #e2f4f1;
+  --code-bg: #10261f;
+  --code-ink: #e6f2ee;
+  --code-dim: #8fb3a8;
+  --warn: #8a5a00;
+  --warn-soft: #fbf1dc;
+  --display: "Space Grotesk", "IBM Plex Sans", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1c18; --surface: #12251f; --ink: #e3efeb; --ink-2: #a9c2bb; --line: #24423a;
+    --accent: #3cc9b8; --accent-soft: #143a33; --code-bg: #08130f; --code-ink: #e3efeb; --code-dim: #7fa498;
+    --warn: #f0c46b; --warn-soft: #2e2512; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1c18; --surface: #12251f; --ink: #e3efeb; --ink-2: #a9c2bb; --line: #24423a;
+  --accent: #3cc9b8; --accent-soft: #143a33; --code-bg: #08130f; --code-ink: #e3efeb; --code-dim: #7fa498;
+  --warn: #f0c46b; --warn-soft: #2e2512; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 64px; display: grid; gap: 40px; grid-template-columns: 220px minmax(0, 1fr); }
+@media (max-width: 860px) { .wrap { grid-template-columns: minmax(0, 1fr); padding-block: 24px 48px; gap: 24px; } nav.rail { display: none; } }
+header.top { grid-column: 1 / -1; display: grid; gap: 12px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { max-width: 68ch; color: var(--ink-2); margin: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.fact { font-family: var(--mono); font-size: 13px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+.fact b { color: var(--accent); font-weight: 500; }
+nav.rail { position: sticky; top: calc(24px + env(safe-area-inset-top, 0px)); align-self: start; font-size: 14px; }
+nav.rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; border-left: 2px solid var(--line); }
+nav.rail a { display: grid; grid-template-columns: 22px 1fr; gap: 6px; padding: 6px 10px; margin-left: -2px; border-left: 2px solid transparent; color: var(--ink-2); text-decoration: none; }
+nav.rail a:hover, nav.rail a:focus-visible { color: var(--ink); border-left-color: var(--accent); outline: none; }
+nav.rail span { font-family: var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+main { display: grid; gap: 48px; min-width: 0; }
+section { display: grid; gap: 14px; min-width: 0; scroll-margin-top: 24px; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 24px; margin: 0; display: flex; gap: 12px; align-items: baseline; text-wrap: balance; }
+h2 .n { font-family: var(--mono); font-size: 14px; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 1px 7px; font-weight: 500; }
+h3 { font-family: var(--display); font-weight: 600; font-size: 17px; margin: 8px 0 0; }
+p { margin: 0; max-width: 72ch; }
+.muted { color: var(--ink-2); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: .88em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.cmd { position: relative; background: var(--code-bg); color: var(--code-ink); border-radius: 10px; min-width: 0; }
+.cmd pre { margin: 0; padding: 16px 18px; overflow-x: auto; font-family: var(--mono); font-size: 13.5px; line-height: 1.65; }
+.cmd .c { color: var(--code-dim); }
+.cmd button { position: absolute; top: 8px; right: 8px; font: 500 12px var(--mono); color: var(--code-ink); background: transparent; border: 1px solid #ffffff33; border-radius: 6px; padding: 3px 9px; cursor: pointer; }
+.cmd button:hover, .cmd button:focus-visible { border-color: var(--accent); outline: none; }
+.cmd .label { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--code-dim); padding: 10px 18px 0; }
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--mono); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-2); font-weight: 500; background: var(--accent-soft); }
+td:first-child { white-space: nowrap; font-weight: 500; }
+@media (max-width: 600px) { td:first-child { white-space: normal; } }
+.note { border-left: 3px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 15px; max-width: 72ch; }
+.note b { color: var(--warn); }
+ol.checks { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 10px; counter-reset: c; max-width: 76ch; }
+ol.checks li { counter-increment: c; display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+ol.checks li::before { content: counter(c); font-family: var(--mono); font-size: 13px; color: var(--accent); border: 1px solid var(--line); border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; background: var(--surface); }
+ul.limits { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 76ch; }
+.tested { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tested div { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); }
+.tested b { display: block; font-family: var(--display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.tested span { font-size: 13px; color: var(--ink-2); }
+footer { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 16px; font-size: 14px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 8px 24px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Nature OS · Terra Garden pilot · runbook</div>
+    <h1>Putting Nature OS on a test server</h1>
+    <p class="lede">One Linux server with Docker runs everything: the database and sign-in (self-hosted Supabase), the web app, the species identify service, and Caddy for HTTPS. Follow the steps in order. Replace <code>nature.example.org</code> with your own names throughout.</p>
+    <div class="facts">
+      <span class="fact">repo <b>github.com/spareeth/NatureManager</b></span>
+      <span class="fact">branch <b>phase-3</b></span>
+      <span class="fact">tested <b>10 Nov 2026</b></span>
+      <span class="fact">Postgres <b>17.6</b> · PostGIS <b>3.3</b></span>
+    </div>
+  </header>
+
+  <nav class="rail" aria-label="Steps">
+    <ol>
+      <li><a href="#need"><span>1</span>What you need</a></li>
+      <li><a href="#prepare"><span>2</span>Prepare the server</a></li>
+      <li><a href="#supabase"><span>3</span>Database and sign-in</a></li>
+      <li><a href="#schema"><span>4</span>Schema and data</a></li>
+      <li><a href="#web"><span>5</span>Web app</a></li>
+      <li><a href="#people"><span>6</span>Map layers, people</a></li>
+      <li><a href="#https"><span>7</span>Identify service, HTTPS</a></li>
+      <li><a href="#check"><span>8</span>Check it works</a></li>
+      <li><a href="#limits"><span>9</span>Known limits</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section aria-labelledby="tested-h">
+      <h2 id="tested-h">Tested before release</h2>
+      <div class="tested">
+        <div><b>548</b><span>database tests, fresh install and with Hortis data</span></div>
+        <div><b>234</b><span>web tests; type check, lint and build clean</span></div>
+        <div><b>13</b><span>species identify service tests</span></div>
+        <div><b>26/26</b><span>pages, 3 roles, phone and Arabic, no errors</span></div>
+      </div>
+      <p class="muted">Also checked: offline observation and sync, work order from an observation, sensitive species hiding, QR labels. Four bugs found on the fresh install were fixed before writing this guide.</p>
+    </section>
+
+    <section id="need" aria-labelledby="need-h">
+      <h2 id="need-h"><span class="n">1</span>What you need</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Item</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>A Linux server</td><td>Ubuntu 24.04, 4 vCPU, 8 GB RAM (16 GB if the species model runs there), 80 GB disk. A Hetzner CX42 or CPX41 is enough.</td></tr>
+          <tr><td>Three DNS names</td><td><code>nature.example.org</code> (app), <code>api.nature.example.org</code> (database and sign-in), <code>ai.nature.example.org</code> (species identify), all pointing to the server.</td></tr>
+          <tr><td>An email account (SMTP)</td><td>Sign-in is by emailed link, so the server must send email: Microsoft 365, SendGrid, Amazon SES or similar. Without it nobody can sign in.</td></tr>
+          <tr><td>Files from your PC</td><td><code>data/hortis/raw/2026-04-27/</code> (Hortis export) and <code>apps/web/public/tiles/</code> (map layers, about 80 MB). Both are kept out of git.</td></tr>
+          <tr><td>Optional keys</td><td>Google Map Tiles API key (Google satellite; restrict it to your app domain), Pl@ntNet API key (plant identification).</td></tr>
+        </tbody>
+      </table></div>
+      <p>Open only ports 22 (SSH), 80 and 443 on the server firewall.</p>
+    </section>
+
+    <section id="prepare" aria-labelledby="prepare-h">
+      <h2 id="prepare-h"><span class="n">2</span>Prepare the server</h2>
+      <div class="cmd"><div class="label">server, as a sudo user</div><button type="button">Copy</button><pre>sudo apt update &amp;&amp; sudo apt -y upgrade
+sudo apt -y install git curl postgresql-client python3 python3-venv
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - &amp;&amp; sudo apt -y install nodejs
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER      <span class="c"># then log out and in again</span>
+sudo ufw allow OpenSSH &amp;&amp; sudo ufw allow 80 &amp;&amp; sudo ufw allow 443 &amp;&amp; sudo ufw enable</pre></div>
+      <p>Install Caddy from its apt repository: <a href="https://caddyserver.com/docs/install#debian-ubuntu-raspbian">caddyserver.com/docs/install</a>.</p>
+      <div class="cmd"><div class="label">server</div><button type="button">Copy</button><pre>git clone git@github.com:spareeth/NatureManager.git ~/terragarden_platform
+cd ~/terragarden_platform &amp;&amp; git checkout phase-3</pre></div>
+      <p class="muted">The repository is private: add the server's SSH key to GitHub (Settings, SSH keys) or use a deploy key first.</p>
+    </section>
+
+    <section id="supabase" aria-labelledby="supabase-h">
+      <h2 id="supabase-h"><span class="n">3</span>Database and sign-in (self-hosted Supabase)</h2>
+      <p>Follow Supabase's Docker guide, <a href="https://supabase.com/docs/guides/self-hosting/docker">supabase.com/docs/guides/self-hosting/docker</a>. In short:</p>
+      <div class="cmd"><div class="label">server</div><button type="button">Copy</button><pre>git clone --depth 1 https://github.com/supabase/supabase ~/supabase
+mkdir -p ~/supabase-project &amp;&amp; cp -rf ~/supabase/docker/* ~/supabase-project
+cp ~/supabase/docker/.env.example ~/supabase-project/.env
+cd ~/supabase-project</pre></div>
+      <h3>Edit <code>~/supabase-project/.env</code></h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td><code>POSTGRES_PASSWORD</code>, <code>JWT_SECRET</code>, <code>DASHBOARD_PASSWORD</code></td><td>New strong values. The Supabase guide shows how to generate the JWT secret and the matching <code>ANON_KEY</code> and <code>SERVICE_ROLE_KEY</code>.</td></tr>
+          <tr><td><code>SITE_URL</code></td><td><code>https://nature.example.org</code></td></tr>
+          <tr><td><code>ADDITIONAL_REDIRECT_URLS</code></td><td><code>https://nature.example.org/**</code></td></tr>
+          <tr><td><code>API_EXTERNAL_URL</code>, <code>SUPABASE_PUBLIC_URL</code></td><td><code>https://api.nature.example.org</code></td></tr>
+          <tr><td><code>SMTP_*</code></td><td>Your email account: host, port, user, password, admin email; sender name <code>Nature OS</code>.</td></tr>
+          <tr><td><code>ENABLE_EMAIL_SIGNUP</code></td><td><code>true</code> (needed for emailed sign-in links)</td></tr>
+          <tr><td><code>DISABLE_SIGNUP</code></td><td><code>true</code>: only people you add in step 6 can sign in</td></tr>
+        </tbody>
+      </table></div>
+      <p>In <code>docker-compose.yml</code>, set the database image to the Postgres 17 image used in development, <code>supabase/postgres:17.6.1.171</code> or a later 17.x.</p>
+      <div class="cmd"><div class="label">server, in ~/supabase-project</div><button type="button">Copy</button><pre>docker compose pull &amp;&amp; docker compose up -d
+docker compose ps      <span class="c"># all healthy; the database container is usually "supabase-db"</span></pre></div>
+      <p class="note"><b>Studio</b> (the database dashboard) is reachable on the API address. Keep it behind its dashboard password, or block it in Caddy and reach it through an SSH tunnel.</p>
+    </section>
+
+    <section id="schema" aria-labelledby="schema-h">
+      <h2 id="schema-h"><span class="n">4</span>Schema, seed and Hortis data</h2>
+      <p>The commands below need the database port. Expose 5432 to localhost only in the Supabase compose file, or run them from your PC through an SSH tunnel (<code>ssh -L 54329:localhost:5432 server</code>).</p>
+      <div class="cmd"><div class="label">server, in ~/terragarden_platform</div><button type="button">Copy</button><pre>export PSQL="docker exec -i supabase-db psql -U postgres -d postgres"
+
+<span class="c"># 4.1 All migrations, in order; recorded so later updates apply only new ones</span>
+npx supabase@2 db push --db-url "postgresql://postgres:&lt;POSTGRES_PASSWORD&gt;@localhost:5432/postgres"
+
+<span class="c"># 4.2 Terra, the site, asset types and the 48 beds (no demo users)</span>
+scripts/deploy/seed_server.sh
+
+<span class="c"># 4.3 Hortis: 77 taxa, 77 accessions, 666 plants (copy data/hortis/raw/2026-04-27/ first)</span>
+python3 -m venv ~/.venv-hortis &amp;&amp; ~/.venv-hortis/bin/pip install pg8000
+DATABASE_URL=postgresql://postgres:&lt;POSTGRES_PASSWORD&gt;@localhost:5432/postgres \
+  ~/.venv-hortis/bin/python scripts/hortis/migrate.py --org terra
+
+<span class="c"># check: 666</span>
+$PSQL -qAt -c "select count(*) from asset"</pre></div>
+      <p class="muted">Later updates: <code>git pull</code>, then the same <code>db push</code>; it applies only what the server does not have. Never edit a migration that is already on the server.</p>
+    </section>
+
+    <section id="web" aria-labelledby="web-h">
+      <h2 id="web-h"><span class="n">5</span>Web app</h2>
+      <p>Build on your PC (or on the server with Node 22) with the server addresses. Create <code>.env.server</code> in the repository root; it is kept out of git, so never commit keys.</p>
+      <div class="cmd"><div class="label">.env.server</div><button type="button">Copy</button><pre>VITE_SUPABASE_URL=https://api.nature.example.org
+VITE_SUPABASE_ANON_KEY=&lt;ANON_KEY from step 3&gt;
+VITE_AI_SERVICE_URL=https://ai.nature.example.org
+VITE_PUBLIC_BASE_URL=https://nature.example.org
+VITE_GOOGLE_MAPS_API_KEY=&lt;optional&gt;</pre></div>
+      <div class="cmd"><div class="label">your PC, in the repository</div><button type="button">Copy</button><pre>cp .env.server .env.production.local      <span class="c"># Vite reads it for the production build</span>
+npm ci &amp;&amp; npm run build -w @terragarden/web
+rm .env.production.local
+rsync -a apps/web/dist/ server:/srv/terragarden/web/
+rsync -a apps/web/public/tiles/ server:/srv/terragarden/web/tiles/</pre></div>
+      <p class="note"><b>QR labels</b> print the address in <code>VITE_PUBLIC_BASE_URL</code>. Set it to the real address before printing any label for a tree.</p>
+    </section>
+
+    <section id="people" aria-labelledby="people-h">
+      <h2 id="people-h"><span class="n">6</span>Map layers and people</h2>
+      <div class="cmd"><div class="label">server, in ~/terragarden_platform</div><button type="button">Copy</button><pre><span class="c"># Satellite overlays, base maps (CAD plan, Dec 2025 image), per-bed values, tree loss.
+# Copy data/imagery/stats/ and data/trees/isolated/ from your PC first (small files).</span>
+python3 scripts/imagery/load_layers.py | $PSQL -q -1 -v ON_ERROR_STOP=1
+python3 scripts/trees/load_tree_loss.py | $PSQL -q -1 -v ON_ERROR_STOP=1
+
+<span class="c"># People: one line each; they sign in with the link emailed to them</span>
+export SUPABASE_URL=https://api.nature.example.org SERVICE_ROLE_KEY=&lt;SERVICE_ROLE_KEY&gt;
+scripts/deploy/add_member.sh you@expocitydubai.ae manager "Your Name"
+scripts/deploy/add_member.sh someone@expocitydubai.ae green_team "Their Name" "Green Team East"</pre></div>
+      <p class="muted">Roles: <code>owner</code>, <code>manager</code>, <code>field_manager</code>, <code>curator</code>, <code>green_team</code>, <code>field_engineer</code>; several at once as <code>"green_team,curator"</code>. Running the line again for the same person updates their roles.</p>
+    </section>
+
+    <section id="https" aria-labelledby="https-h">
+      <h2 id="https-h"><span class="n">7</span>Species identify service and HTTPS</h2>
+      <div class="cmd"><div class="label">server, in ~/terragarden_platform</div><button type="button">Copy</button><pre>export APP_DOMAIN=nature.example.org API_DOMAIN=api.nature.example.org AI_DOMAIN=ai.nature.example.org
+export ANON_KEY=&lt;ANON_KEY&gt; PLANTNET_API_KEY=&lt;optional&gt;
+docker compose -f deploy/ai.compose.yml up -d --build    <span class="c"># first build downloads about 2.5 GB</span>
+curl -s localhost:8088/health                            <span class="c"># {"status":"ok",...}</span>
+
+sudo cp deploy/Caddyfile /etc/caddy/Caddyfile
+sudo sed -i "s/app.example.org/$APP_DOMAIN/; s/api.example.org/$API_DOMAIN/; s/ai.example.org/$AI_DOMAIN/" /etc/caddy/Caddyfile
+sudo mkdir -p /srv/terragarden/web &amp;&amp; sudo chown -R $USER /srv/terragarden
+sudo systemctl reload caddy      <span class="c"># HTTPS certificates are issued automatically</span></pre></div>
+      <p class="muted">The identify service needs about 3 GB of memory for the BioCLIP model. On a small server, leave it out: the app still works, and Identify species reports that the service did not answer.</p>
+    </section>
+
+    <section id="check" aria-labelledby="check-h">
+      <h2 id="check-h"><span class="n">8</span>Check it works</h2>
+      <ol class="checks">
+        <li><span>Open <code>https://nature.example.org</code>: the sign-in page loads over HTTPS.</span></li>
+        <li><span>Sign in as the manager you added: the email arrives, and the link opens the map with 48 beds and 666 plants.</span></li>
+        <li><span>More, Biodiversity and Water: figures and maps load; switch the overlay and the base map; try Compare with.</span></li>
+        <li><span>On a phone: add the app to the home screen, sign in as a green team member, open My day, Observe a plant with a photo, Identify species, Save. In flight mode, save another; back online, the bar shows it sent.</span></li>
+        <li><span>Work orders: report a problem from the map; as manager, schedule it; as the green team member, start and complete it; as field manager, verify it.</span></li>
+        <li><span>Print a QR label from an asset page and scan it with the phone camera: the asset opens.</span></li>
+        <li><span>Preventive jobs are generated every night at 00:30 Dubai time; the next morning, Planning shows new jobs.</span></li>
+      </ol>
+      <h3>Daily backup</h3>
+      <div class="cmd"><div class="label">server, crontab -e</div><button type="button">Copy</button><pre>30 2 * * * docker exec supabase-db pg_dump -U postgres -Fc postgres &gt; ~/backups/nature_$(date +\%F).dump</pre></div>
+      <p class="muted">Copy the dumps off the server regularly.</p>
+    </section>
+
+    <section id="limits" aria-labelledby="limits-h">
+      <h2 id="limits-h"><span class="n">9</span>Known limits of this test build</h2>
+      <ul class="limits">
+        <li>For testing only: one server, no high availability, backups as above.</li>
+        <li>The main web bundle is 1.6 MB (475 kB compressed), so the first load on a weak phone connection takes a few seconds.</li>
+        <li>react-router 6 has a moderate advisory (open redirect through a backslash in links). The app builds its own links, so exposure is low; upgrade to version 7 later.</li>
+        <li>Members cannot be added in the app yet; use <code>scripts/deploy/add_member.sh</code>.</li>
+        <li>Map layer files in <code>/tiles/</code> can be read by anyone who knows their address. Serve them behind sign-in for production.</li>
+        <li>Vegetation change and tree loss are exploratory research layers; read their notes before quoting figures.</li>
+        <li>Not built yet: Darwin Core export (task 3.7), camera traps (3.8), sensors and alerts (Phase 4).</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <span>Source: <code>docs/DEPLOYMENT.md</code> in the repository</span>
+    <span>Scripts: <code>scripts/deploy/</code> · Caddy and identify service: <code>deploy/</code></span>
+  </footer>
+</div>
+
+<script>
+document.querySelectorAll('.cmd button').forEach((b) => {
+  b.addEventListener('click', () => {
+    const pre = b.parentElement.querySelector('pre');
+    const text = pre.innerText;
+    const done = () => { b.textContent = 'Copied'; setTimeout(() => { b.textContent = 'Copy'; }, 1500); };
+    const select = () => { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Selected'; setTimeout(() => { b.textContent = 'Copy'; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, select);
+    else select();
+  });
+});
+</script>
+</body>
+</html>

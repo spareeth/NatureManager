@@ -1,6 +1,7 @@
 # Deploying a test server
 
-How to put the pilot on one Linux server for testing (not production). Everything runs on one virtual
+How to put the pilot on one Linux server for testing (not production). A formatted version of this guide
+is published at https://claude.ai/artifact/PofS4oaPjBxSXZBWh3pF9a. Everything runs on one virtual
 machine with Docker: the database and sign-in (self-hosted Supabase), the web app (static files), the
 species identify service and a web server (Caddy) that adds HTTPS.
 
@@ -36,9 +37,12 @@ sudo ufw allow OpenSSH && sudo ufw allow 80 && sudo ufw allow 443 && sudo ufw en
 Install Caddy: follow https://caddyserver.com/docs/install#debian-ubuntu-raspbian (one apt repository).
 
 ```bash
-git clone <your repository URL> ~/terragarden_platform
+git clone git@github.com:spareeth/NatureManager.git ~/terragarden_platform
 cd ~/terragarden_platform && git checkout phase-3
 ```
+
+The repository is private: add the server's SSH key to GitHub (Settings, SSH keys) or use a deploy key
+first.
 
 ## 3. Database and sign-in (self-hosted Supabase)
 
