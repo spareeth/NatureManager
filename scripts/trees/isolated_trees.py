@@ -47,8 +47,12 @@ PRESENT, ABSENT = 0.30, 0.10
 
 
 def load(d):
-    # The image footprint: dark pixels inside it (shadowed canopy) are data, not gaps.
-    return (np.load(IN / f"prob_{d}.npy").astype("float32"),
+    # April and October: their own models (own_models.py) when present; they read the dark SuperView
+    # vegetation that the December model misses. The image footprint: dark pixels inside it (shadowed
+    # canopy) are data, not gaps.
+    own = IN / f"prob_{d}_own.npy"
+    src = own if d != "dec2025" and own.exists() else IN / f"prob_{d}.npy"
+    return (np.load(src).astype("float32"),
             ndimage.binary_fill_holes(np.load(IN / f"valid_{d}.npy")))
 
 
